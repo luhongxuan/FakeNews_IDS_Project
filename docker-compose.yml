@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+
+  jupyter:
+    build: ./data_pipeline
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./data_pipeline:/app
+      - ./data:/app/data
+    env_file:
+      - ./data_pipeline/.env
+    command: >
+      jupyter lab
+      --ip=0.0.0.0
+      --port=8888
+      --no-browser
+      --NotebookApp.token=''
+      --NotebookApp.password=''
+    depends_on:
+      - db
+
+  pipeline:
+    build: ./data_pipeline
+    volumes:
+      - ./data_pipeline:/app
+      - ./data:/app/data
+    env_file:
+      - ./data_pipeline/.env
+    depends_on:
+      - db
+    # 每次跑不同腳本時在這裡指定，例如：
+    # command: python -m collectors.fact_check
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: misinfo_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
