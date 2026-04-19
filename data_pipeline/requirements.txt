@@ -50,7 +50,9 @@ nbconvert==7.17.1
 nbformat==5.10.4
 nest-asyncio==1.6.0
 notebook_shim==0.2.4
+numpy==2.4.4
 packaging==26.1
+pandas==3.0.2
 pandocfilters==1.5.1
 parso==0.8.6
 pexpect==4.9.0
@@ -63,6 +65,7 @@ pure_eval==0.2.3
 pycparser==3.0
 Pygments==2.20.0
 python-dateutil==2.9.0.post0
+python-dotenv==1.2.2
 python-json-logger==4.1.0
 PyYAML==6.0.3
 pyzmq==27.1.0
