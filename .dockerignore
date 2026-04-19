@@ -1,0 +1,6 @@
+.Trash-0
+.Trash-*/
+__pycache__/
+*.pyc
+venv/
+/data_pipeline/.env

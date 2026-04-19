@@ -1,0 +1,257 @@
+
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .wrap { padding: 16px 0 24px; font-size: 14px; color: var(--color-text-primary); }
+  h2 { font-size: 18px; font-weight: 500; margin: 0 0 4px; }
+  .subtitle { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 20px; }
+  .phase { border-radius: var(--border-radius-lg); border: 1px solid var(--color-border-tertiary); margin-bottom: 14px; overflow: hidden; }
+  .phase-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; user-select: none; }
+  .phase-header:hover { background: var(--color-background-secondary); }
+  .badge { border-radius: 6px; font-size: 11px; font-weight: 500; padding: 3px 8px; white-space: nowrap; }
+  .m1 .badge { background: #EEEDFE; color: #3C3489; }
+  .m2 .badge { background: #E1F5EE; color: #085041; }
+  .m3 .badge { background: #E6F1FB; color: #0C447C; }
+  .m4 .badge { background: #FAEEDA; color: #633806; }
+  .m5 .badge { background: #FAECE7; color: #712B13; }
+  @media (prefers-color-scheme: dark) {
+    .m1 .badge { background: #3C3489; color: #CECBF6; }
+    .m2 .badge { background: #085041; color: #9FE1CB; }
+    .m3 .badge { background: #0C447C; color: #B5D4F4; }
+    .m4 .badge { background: #633806; color: #FAC775; }
+    .m5 .badge { background: #712B13; color: #F5C4B3; }
+  }
+  .phase-title { font-weight: 500; font-size: 15px; flex: 1; }
+  .phase-weeks { font-size: 12px; color: var(--color-text-secondary); }
+  .chevron { font-size: 12px; color: var(--color-text-tertiary); transition: transform 0.2s; }
+  .chevron.open { transform: rotate(90deg); }
+  .phase-body { padding: 0 16px 16px; display: none; }
+  .phase-body.open { display: block; }
+  .goal { font-size: 13px; color: var(--color-text-secondary); margin: 0 0 12px; border-left: 3px solid var(--color-border-secondary); padding-left: 10px; line-height: 1.6; }
+  .section-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); margin: 14px 0 6px; }
+  .tasks { display: flex; flex-direction: column; gap: 6px; }
+  .task { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.5; }
+  .task-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+  .m1 .task-dot { background: #7F77DD; }
+  .m2 .task-dot { background: #1D9E75; }
+  .m3 .task-dot { background: #378ADD; }
+  .m4 .task-dot { background: #BA7517; }
+  .m5 .task-dot { background: #D85A30; }
+  .tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .tool { font-size: 11px; padding: 3px 8px; border-radius: 5px; background: var(--color-background-secondary); border: 1px solid var(--color-border-tertiary); color: var(--color-text-secondary); }
+  .team-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .member { font-size: 12px; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--color-border-tertiary); color: var(--color-text-secondary); }
+  .divider { height: 1px; background: var(--color-border-tertiary); margin: 10px 0; }
+  .milestone { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--color-text-secondary); margin-top: 10px; background: var(--color-background-secondary); border-radius: 8px; padding: 8px 12px; }
+  .ms-icon { font-size: 14px; }
+  .progress-bar { display: flex; gap: 3px; margin-bottom: 20px; }
+  .prog-seg { flex: 1; height: 5px; border-radius: 3px; }
+  .s1 { background: #7F77DD; }
+  .s2 { background: #1D9E75; }
+  .s3 { background: #378ADD; }
+  .s4 { background: #BA7517; }
+  .s5 { background: #D85A30; }
+</style>
+<div class="wrap">
+  <h2>5 個月專題開發路線圖</h2>
+  <div class="subtitle">假訊息查核 × 擴散追蹤 × 干預模擬平台 ｜ 3 人團隊</div>
+  <div class="progress-bar">
+    <div class="prog-seg s1"></div>
+    <div class="prog-seg s1"></div>
+    <div class="prog-seg s2"></div>
+    <div class="prog-seg s2"></div>
+    <div class="prog-seg s3"></div>
+    <div class="prog-seg s3"></div>
+    <div class="prog-seg s4"></div>
+    <div class="prog-seg s4"></div>
+    <div class="prog-seg s5"></div>
+  </div>
+
+  <!-- Phase 1 -->
+  <div class="phase m1">
+    <div class="phase-header" onclick="toggle(this)">
+      <span class="badge">第 1 個月</span>
+      <span class="phase-title">研究規劃 & 資料探索</span>
+      <span class="phase-weeks">週 1－4</span>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="phase-body open">
+      <p class="goal">把所有理想用「能不能真的做出來」來驗證，確認技術可行性，選定資料集，寫好文件。</p>
+      <div class="section-label">核心任務</div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot"></div><span>下載並探索 PHEME、FakeNewsNet 資料集，了解欄位結構與限制</span></div>
+        <div class="task"><div class="task-dot"></div><span>試打 Google Fact Check Tools API，確認查詢效果與回傳格式</span></div>
+        <div class="task"><div class="task-dot"></div><span>試用 GDELT API 做新聞事件查詢，評估資料量與品質</span></div>
+        <div class="task"><div class="task-dot"></div><span>定義系統架構：前後端分工、API 設計、資料庫結構</span></div>
+        <div class="task"><div class="task-dot"></div><span>確定三人分工：後端 / 圖分析 / 前端視覺化</span></div>
+      </div>
+      <div class="section-label">使用工具</div>
+      <div class="tools">
+        <span class="tool">Python (pandas)</span>
+        <span class="tool">Jupyter Notebook</span>
+        <span class="tool">Google Fact Check API</span>
+        <span class="tool">GDELT API</span>
+        <span class="tool">Figma（系統設計稿）</span>
+      </div>
+      <div class="section-label">建議分工</div>
+      <div class="team-row">
+        <span class="member">A — 資料集探索 + API 評估</span>
+        <span class="member">B — 系統架構設計</span>
+        <span class="member">C — UI wireframe</span>
+      </div>
+      <div class="milestone"><span class="ms-icon">🎯</span><span>里程碑：能用 Fact Check API 查到一個 claim 的完整回傳結果</span></div>
+    </div>
+  </div>
+
+  <!-- Phase 2 -->
+  <div class="phase m2">
+    <div class="phase-header" onclick="toggle(this)">
+      <span class="badge">第 2 個月</span>
+      <span class="phase-title">後端核心 MVP</span>
+      <span class="phase-weeks">週 5－8</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="phase-body">
+      <p class="goal">做出可以接受使用者輸入、完成查核搜尋、抓取新聞資料的後端 pipeline。</p>
+      <div class="section-label">核心任務</div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot"></div><span>實作 claim 輸入 → Fact Check API 查詢 → 結構化回傳</span></div>
+        <div class="task"><div class="task-dot"></div><span>實作 GDELT 新聞抓取 → 去重 → 時間排序 pipeline</span></div>
+        <div class="task"><div class="task-dot"></div><span>設計並建立資料庫（PostgreSQL 或 SQLite）儲存查核結果快取</span></div>
+        <div class="task"><div class="task-dot"></div><span>用 sentence-transformers 做基礎 Claim Clustering（相似 claim 合併）</span></div>
+        <div class="task"><div class="task-dot"></div><span>建立 FastAPI 後端，定義 /search、/timeline、/graph 三個端點</span></div>
+      </div>
+      <div class="section-label">使用工具</div>
+      <div class="tools">
+        <span class="tool">FastAPI</span>
+        <span class="tool">PostgreSQL / SQLite</span>
+        <span class="tool">sentence-transformers</span>
+        <span class="tool">requests / httpx</span>
+        <span class="tool">Pydantic</span>
+      </div>
+      <div class="section-label">建議分工</div>
+      <div class="team-row">
+        <span class="member">A — Fact Check + GDELT pipeline</span>
+        <span class="member">B — FastAPI 架設 + DB schema</span>
+        <span class="member">C — Claim Clustering</span>
+      </div>
+      <div class="milestone"><span class="ms-icon">🎯</span><span>里程碑：輸入「COVID vaccine DNA」，後端回傳查核結果 + 5 篇相關新聞 + 時間排序</span></div>
+    </div>
+  </div>
+
+  <!-- Phase 3 -->
+  <div class="phase m3">
+    <div class="phase-header" onclick="toggle(this)">
+      <span class="badge">第 3 個月</span>
+      <span class="phase-title">圖分析 & 擴散模型</span>
+      <span class="phase-weeks">週 9－12</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="phase-body">
+      <p class="goal">把新聞與來源關係轉成圖結構，分析關鍵節點，跑擴散模擬與干預策略比較。</p>
+      <div class="section-label">核心任務</div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot"></div><span>從 PHEME 資料集建構傳播圖（節點 = 帳號/媒體，邊 = 轉貼/引用）</span></div>
+        <div class="task"><div class="task-dot"></div><span>用 NetworkX 計算 degree / betweenness / PageRank，找出關鍵放大節點</span></div>
+        <div class="task"><div class="task-dot"></div><span>用 NDlib 跑 SIR 模型模擬假訊息擴散過程</span></div>
+        <div class="task"><div class="task-dot"></div><span>實作 4 種干預策略：random / degree / betweenness / greedy，比較效果</span></div>
+        <div class="task"><div class="task-dot"></div><span>設計「干預前後」的比較輸出格式，串接 API</span></div>
+      </div>
+      <div class="section-label">使用工具</div>
+      <div class="tools">
+        <span class="tool">NetworkX</span>
+        <span class="tool">NDlib</span>
+        <span class="tool">NumPy / SciPy</span>
+        <span class="tool">matplotlib（初步驗證圖）</span>
+      </div>
+      <div class="section-label">建議分工</div>
+      <div class="team-row">
+        <span class="member">A — 圖建構 + centrality 分析</span>
+        <span class="member">B — NDlib 擴散模擬</span>
+        <span class="member">C — 干預策略實作 + 比較</span>
+      </div>
+      <div class="milestone"><span class="ms-icon">🎯</span><span>里程碑：能對一個 PHEME 事件跑出 4 種策略的干預效果比較圖</span></div>
+    </div>
+  </div>
+
+  <!-- Phase 4 -->
+  <div class="phase m4">
+    <div class="phase-header" onclick="toggle(this)">
+      <span class="badge">第 4 個月</span>
+      <span class="phase-title">前端視覺化 & 整合</span>
+      <span class="phase-weeks">週 13－17</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="phase-body">
+      <p class="goal">把後端所有結果呈現成可操作的前端介面，完成三層完整 demo 流程。</p>
+      <div class="section-label">核心任務</div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot"></div><span>實作查核入口介面：輸入框 → 查核結果卡 → 可信度量尺</span></div>
+        <div class="task"><div class="task-dot"></div><span>實作新聞時間線：橫軸時間、縱軸平台、事件點可點擊展開</span></div>
+        <div class="task"><div class="task-dot"></div><span>用 Cytoscape.js 或 D3.js 實作互動式擴散圖（點節點看詳細資訊）</span></div>
+        <div class="task"><div class="task-dot"></div><span>實作干預模擬面板：選策略 → 選 k 值 → 顯示干預前後擴散量比較</span></div>
+        <div class="task"><div class="task-dot"></div><span>串接所有 FastAPI 端點，完成 end-to-end 流程</span></div>
+        <div class="task"><div class="task-dot"></div><span>加入 PDF 報告匯出功能</span></div>
+      </div>
+      <div class="section-label">使用工具</div>
+      <div class="tools">
+        <span class="tool">React</span>
+        <span class="tool">Cytoscape.js / D3.js</span>
+        <span class="tool">Recharts（時間線 / 比較圖）</span>
+        <span class="tool">TailwindCSS</span>
+        <span class="tool">jsPDF（報告匯出）</span>
+      </div>
+      <div class="section-label">建議分工</div>
+      <div class="team-row">
+        <span class="member">A — 查核入口 + 時間線</span>
+        <span class="member">B — 擴散圖視覺化</span>
+        <span class="member">C — 干預模擬面板 + 報告匯出</span>
+      </div>
+      <div class="milestone"><span class="ms-icon">🎯</span><span>里程碑：完整 demo 跑通一個案例（從輸入 → 查核 → 擴散圖 → 干預比較）</span></div>
+    </div>
+  </div>
+
+  <!-- Phase 5 -->
+  <div class="phase m5">
+    <div class="phase-header" onclick="toggle(this)">
+      <span class="badge">第 5 個月</span>
+      <span class="phase-title">優化、文件與發表準備</span>
+      <span class="phase-weeks">週 18－20</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="phase-body">
+      <p class="goal">把系統從「能跑」變成「能說服人」，準備好 demo 腳本、論文、簡報。</p>
+      <div class="section-label">核心任務</div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot"></div><span>選定 3 個 case study（一個已知假訊息事件 replay）做 demo 腳本</span></div>
+        <div class="task"><div class="task-dot"></div><span>UI 細節優化：載入速度、空狀態提示、錯誤處理</span></div>
+        <div class="task"><div class="task-dot"></div><span>寫專題報告：動機 → 架構 → 實驗設計 → 結果 → 未來展望</span></div>
+        <div class="task"><div class="task-dot"></div><span>製作發表簡報：突出三層架構亮點，準備 live demo</span></div>
+        <div class="task"><div class="task-dot"></div><span>部署到雲端（Render / Vercel / Railway），讓老師可以線上試用</span></div>
+      </div>
+      <div class="section-label">使用工具</div>
+      <div class="tools">
+        <span class="tool">Render / Railway（後端部署）</span>
+        <span class="tool">Vercel（前端部署）</span>
+        <span class="tool">Docker（環境打包）</span>
+        <span class="tool">Notion / Overleaf（報告）</span>
+      </div>
+      <div class="section-label">建議分工</div>
+      <div class="team-row">
+        <span class="member">A — 部署 + case study</span>
+        <span class="member">B — 報告撰寫</span>
+        <span class="member">C — 簡報製作</span>
+      </div>
+      <div class="milestone"><span class="ms-icon">🎯</span><span>里程碑：系統上線、demo 腳本跑順、報告初稿完成</span></div>
+    </div>
+  </div>
+</div>
+<script>
+function toggle(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.chevron');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chevron.classList.toggle('open', !isOpen);
+}
+</script>
