@@ -27,7 +27,7 @@ async def timeline(query: str, db: Session = Depends(get_db)):
                     source=claim.reviewer,
                     rating=claim.rating
                 ))
-            elif claim.claim_date:
+            if claim.claim_date:
                 timeline_items.append(TimelineItem(
                     date=claim.claim_date,
                     type="claim_claim_date",
@@ -49,7 +49,7 @@ async def timeline(query: str, db: Session = Depends(get_db)):
                     source=claim["reviewer"],
                     rating=claim["rating"]
                 ))
-            elif claim["claim_date"]:
+            if claim["claim_date"]:
                 timeline_items.append(TimelineItem(
                     date=claim["claim_date"],
                     type="claim_claim_date",
