@@ -1,2 +1,7 @@
-/venv
-/data
+venv/
+data/
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
