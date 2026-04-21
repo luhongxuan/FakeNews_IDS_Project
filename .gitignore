@@ -1,4 +1,7 @@
-/venv
-/data
-/data_pipeline/.env
-/backend/.env
+venv/
+data/
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
