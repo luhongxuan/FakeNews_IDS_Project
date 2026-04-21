@@ -26,7 +26,8 @@ async def search(query: str, db: Session = Depends(get_db)):
         #         "review_date": claim.review_date,
         #         "review_title": claim.review_title
         #     })
-        claims = [claim.__dict__ for claim in cached_Claims]
+        #claims = [claim.__dict__ for claim in cached_Claims]
+        claims = cached_Claims
     else:
         claims = await fetch_claims(query)
 
@@ -56,7 +57,8 @@ async def search(query: str, db: Session = Depends(get_db)):
         #         "date": new.date,
         #         "country": new.country
         #     })
-        news = [new.__dict__ for new in cached_News]
+        #news = [new.__dict__ for new in cached_News]
+        news = cached_News
     else:
         news = await fetch_news(query)
 

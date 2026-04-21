@@ -31,7 +31,7 @@ class SearchResponse(BaseModel):
     news: list[NewsResult]
 
 class TimelineItem(BaseModel):
-    date: datetime
+    date: Optional[datetime]
     type: str
     title: Optional[str]
     url: Optional[str]

@@ -21,7 +21,7 @@ async def timeline(query: str, db: Session = Depends(get_db)):
             if claim.review_date:
                 timeline_items.append(TimelineItem(
                     date=claim.review_date,
-                    type="claim_review_date",
+                    type="fact_check",
                     title=claim.claim_text,
                     url=claim.review_url,
                     source=claim.reviewer,
@@ -30,7 +30,7 @@ async def timeline(query: str, db: Session = Depends(get_db)):
             if claim.claim_date:
                 timeline_items.append(TimelineItem(
                     date=claim.claim_date,
-                    type="claim_claim_date",
+                    type="rumour" ,
                     title=claim.claim_text,
                     url=None,
                     source=claim.claimant,
@@ -43,7 +43,7 @@ async def timeline(query: str, db: Session = Depends(get_db)):
             if claim["review_date"]:
                 timeline_items.append(TimelineItem(
                     date=claim["review_date"],
-                    type="claim_review_date",
+                    type="fact_check",
                     title=claim["claim_text"],
                     url=claim["review_url"],
                     source=claim["reviewer"],
@@ -52,7 +52,7 @@ async def timeline(query: str, db: Session = Depends(get_db)):
             if claim["claim_date"]:
                 timeline_items.append(TimelineItem(
                     date=claim["claim_date"],
-                    type="claim_claim_date",
+                    type="rumour",
                     title=claim["claim_text"],
                     url=None,
                     source=claim["claimant"],
@@ -69,7 +69,7 @@ async def timeline(query: str, db: Session = Depends(get_db)):
             if new.date:
                 timeline_items.append(TimelineItem(
                     date=new.date,
-                    type="news_date",
+                    type="news",
                     title=new.title,
                     url=new.url,
                     source=new.source,
@@ -82,7 +82,7 @@ async def timeline(query: str, db: Session = Depends(get_db)):
             if new["date"]:
                 timeline_items.append(TimelineItem(
                     date=new["date"],
-                    type="news_date",
+                    type="news",
                     title=new["title"],
                     url=new["url"],
                     source=new["source"],
