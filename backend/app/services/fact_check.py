@@ -36,4 +36,4 @@ async def fetch_claims(query: str, max_results: int = 10) -> dict:
                 "review_title": review.get("title"),
             })
     
-    return results
+    return results[:max_results]
