@@ -9,6 +9,7 @@ class ClaimResult(BaseModel):
     reviewer: Optional[str]
     review_url: Optional[str]
     review_date: Optional[str]
+    review_title: Optional[str]
 
     class Config:
         orm_mode = True

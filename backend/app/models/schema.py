@@ -16,6 +16,7 @@ class ClaimCache(Base):
     reviewer = Column(String, nullable=True)
     review_url = Column(String, nullable=True)
     review_date = Column(DateTime, nullable=True)
+    review_title = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
 
 class Newscache(Base):
