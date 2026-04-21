@@ -42,7 +42,7 @@ async def search(query: str, db: Session = Depends(get_db)):
             #     review_date = claim["review_date"],
             #     review_title = claim["review_title"],
             # )
-            db.add(query=query, **claim)
+            db.add(ClaimCache(query=query, **claim))
         db.commit()
 
     cached_News = db.query(Newscache).filter(Newscache.query == query).all()
@@ -69,7 +69,7 @@ async def search(query: str, db: Session = Depends(get_db)):
             #     date = new["date"],
             #     country = new["country"]
             # )
-            db.add(query=query, **new)
+            db.add(Newscache(query=query, **new))
         db.commit()
 
     return SearchResponse(query=query, claims=claims, news=news)

@@ -13,7 +13,7 @@ class ClaimResult(BaseModel):
     review_title: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class NewsResult(BaseModel):
     title: str
@@ -23,9 +23,22 @@ class NewsResult(BaseModel):
     country: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class SearchResponse(BaseModel):
     query: str
     claims: list[ClaimResult]
     news: list[NewsResult]
+
+class TimelineItem(BaseModel):
+    date: datetime
+    type: str
+    title: Optional[str]
+    url: Optional[str]
+    source: Optional[str]
+    rating: Optional[str]
+
+class TimelineResponse(BaseModel):
+    query: str
+    total: int
+    items: list[TimelineItem]
