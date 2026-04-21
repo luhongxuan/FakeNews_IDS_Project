@@ -1,6 +1,16 @@
 version: "3.9"
 
 services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
 
   jupyter:
     build: ./data_pipeline
@@ -32,8 +42,6 @@ services:
       - ./data_pipeline/.env
     depends_on:
       - db
-    # 每次跑不同腳本時在這裡指定，例如：
-    # command: python -m collectors.fact_check
 
   db:
     image: postgres:15
