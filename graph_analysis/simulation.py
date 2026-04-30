@@ -1,9 +1,9 @@
 import networkx as nx
 import os
 import matplotlib.pyplot as plt
-from builder import build_graph_from_pheme
 import ndlib.models.ModelConfig as mc
 import ndlib.models.epidemics as ep
+from graph_analysis.builder import build_graph_from_pheme
 from dotenv import load_dotenv
 
 def run_sir_simulation(

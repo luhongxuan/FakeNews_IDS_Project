@@ -1,6 +1,6 @@
 import networkx as nx
 import os
-from builder import build_graph_from_pheme
+from graph_analysis.builder import build_graph_from_pheme
 from dotenv import load_dotenv
 
 
