@@ -6,4 +6,3 @@ __pycache__/
 *.pyo
 *.pyd
 test.ipynb
-data.zip
