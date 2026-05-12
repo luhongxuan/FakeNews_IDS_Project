@@ -1,13 +1,15 @@
 import networkx as nx
 import os
+import sys
 from graph_analysis.builder import build_graph_from_pheme
 from dotenv import load_dotenv
 
+if os.path.exists("/home/luhongxuan/FakeNews_IDS_Project"):
+    sys.path.append("/home/luhongxuan/FakeNews_IDS_Project")
 
 load_dotenv()
-PHEME_PATH = os.getenv("PHEME_PATH")
 
-G = build_graph_from_pheme(PHEME_PATH, "charliehebdo")
+PHEME_PATH = os.getenv("PHEME_PATH")
 
 def compute_centrality(G: nx.DiGraph) -> dict:
     """
@@ -43,9 +45,3 @@ def get_top_nodes(centrality_data: dict, metric: str, top_k: int = 10) -> list:
         reverse=True
     )
     return [{"node": n, **data} for n, data in sorted_nodes[:top_k]]
-
-centrality_data = compute_centrality(G)
-# print(centrality_data)
-top_degree = get_top_nodes(centrality_data, "degree_centrality")
-top_betweenness = get_top_nodes(centrality_data, "betweenness_centrality")
-top_pagerank = get_top_nodes(centrality_data, "pagerank")

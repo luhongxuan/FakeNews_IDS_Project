@@ -1,10 +1,16 @@
 import networkx as nx
 import os
+import sys
 import matplotlib.pyplot as plt
 import ndlib.models.ModelConfig as mc
 import ndlib.models.epidemics as ep
 from graph_analysis.builder import build_graph_from_pheme
 from dotenv import load_dotenv
+
+load_dotenv()
+
+if os.path.exists("/home/luhongxuan/FakeNews_IDS_Project"):
+    sys.path.append("/home/luhongxuan/FakeNews_IDS_Project")
 
 def run_sir_simulation(
     G: nx.Graph,
@@ -51,33 +57,32 @@ def run_sir_simulation(
     }
 
 
-load_dotenv()
+# load_dotenv()
 
-PHEME_PATH = os.getenv("PHEME_PATH")
+# PHEME_PATH = os.getcwd() + os.getenv("PHEME_PATH")
+# G = build_graph_from_pheme(PHEME_PATH, "charliehebdo")
+# result = run_sir_simulation(G, beta=0.1, gamma=0.05, iterations=50)
+# trends = result["trends"]
 
-G = build_graph_from_pheme(PHEME_PATH, "charliehebdo")
-result = run_sir_simulation(G, beta=0.1, gamma=0.05, iterations=50)
-trends = result["trends"]
+# x = range(len(trends["susceptible"]))
 
-x = range(len(trends["susceptible"]))
+# plt.figure(figsize=(10, 5))
+# plt.plot(x, trends["susceptible"], label="Susceptible", color="blue")
+# plt.plot(x, trends["infected"],    label="Infected",    color="red")
+# plt.plot(x, trends["removed"],     label="Removed",     color="green")
 
-plt.figure(figsize=(10, 5))
-plt.plot(x, trends["susceptible"], label="Susceptible", color="blue")
-plt.plot(x, trends["infected"],    label="Infected",    color="red")
-plt.plot(x, trends["removed"],     label="Removed",     color="green")
+# plt.axvline(
+#     x=trends["infected"].index(max(trends["infected"])),
+#     color="red", linestyle="--", alpha=0.5,
+#     label=f"Peak Infected: {result['peak_infected']} nodes"
+# )
 
-plt.axvline(
-    x=trends["infected"].index(max(trends["infected"])),
-    color="red", linestyle="--", alpha=0.5,
-    label=f"Peak Infected: {result['peak_infected']} nodes"
-)
+# plt.xlabel("Iteration")
+# plt.ylabel("Node Count")
+# plt.title("SIR Simulation — charliehebdo Event")
+# plt.legend()
+# plt.tight_layout()
+# plt.show()
 
-plt.xlabel("Iteration")
-plt.ylabel("Node Count")
-plt.title("SIR Simulation — charliehebdo Event")
-plt.legend()
-plt.tight_layout()
-plt.show()
-
-plt.savefig("/home/luhongxuan/FakeNews_IDS_Project/data/sir_simulation.png", dpi=150, bbox_inches="tight")
-plt.close()
+# plt.savefig("/home/luhongxuan/FakeNews_IDS_Project/data/sir_simulation.png", dpi=150, bbox_inches="tight")
+# plt.close()

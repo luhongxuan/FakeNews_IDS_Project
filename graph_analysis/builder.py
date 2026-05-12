@@ -2,10 +2,6 @@ import os, json
 import networkx as nx
 from dotenv import load_dotenv
 
-load_dotenv()
-
-PHEME_PATH = os.getenv("PHEME_PATH")
-
 def build_graph_from_pheme(base_path: str, event: str) -> nx.DiGraph:
     """
     從單一 PHEME 事件建構傳播圖
@@ -13,7 +9,7 @@ def build_graph_from_pheme(base_path: str, event: str) -> nx.DiGraph:
     """
     G = nx.DiGraph()
     event_path = os.path.join(base_path, event + "-all-rnr-threads")
-
+    print(f"正在建構圖：{event_path}")
     for label in ["rumours", "non-rumours"]:
         label_path = os.path.join(event_path, label)
         if not os.path.exists(label_path):
@@ -22,7 +18,6 @@ def build_graph_from_pheme(base_path: str, event: str) -> nx.DiGraph:
         for thread_id in os.listdir(label_path):
             thread_path = os.path.join(label_path, thread_id)
             is_rumour = (label == "rumours")
-
             source_user = _read_source_user(thread_path)
             if not source_user:
                 continue
@@ -62,3 +57,6 @@ def _read_source_user(thread_path: str):
         except:
             continue
     return None
+
+if __name__ == "__main__":
+    build_graph_from_pheme()
