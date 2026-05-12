@@ -1,12 +1,13 @@
 import random
 import os
 import sys
+import time
 from collections import deque
 from typing import Optional
 import networkx as nx
 from graph_analysis.simulation import run_sir_simulation
 
-STRATEGIES = ["random", "degree", "greedy", "min_cut"]
+STRATEGIES = ["greedy"]
 
 if os.path.exists("/home/luhongxuan/FakeNews_IDS_Project"):
     sys.path.append("/home/luhongxuan/FakeNews_IDS_Project")
@@ -56,7 +57,9 @@ def run_intervention_comparison(
 
     for strategy in active:
         print(strategy)
+        start_time = time.time()
         nodes_to_remove = select_intervention_nodes(G, strategy, k, pheme_trees)
+        elapsed = time.time() - start_time
 
         G_i = G.copy()
         G_i.remove_nodes_from(nodes_to_remove)
@@ -71,6 +74,7 @@ def run_intervention_comparison(
                 1 - sim["peak_infected"] / max(baseline_peak, 1), 4
             ),
             "trends": sim["trends"],
+            "execution_time": elapsed
         }
 
     return results

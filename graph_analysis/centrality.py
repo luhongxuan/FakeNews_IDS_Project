@@ -38,7 +38,6 @@ def get_top_nodes(centrality_data: dict, metric: str, top_k: int = 10) -> list:
     取特定指標排名前 k 的節點
     metric: 'degree_centrality' | 'betweenness_centrality' | 'pagerank'
     """
-    print(centrality_data)
     sorted_nodes = sorted(
         centrality_data.items(),
         key=lambda x: x[1][metric],

@@ -5,7 +5,7 @@ from graph_analysis.centrality import compute_centrality, get_top_nodes
 from graph_analysis.intervention import run_intervention_comparison
 import networkx as nx
 
-def get_graph(event="charliehebdo", k=5, beta=0.1, gamma=0.05):
+def get_graph(event="sydneysiege", k=5, beta=0.1, gamma=0.05):
     G = build_graph_from_pheme("/home/luhongxuan/FakeNews_IDS_Project/data/raw/pheme", event)
 
     centrality = compute_centrality(G)
@@ -22,5 +22,3 @@ def get_graph(event="charliehebdo", k=5, beta=0.1, gamma=0.05):
         "top_nodes": top_nodes,
         "intervention_comparison": comparison,
     }
-
-print(get_graph())

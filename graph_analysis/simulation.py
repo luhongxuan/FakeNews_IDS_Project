@@ -43,8 +43,6 @@ def run_sir_simulation(
 
     trends = model.build_trends(iterations_result)
 
-    print(trends)
-
     return {
         "iterations": iterations_result,
         "trends": {
