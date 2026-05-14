@@ -13,7 +13,7 @@ router = APIRouter()
 async def get_graph():
     # 這裡的路徑對應 Docker 容器內掛載的資料夾路徑
     PHEME_PATH = os.getenv("PHEME_PATH", "/app/data/raw/pheme")
-    event_name = "charliehebdo"  # 這裡先使用 charliehebdo 事件作為測試
+    event_name = "sydneysiege"  # 這裡先使用 charliehebdo 事件作為測試
     
     G = build_graph_from_pheme(PHEME_PATH, event_name)
     elements = []
