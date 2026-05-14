@@ -2,6 +2,7 @@
 from fastapi import APIRouter
 import os
 import sys
+import networkx as nx
 
 # 確保程式可以載入位於專案根目錄的 graph_analysis 模組
 sys.path.append("/app")
@@ -21,8 +22,26 @@ async def get_graph():
     if G.number_of_nodes() > 0:
         # ⚠️ 為了避免前端卡死，我們計算每個節點的連線數 (Degree)，並只取前 100 個最活躍的節點
         degrees = dict(G.degree())
-        top_nodes = sorted(degrees, key=degrees.get, reverse=True)[:100]
-        subG = G.subgraph(top_nodes)
+        top_nodes = set(sorted(degrees, key=degrees.get, reverse=True)[:500])
+
+        # 過濾邊：兩端都在 top_nodes、且不是自我連接
+        edges = [(u, v) for u, v in G.edges() 
+                if u in top_nodes and v in top_nodes and u != v]
+
+        # 從邊反推有連接的節點
+        connected_nodes = set()
+        for u, v in edges:
+            connected_nodes.add(u)
+            connected_nodes.add(v)
+
+        # 直接用過濾後的邊建新圖，不用 subgraph
+        subG = nx.DiGraph()
+        subG.add_nodes_from(connected_nodes)
+        subG.add_edges_from(edges)
+
+        UG = subG.to_undirected()
+        largest_cc = max(nx.connected_components(UG), key=len)
+        subG = subG.subgraph(largest_cc)
         
         # 1. 轉換節點 (Nodes) 資料格式
         for node in subG.nodes():
