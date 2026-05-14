@@ -22,7 +22,7 @@ async def get_graph():
     if G.number_of_nodes() > 0:
         # ⚠️ 為了避免前端卡死，我們計算每個節點的連線數 (Degree)，並只取前 100 個最活躍的節點
         degrees = dict(G.degree())
-        top_nodes = set(sorted(degrees, key=degrees.get, reverse=True)[:500])
+        top_nodes = set(sorted(degrees, key=degrees.get, reverse=True)[:300])
 
         # 過濾邊：兩端都在 top_nodes、且不是自我連接
         edges = [(u, v) for u, v in G.edges() 
