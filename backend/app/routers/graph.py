@@ -2,6 +2,7 @@
 from fastapi import APIRouter
 import os
 import sys
+import networkx as nx
 import networkx as nx  # <--- 🌟 確保這裡有引入 networkx
 
 sys.path.append("/app")
@@ -22,34 +23,10 @@ async def get_graph():
         
         # 1. 找出全網度數 (連線數) 最高的「核心源頭節點」
         degrees = dict(G.degree())
-        root_node = max(degrees, key=degrees.get) 
+        top_nodes = sorted(degrees, key=degrees.get, reverse=True)[:100]
+        subG = G.subgraph(top_nodes)
         
-        # 2. 使用 Queue 來向外一層一層擴散，直到收集滿 50 個相連的節點
-        sampled_nodes = set([root_node])
-        queue = [root_node]
-        target_node_count = 10  # 你可以在這裡控制要顯示的節點數量
-        
-        while queue and len(sampled_nodes) < target_node_count:
-            current = queue.pop(0)
-            
-            # 找出與 current 節點有相連的所有人 (無論是轉推或被轉推)
-            for neighbor in nx.all_neighbors(G, current):
-                if neighbor not in sampled_nodes:
-                    sampled_nodes.add(neighbor)
-                    queue.append(neighbor)
-                    
-                    # 只要人數一滿，立刻煞車停止擴散
-                    if len(sampled_nodes) >= target_node_count:
-                        break
-
-        # 3. 根據這群彼此相連的節點，裁切出子圖
-        subG = G.subgraph(sampled_nodes)
-        
-        # 重新計算這個子圖內的 degree，用來決定前端圓圈的大小
-        sub_degrees = dict(subG.degree())
-        
-        # --- 轉換為前端 Cytoscape 格式 ---
-        # 轉換 Nodes
+        # 1. 轉換節點 (Nodes) 資料格式
         for node in subG.nodes():
             elements.append({
                 "data": {
