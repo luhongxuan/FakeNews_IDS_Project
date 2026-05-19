@@ -57,6 +57,3 @@ def _read_source_user(thread_path: str):
         except:
             continue
     return None
-
-if __name__ == "__main__":
-    build_graph_from_pheme()

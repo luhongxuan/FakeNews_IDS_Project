@@ -1,34 +1,51 @@
-# backend/app/routers/graph.py
-from fastapi import APIRouter, Query
-from graph_analysis.builder import build_graph_from_pheme
-from graph_analysis.centrality import compute_centrality, get_top_nodes
-from graph_analysis.intervention import run_intervention_comparison
+# 檔案位置：backend/app/routers/graph.py
+from fastapi import APIRouter
+import os
+import sys
 import networkx as nx
+import networkx as nx  # <--- 🌟 確保這裡有引入 networkx
+
+sys.path.append("/app")
+from graph_analysis.builder import build_graph_from_pheme
 
 router = APIRouter()
 
-PHEME_PATH = "/app/data/raw/pheme"
+@router.get("/api/graph")
+async def get_graph():
+    PHEME_PATH = os.getenv("PHEME_PATH", "/app/data/raw/pheme")
+    event_name = "sydneysiege"  
+    
+    G = build_graph_from_pheme(PHEME_PATH, event_name)
+    elements = []
+    
+    if G.number_of_nodes() > 0:
+        # 🌟 演算法更換：雪球擴展法 (BFS)
+        
+        # 1. 找出全網度數 (連線數) 最高的「核心源頭節點」
+        degrees = dict(G.degree())
+        top_nodes = sorted(degrees, key=degrees.get, reverse=True)[:100]
+        subG = G.subgraph(top_nodes)
+        
+        # 1. 轉換節點 (Nodes) 資料格式
+        for node in subG.nodes():
+            elements.append({
+                "data": {
+                    "id": str(node),
+                    "label": str(node),
+                    # 視覺化大小調整：依照在「子圖」中的重要性來放大縮小
+                    "pagerank": min(sub_degrees.get(node, 1) * 3 + 15, 60), 
+                    "is_rumour": False 
+                }
+            })
+            
+        # 轉換 Edges
+        for u, v, data in subG.edges(data=True):
+            elements.append({
+                "data": {
+                    "source": str(u),
+                    "target": str(v),
+                    "is_rumour": data.get("is_rumour", False)
+                }
+            })
 
-@router.get("/graph")
-async def get_graph(
-    event: str = Query(..., description="PHEME 事件名稱"),
-    k: int = Query(5, description="干預節點數量"),
-    beta: float = Query(0.1),
-    gamma: float = Query(0.05),
-):
-    G = build_graph_from_pheme(PHEME_PATH, event)
-
-    centrality = compute_centrality(G)
-    top_nodes  = get_top_nodes(centrality, "pagerank", top_k=10)
-
-    comparison = run_intervention_comparison(G, k=k, beta=beta, gamma=gamma)
-
-    return {
-        "event": event,
-        "graph_stats": {
-            "nodes": G.number_of_nodes(),
-            "edges": G.number_of_edges(),
-        },
-        "top_nodes": top_nodes,
-        "intervention_comparison": comparison,
-    }
+    return {"elements": elements}
