@@ -1,6 +1,7 @@
 import os, json
 import networkx as nx
 from dotenv import load_dotenv
+from datetime import datetime
 
 def build_graph_from_pheme(base_path: str, event: str) -> nx.DiGraph:
     """
@@ -8,6 +9,8 @@ def build_graph_from_pheme(base_path: str, event: str) -> nx.DiGraph:
     回傳 DiGraph，節點是 user，邊是傳播方向
     """
     G = nx.DiGraph()
+    date = None
+    rumours_num = 0
     event_path = os.path.join(base_path, event + "-all-rnr-threads")
     print(f"正在建構圖：{event_path}")
     for label in ["rumours", "non-rumours"]:
@@ -18,9 +21,14 @@ def build_graph_from_pheme(base_path: str, event: str) -> nx.DiGraph:
         for thread_id in os.listdir(label_path):
             thread_path = os.path.join(label_path, thread_id)
             is_rumour = (label == "rumours")
-            source_user = _read_source_user(thread_path)
+            if is_rumour:
+                rumours_num += 1
+            source_user, create_at = _read_source_user(thread_path)
             if not source_user:
                 continue
+            create_at_parsed = _parse_data(create_at)
+            if create_at_parsed and (not date or create_at_parsed < date):
+                date = create_at_parsed
 
             reactions_path = os.path.join(thread_path, "reactions")
             if not os.path.exists(reactions_path):
@@ -40,12 +48,12 @@ def build_graph_from_pheme(base_path: str, event: str) -> nx.DiGraph:
                 except:
                     continue
 
-    return G
+    return G, date.strftime("%Y-%m-%d") if date else None, rumours_num
 
 def _read_source_user(thread_path: str):
     source_path = os.path.join(thread_path, "source-tweets")
     if not os.path.exists(source_path):
-        return None
+        return None, None
     for fname in os.listdir(source_path):
         if fname.startswith("._"):
             continue
@@ -53,7 +61,17 @@ def _read_source_user(thread_path: str):
         try:
             with open(fpath, encoding="utf-8", errors="ignore") as f:
                 tweet = json.load(f)
-                return tweet.get("user", {}).get("screen_name")
+                screen_name = tweet.get("user", {}).get("screen_name")
+                create_at = tweet.get("created_at")
+                return (screen_name, create_at)
         except:
             continue
-    return None
+    return None, None
+
+def _parse_data(date_str):
+    if not date_str:
+        return None
+    try:
+        return datetime.strptime(date_str, "%a %b %d %H:%M:%S %z %Y")
+    except:
+        return None

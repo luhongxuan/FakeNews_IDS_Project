@@ -1,10 +1,8 @@
 // 檔案位置：frontend/src/components/EventDashboard.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './EventDashboard.module.css';
 
 const MOCK_EVENTS = [
-  { id: 'sydneysiege', title: '雪梨人質事件', date: '2014-12-15', nodes: 1221, rumours: 522, status: 'monitoring', severity: 'high', description: '發生於澳洲雪梨的咖啡館人質挾持事件，社群媒體上出現大量關於嫌犯身份的未經證實消息。' },
-  { id: 'charliehebdo', title: '查理週刊槍擊案', date: '2015-01-07', nodes: 2079, rumours: 458, status: 'monitoring', severity: 'high', description: '法國巴黎《查理週刊》總部遭恐怖攻擊，Twitter 上迅速爆發大規模聲援與陰謀論。' },
   { id: 'covid19-5g', title: '5G 傳播新冠病毒', date: '2020-04-05', nodes: 5600, rumours: 3200, status: 'monitoring', severity: 'high', description: '疫情期間，網路上謠傳 5G 基地台會傳播新冠病毒，導致多地基地台遭縱火。' },
   { id: 'election2020', title: '美國大選舞弊指控', date: '2020-11-04', nodes: 8900, rumours: 4500, status: 'monitoring', severity: 'high', description: '美國總統大選期間，社群媒體上出現大量關於計票機作弊的虛假訊息。' },
   { id: 'vaccine-microchip', title: '疫苗植入微晶片', date: '2020-12-10', nodes: 3100, rumours: 2100, status: 'monitoring', severity: 'medium', description: '陰謀論指控藉由新冠疫苗向人體植入追蹤微晶片。' },
@@ -28,8 +26,45 @@ const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav })
   const [isLeftMenuOpen, setIsLeftMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSeverity, setFilterSeverity] = useState('all');
+  const [eventStates, setEventStates] = useState({});
 
-  const filteredEvents = MOCK_EVENTS.filter(event => {
+  useEffect(() => {
+    const phemeEvents = ["charliehebdo"];
+
+    phemeEvents.forEach(eventId => {
+      fetch(`/api/events/${eventId}/summary`)
+        .then(res => res.json())
+        .then(data => {
+          setEventStates(prev => ({
+            ...prev,
+            [eventId]: {
+              title: data.title,
+              date: data.date,
+              nodes: data.nodes,
+              rumours: data.rumours,
+              status: data.status,
+              severity: data.severity,
+              description: data.description
+            }
+          }));
+        })
+        .catch((error) => {
+          console.error(`載入事件 ${eventId} 統計失敗:`, error);
+        });
+    });
+  }, []);
+  const backendEvents = Object.entries(eventStates).map(([id, data]) => ({ 
+    id, ...data
+  }));
+
+  const backendIds = Object.keys(eventStates);
+  const onlyMockEvents = MOCK_EVENTS.filter(e => !backendIds.includes(e.id));
+
+  const allEvents = [...backendEvents, ...onlyMockEvents];
+
+  console.log('目前載入的事件列表:', allEvents);
+
+  const filteredEvents = allEvents.filter(event => {
     const matchSearch = event.title.includes(searchQuery) || event.description.includes(searchQuery) || event.id.includes(searchQuery);
     const matchSeverity = filterSeverity === 'all' || event.severity === filterSeverity;
     return matchSearch && matchSeverity;
@@ -48,32 +83,35 @@ const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav })
     }
   };
 
-  const renderCard = (event) => (
-    <div key={event.id} className={styles.eventCard} onClick={() => onEventClick(event.id)}>
-      <div className={styles.cardTitle}>
-        {event.title}
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
-      </div>
-      <div className={styles.cardDesc}>{event.description}</div>
-      <div className={styles.cardTags}>
-        <span className={styles.tag}>{event.id}</span>
-        {getSeverityTag(event.severity)}
-      </div>
-      <div className={styles.cardFooter}>
-        <div className={styles.stats}>
-          <div className={styles.statItem}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            {event.nodes}
-          </div>
-          <div className={styles.statItem} style={{ color: '#F28B82' }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            {event.rumours}
-          </div>
+  const renderCard = (event) => {
+    const realStats = eventStates[event.id];
+    return (
+      <div key={event.id} className={styles.eventCard} onClick={() => onEventClick(event.id)}>
+        <div className={styles.cardTitle}>
+          {event.title}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
         </div>
-        <div>{event.date}</div>
+        <div className={styles.cardDesc}>{event.description}</div>
+        <div className={styles.cardTags}>
+          <span className={styles.tag}>{event.id}</span>
+          {getSeverityTag(event.severity)}
+        </div>
+        <div className={styles.cardFooter}>
+          <div className={styles.stats}>
+            <div className={styles.statItem}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              {event.nodes}
+            </div>
+            <div className={styles.statItem} style={{ color: '#F28B82' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              {event.rumours}
+            </div>
+          </div>
+          <div>{event.date}</div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // 🌟 修正：首頁專屬「純靜態、無條紋跑動、無文字提示」的工業風虛線留白框
   const renderEmptyPlaceholders = () => (
