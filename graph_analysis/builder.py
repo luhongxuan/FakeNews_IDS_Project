@@ -75,3 +75,11 @@ def _parse_data(date_str):
         return datetime.strptime(date_str, "%a %b %d %H:%M:%S %z %Y")
     except:
         return None
+        
+if __name__ == "__main__":
+    load_dotenv()
+    print(os.getcwd())
+    PHEME_PATH = os.getenv("PHEME_PATH", "data/raw/pheme")
+    print(os.path.exists(PHEME_PATH))
+    G, date, rumours_num = build_graph_from_pheme(PHEME_PATH, "charliehebdo")
+    print(G.edges(data=True))

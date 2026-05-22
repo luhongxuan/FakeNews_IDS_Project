@@ -2,25 +2,25 @@
 import React, { useState, useEffect } from 'react';
 import styles from './EventDashboard.module.css';
 
-const MOCK_EVENTS = [
-  { id: 'covid19-5g', title: '5G 傳播新冠病毒', date: '2020-04-05', nodes: 5600, rumours: 3200, status: 'monitoring', severity: 'high', description: '疫情期間，網路上謠傳 5G 基地台會傳播新冠病毒，導致多地基地台遭縱火。' },
-  { id: 'election2020', title: '美國大選舞弊指控', date: '2020-11-04', nodes: 8900, rumours: 4500, status: 'monitoring', severity: 'high', description: '美國總統大選期間，社群媒體上出現大量關於計票機作弊的虛假訊息。' },
-  { id: 'vaccine-microchip', title: '疫苗植入微晶片', date: '2020-12-10', nodes: 3100, rumours: 2100, status: 'monitoring', severity: 'medium', description: '陰謀論指控藉由新冠疫苗向人體植入追蹤微晶片。' },
+// const MOCK_EVENTS = [
+//   { id: 'covid19-5g', title: '5G 傳播新冠病毒', date: '2020-04-05', nodes: 5600, rumours: 3200, status: 'monitoring', severity: 'high', description: '疫情期間，網路上謠傳 5G 基地台會傳播新冠病毒，導致多地基地台遭縱火。' },
+//   { id: 'election2020', title: '美國大選舞弊指控', date: '2020-11-04', nodes: 8900, rumours: 4500, status: 'monitoring', severity: 'high', description: '美國總統大選期間，社群媒體上出現大量關於計票機作弊的虛假訊息。' },
+//   { id: 'vaccine-microchip', title: '疫苗植入微晶片', date: '2020-12-10', nodes: 3100, rumours: 2100, status: 'monitoring', severity: 'medium', description: '陰謀論指控藉由新冠疫苗向人體植入追蹤微晶片。' },
   
-  { id: 'ottawashooting', title: '渥太華槍擊案', date: '2014-10-22', nodes: 890, rumours: 310, status: 'pending', severity: 'high', description: '加拿大國會山莊發生槍擊，初期 Twitter 出現關於多名槍手的錯誤警報。' },
-  { id: 'putinmissing', title: '普丁失蹤傳聞', date: '2015-03-11', nodes: 238, rumours: 115, status: 'pending', severity: 'low', description: '俄羅斯總統普丁連續數日未公開露面，社群湧現政變甚至身亡的陰謀論。' },
-  { id: 'ukraine-ghost', title: '基輔之鬼', date: '2022-02-25', nodes: 1500, rumours: 800, status: 'pending', severity: 'medium', description: '俄烏戰爭初期，流傳一名烏克蘭王牌飛行員擊落多架俄軍戰機的故事。' },
-  { id: 'taiwan-quake', title: '花蓮地震不實畫面', date: '2024-04-03', nodes: 950, rumours: 320, status: 'pending', severity: 'low', description: '台灣花蓮發生強震，社群平台上混雜了過去其他地震的舊畫面。' },
-  { id: 'paris-olympics', title: '巴黎奧運假新聞', date: '2024-07-26', nodes: 1200, rumours: 400, status: 'pending', severity: 'medium', description: '奧運期間針對選手性別、賽事安排的各類錯假訊息傳播。' },
+//   { id: 'ottawashooting', title: '渥太華槍擊案', date: '2014-10-22', nodes: 890, rumours: 310, status: 'pending', severity: 'high', description: '加拿大國會山莊發生槍擊，初期 Twitter 出現關於多名槍手的錯誤警報。' },
+//   { id: 'putinmissing', title: '普丁失蹤傳聞', date: '2015-03-11', nodes: 238, rumours: 115, status: 'pending', severity: 'low', description: '俄羅斯總統普丁連續數日未公開露面，社群湧現政變甚至身亡的陰謀論。' },
+//   { id: 'ukraine-ghost', title: '基輔之鬼', date: '2022-02-25', nodes: 1500, rumours: 800, status: 'pending', severity: 'medium', description: '俄烏戰爭初期，流傳一名烏克蘭王牌飛行員擊落多架俄軍戰機的故事。' },
+//   { id: 'taiwan-quake', title: '花蓮地震不實畫面', date: '2024-04-03', nodes: 950, rumours: 320, status: 'pending', severity: 'low', description: '台灣花蓮發生強震，社群平台上混雜了過去其他地震的舊畫面。' },
+//   { id: 'paris-olympics', title: '巴黎奧運假新聞', date: '2024-07-26', nodes: 1200, rumours: 400, status: 'pending', severity: 'medium', description: '奧運期間針對選手性別、賽事安排的各類錯假訊息傳播。' },
 
-  { id: 'bostonbombing', title: '波士頓馬拉松爆炸案', date: '2013-04-15', nodes: 3450, rumours: 890, status: 'archived', severity: 'high', description: '終點線發生爆炸，網路上湧現大量尋人與假嫌犯指控。' },
-  { id: 'ferguson', title: '佛格森騷亂', date: '2014-08-09', nodes: 1143, rumours: 284, status: 'archived', severity: 'medium', description: '美國密蘇里州非裔青年遭警察槍殺引發抗議，網路上充斥對立假訊息。' },
-  { id: 'hurricanesandy', title: '颶風珊迪假照片', date: '2012-10-29', nodes: 2100, rumours: 1050, status: 'archived', severity: 'medium', description: '颶風侵襲美國東岸期間，Twitter 上瘋傳多張合成的淹水假照片。' },
-  { id: 'mh370', title: '馬航 MH370 失聯', date: '2014-03-08', nodes: 4200, rumours: 1800, status: 'archived', severity: 'high', description: '航班失聯，網路上出現各種關於航班下落與劫機的陰謀論。' },
-  { id: 'germanwings', title: '德國之翼空難', date: '2015-03-24', nodes: 469, rumours: 112, status: 'archived', severity: 'medium', description: '德國之翼航空墜毀，網傳副機長動機與機械故障的猜測。' },
-  { id: 'ebola-essien', title: '埃辛感染伊波拉謠言', date: '2014-10-12', nodes: 14, rumours: 14, status: 'archived', severity: 'low', description: '網傳知名足球員 Michael Essien 感染伊波拉病毒，為惡作劇。' },
-  { id: 'gurlitt', title: '古利特藝術品收藏案', date: '2013-11-03', nodes: 138, rumours: 45, status: 'archived', severity: 'low', description: '慕尼黑發現納粹掠奪藝術品，推特上出現去向錯誤資訊。' },
-];
+//   { id: 'bostonbombing', title: '波士頓馬拉松爆炸案', date: '2013-04-15', nodes: 3450, rumours: 890, status: 'archived', severity: 'high', description: '終點線發生爆炸，網路上湧現大量尋人與假嫌犯指控。' },
+//   { id: 'ferguson', title: '佛格森騷亂', date: '2014-08-09', nodes: 1143, rumours: 284, status: 'archived', severity: 'medium', description: '美國密蘇里州非裔青年遭警察槍殺引發抗議，網路上充斥對立假訊息。' },
+//   { id: 'hurricanesandy', title: '颶風珊迪假照片', date: '2012-10-29', nodes: 2100, rumours: 1050, status: 'archived', severity: 'medium', description: '颶風侵襲美國東岸期間，Twitter 上瘋傳多張合成的淹水假照片。' },
+//   { id: 'mh370', title: '馬航 MH370 失聯', date: '2014-03-08', nodes: 4200, rumours: 1800, status: 'archived', severity: 'high', description: '航班失聯，網路上出現各種關於航班下落與劫機的陰謀論。' },
+//   { id: 'germanwings', title: '德國之翼空難', date: '2015-03-24', nodes: 469, rumours: 112, status: 'archived', severity: 'medium', description: '德國之翼航空墜毀，網傳副機長動機與機械故障的猜測。' },
+//   { id: 'ebola-essien', title: '埃辛感染伊波拉謠言', date: '2014-10-12', nodes: 14, rumours: 14, status: 'archived', severity: 'low', description: '網傳知名足球員 Michael Essien 感染伊波拉病毒，為惡作劇。' },
+//   { id: 'gurlitt', title: '古利特藝術品收藏案', date: '2013-11-03', nodes: 138, rumours: 45, status: 'archived', severity: 'low', description: '慕尼黑發現納粹掠奪藝術品，推特上出現去向錯誤資訊。' },
+// ];
 
 const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav }) => {
   const [isLeftMenuOpen, setIsLeftMenuOpen] = useState(false);
@@ -29,7 +29,7 @@ const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav })
   const [eventStates, setEventStates] = useState({});
 
   useEffect(() => {
-    const phemeEvents = ["charliehebdo"];
+    const phemeEvents = ["charliehebdo", "ebola-essien", "ferguson", "germanwings-crash", "gurlitt", "ottawashooting", "prince-toronto", "putinmissing", "sydneysiege"];
 
     phemeEvents.forEach(eventId => {
       fetch(`/api/events/${eventId}/summary`)
@@ -40,8 +40,8 @@ const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav })
             [eventId]: {
               title: data.title,
               date: data.date,
-              nodes: data.nodes,
-              rumours: data.rumours,
+              nodes: data.node_count,
+              rumours: data.rumour_count,
               status: data.status,
               severity: data.severity,
               description: data.description
@@ -58,9 +58,9 @@ const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav })
   }));
 
   const backendIds = Object.keys(eventStates);
-  const onlyMockEvents = MOCK_EVENTS.filter(e => !backendIds.includes(e.id));
+  // const onlyMockEvents = MOCK_EVENTS.filter(e => !backendIds.includes(e.id));
 
-  const allEvents = [...backendEvents, ...onlyMockEvents];
+  const allEvents = [...backendEvents];
 
   console.log('目前載入的事件列表:', allEvents);
 
