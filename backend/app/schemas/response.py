@@ -42,3 +42,4 @@ class TimelineResponse(BaseModel):
     query: str
     total: int
     items: list[TimelineItem]
+

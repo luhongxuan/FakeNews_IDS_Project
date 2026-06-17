@@ -1,0 +1,148 @@
+/* 檔案位置：frontend/src/components/UserProfile.module.css */
+
+* { scrollbar-width: thin; scrollbar-color: #5F6368 transparent; }
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background-color: #444746; border-radius: 10px; }
+*::-webkit-scrollbar-thumb:hover { background-color: #5F6368; }
+
+.dashboard { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; background-color: #131314; color: #E3E3E3; font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box; }
+
+.topNav { height: 56px; flex-shrink: 0; background-color: #1E1F22; border-bottom: 1px solid #3C4043; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+.navLeft { width: 280px; display: flex; align-items: center; gap: 16px; }
+.navRight { width: 280px; display: flex; justify-content: flex-end; align-items: center; }
+
+/* 🌟 新增：帳戶頁面頂部中央搜尋區佈局樣式 */
+.navCenter {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  margin: 0 20px;
+}
+
+.searchBar {
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: #9AA0A6;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  background-color: #282A2C;
+  border: 1px solid #3C4043;
+  border-radius: 6px;
+  padding: 6px 12px 6px 36px;
+  color: #E3E3E3;
+  font-size: 13px;
+  outline: none;
+  transition: border 0.2s, background-color 0.2s;
+}
+
+.searchInput:focus { 
+  border: 1px solid #8AB4F8; 
+  background-color: #202124;
+}
+
+.menuBtn { background: transparent; border: none; color: #9AA0A6; cursor: pointer; padding: 6px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+.menuBtn:hover { background-color: rgba(255, 255, 255, 0.08); color: #E3E3E3; }
+.navTitle { font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 8px; color: #E3E3E3; cursor: pointer; }
+
+.backBtn { background: transparent; border: 1px solid #3C4043; color: #9AA0A6; padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s, color 0.2s; }
+.backBtn:hover { background: #282A2C; color: #E3E3E3; }
+
+.bodyLayout { display: flex; flex: 1; overflow: hidden; background-color: #131314; }
+.leftSidebar { width: 240px; background-color: #131314; border-right: 1px solid #3C4043; display: flex; flex-direction: column; padding: 16px 8px; gap: 4px; transition: width 0.2s, padding 0.2s, opacity 0.2s; white-space: nowrap; overflow: hidden; flex-shrink: 0; }
+.leftSidebarClosed { width: 0; padding: 16px 0; border-right: none; opacity: 0; }
+.menuItem { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 6px; color: #9AA0A6; font-size: 13px; font-weight: 500; cursor: pointer; background-color: transparent; }
+.menuItem:hover { background-color: rgba(255, 255, 255, 0.04); color: #E3E3E3;}
+.menuItemActive { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 6px; color: #8AB4F8; font-size: 13px; font-weight: 500; cursor: pointer; background-color: rgba(138, 180, 248, 0.1); }
+
+.mainWorkspace { flex: 1; padding: 32px 40px; display: flex; flex-direction: column; gap: 32px; overflow-y: auto; max-width: 1400px; margin: 0 auto; width: 100%; }
+
+.profileCard { background-color: #1E1F22; border: 1px solid #3C4043; border-radius: 12px; padding: 32px; display: flex; gap: 32px; align-items: center; }
+.avatarSection { display: flex; flex-direction: column; align-items: center; gap: 16px; min-width: 160px; }
+.avatar { width: 96px; height: 96px; border-radius: 50%; background-color: #131314; border: 2px solid #3C4043; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 500; color: #9AA0A6; }
+.infoSection { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+.nameBlock { display: flex; flex-direction: column; gap: 6px; }
+.userName { font-size: 28px; font-weight: 600; color: #E3E3E3; }
+.userId { font-size: 14px; color: #9AA0A6; font-family: monospace; }
+.statsGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.statBox { background-color: #131314; border: 1px solid #3C4043; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.statLabel { font-size: 13px; color: #9AA0A6; font-weight: 500; }
+.statValue { font-size: 20px; color: #E3E3E3; font-weight: 600; font-family: monospace; }
+.riskCriticalText { color: #F28B82; }
+
+.riskText { font-family: system-ui, -apple-system, sans-serif; font-weight: 500; }
+.critical { color: #F28B82; }
+.high { color: #F6AEA9; }
+.medium { color: #FDD663; }
+.safe { color: #8AB4F8; }
+
+.eventsSection { display: flex; flex-direction: column; gap: 16px; flex: 1; }
+.sectionHeader { display: flex; justify-content: space-between; align-items: center; padding-bottom: 4px; }
+.sectionTitle { font-size: 14px; font-weight: 500; color: #E3E3E3; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.selectInput { background-color: #1E1F22; border: 1px solid #3C4043; border-radius: 6px; padding: 6px 14px; color: #E3E3E3; font-size: 13px; outline: none; cursor: pointer; transition: border-color 0.2s; }
+.selectInput:focus { border-color: #8AB4F8; }
+
+.cardList { display: flex; flex-direction: column; gap: 14px; }
+.eventCard { background-color: #1E1F22; border: 1px solid #3C4043; border-radius: 8px; padding: 20px 24px; cursor: pointer; display: flex; flex-direction: column; gap: 12px; transition: background-color 0.15s, border-color 0.15s, transform 0.15s; }
+.eventCard:hover { background-color: #282A2C; border-color: #5F6368; transform: translateY(-2px); }
+.eventCardHeader { display: flex; justify-content: space-between; align-items: center; }
+.eventCardTitle { font-size: 15px; font-weight: 500; color: #E3E3E3; display: flex; align-items: center; gap: 6px; }
+.eventDate { font-size: 12px; color: #9AA0A6; font-family: monospace; }
+.eventCardBody { display: flex; flex-direction: column; gap: 10px; }
+.eventImpactBadge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #FDD663; background-color: rgba(253, 214, 99, 0.08); border: 1px solid rgba(253, 214, 99, 0.15); padding: 4px 8px; border-radius: 4px; width: fit-content; font-weight: 500; font-family: monospace; }
+.eventDesc { font-size: 13px; color: #9AA0A6; line-height: 1.6; margin: 0; }
+.emptyLog { padding: 40px; text-align: center; color: #5F6368; font-size: 14px; border: 1px dashed #3C4043; border-radius: 8px; }
+
+/* 🌟 新增：空白初始狀態下的「骨架卡片佔位屏」動畫樣式表 */
+.skeletonCard {
+  background-color: #1E1F22;
+  border: 1px solid rgba(60, 64, 67, 0.3);
+  border-radius: 8px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  pointer-events: none;
+}
+
+.skeletonHeader { display: flex; justify-content: space-between; align-items: center; }
+
+.skeletonTitle {
+  width: 200px; height: 14px;
+  background: linear-gradient(90deg, #282A2C 25%, #313335 50%, #282A2C 75%);
+  background-size: 200% 100%;
+  animation: loadingShimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.skeletonDate { width: 70px; height: 11px; background-color: #282A2C; border-radius: 3px; }
+.skeletonBody { display: flex; flex-direction: column; gap: 12px; }
+.skeletonBadge { width: 120px; height: 20px; background-color: rgba(253, 214, 99, 0.03); border: 1px solid rgba(253, 214, 99, 0.05); border-radius: 4px; }
+
+.skeletonLine {
+  width: 95%; height: 12px;
+  background: linear-gradient(90deg, #282A2C 25%, #313335 50%, #282A2C 75%);
+  background-size: 200% 100%;
+  animation: loadingShimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.skeletonLineShort { composes: skeletonLine; width: 60%; }
+
+@keyframes loadingShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
