@@ -1,9 +1,7 @@
-# 檔案位置：backend/app/routers/graph.py
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 import os
 import sys
 import networkx as nx
-import networkx as nx  # <--- 🌟 確保這裡有引入 networkx
 
 sys.path.append("/app")
 from graph_analysis.builder import build_graph_from_pheme
@@ -11,34 +9,45 @@ from graph_analysis.builder import build_graph_from_pheme
 router = APIRouter()
 
 @router.get("/api/graph")
-async def get_graph():
+async def get_graph(event: str = Query(..., description="PHEME 事件名稱")):
     PHEME_PATH = os.getenv("PHEME_PATH", "/app/data/raw/pheme")
-    event_name = "sydneysiege"  
     
-    G = build_graph_from_pheme(PHEME_PATH, event_name)
+    G = build_graph_from_pheme(PHEME_PATH, event)
     elements = []
-    
+
     if G.number_of_nodes() > 0:
-        # 🌟 演算法更換：雪球擴展法 (BFS)
-        
-        # 1. 找出全網度數 (連線數) 最高的「核心源頭節點」
         degrees = dict(G.degree())
-        top_nodes = sorted(degrees, key=degrees.get, reverse=True)[:100]
-        subG = G.subgraph(top_nodes)
-        
-        # 1. 轉換節點 (Nodes) 資料格式
+        top_nodes = set(sorted(degrees, key=degrees.get, reverse=True)[:500])
+
+        edges = [(u, v) for u, v in G.edges() 
+                 if u in top_nodes and v in top_nodes and u != v]
+
+        connected_nodes = set()
+        for u, v in edges:
+            connected_nodes.add(u)
+            connected_nodes.add(v)
+
+        subG = nx.DiGraph()
+        subG.add_nodes_from(connected_nodes)
+        subG.add_edges_from(edges)
+
+        UG = subG.to_undirected()
+        if UG.number_of_nodes() > 0:
+            largest_cc = max(nx.connected_components(UG), key=len)
+            subG = subG.subgraph(largest_cc)
+
+        sub_degrees = dict(subG.degree())
+
         for node in subG.nodes():
             elements.append({
                 "data": {
                     "id": str(node),
                     "label": str(node),
-                    # 視覺化大小調整：依照在「子圖」中的重要性來放大縮小
-                    "pagerank": min(sub_degrees.get(node, 1) * 3 + 15, 60), 
-                    "is_rumour": False 
+                    "pagerank": min(sub_degrees.get(node, 1) * 3 + 15, 60),
+                    "is_rumour": False
                 }
             })
-            
-        # 轉換 Edges
+
         for u, v, data in subG.edges(data=True):
             elements.append({
                 "data": {
@@ -48,4 +57,4 @@ async def get_graph():
                 }
             })
 
-    return {"elements": elements}
+    return {"elements": elements, "event": event}
