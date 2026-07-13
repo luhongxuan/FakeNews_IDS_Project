@@ -7,3 +7,4 @@ __pycache__/
 *.pyd
 test.ipynb
 test1.ipynb
+test_gnn.ipynb
