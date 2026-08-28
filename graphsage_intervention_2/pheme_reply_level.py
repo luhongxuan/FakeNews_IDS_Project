@@ -1,0 +1,398 @@
+from __future__ import annotations
+
+import json
+import os
+os.chdir(r"C:\FakeNews_IDS_Project")
+from collections import Counter, defaultdict
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
+
+import numpy as np
+import pandas as pd
+
+TWITTER_TIME_FMT = "%a %b %d %H:%M:%S %z %Y"
+LABEL_COL = "is_rumour"
+EVENT_COL = "event_id"
+
+# 支援的時間窗口（秒）
+WINDOW_30MIN  = 1800
+WINDOW_60MIN  = 3600
+WINDOW_ALL    = float("inf")  # 完整傳播樹
+
+
+def parse_twitter_time(time_str: Optional[str]) -> Optional[datetime]:
+    if not time_str:
+        return None
+    try:
+        return datetime.strptime(time_str, TWITTER_TIME_FMT)
+    except (ValueError, TypeError):
+        return None
+
+
+def _load_tweets_in_folder(folder_path: Path) -> dict:
+    tweets = {}
+    if not folder_path.exists():
+        return tweets
+    for fname in os.listdir(folder_path):
+        if fname.startswith("._") or not fname.endswith(".json"):
+            continue
+        try:
+            with open(folder_path / fname, encoding="utf-8", errors="ignore") as f:
+                tweet = json.load(f)
+            tweets[str(tweet["id"])] = tweet
+        except (json.JSONDecodeError, OSError, KeyError):
+            continue
+    return tweets
+
+
+def parse_structure_with_depth(structure: dict) -> tuple[dict, dict]:
+    parent_map: dict[str, Optional[str]] = {}
+    depth_map: dict[str, int] = {}
+
+    def dfs(node_dict: dict, parent_id: Optional[str], depth: int) -> None:
+        if not isinstance(node_dict, dict):
+            return
+        for tweet_id, children in node_dict.items():
+            parent_map[tweet_id] = parent_id
+            depth_map[tweet_id] = depth
+            if isinstance(children, dict):
+                dfs(children, tweet_id, depth + 1)
+
+    dfs(structure, None, 0)
+    return parent_map, depth_map
+
+
+def compute_coverage_scores(parent_map: dict) -> dict[str, float]:
+    """完整傳播樹的 coverage_score（原始版本，不考慮時間窗口）"""
+    total_nodes = len(parent_map)
+    if total_nodes <= 1:
+        return {tid: 0.0 for tid in parent_map}
+
+    children_map: dict[str, list[str]] = defaultdict(list)
+    root_id = None
+    for tid, pid in parent_map.items():
+        if pid is None:
+            root_id = tid
+        else:
+            children_map[pid].append(tid)
+
+    subtree_size: dict[str, int] = {}
+
+    def count_subtree(node_id: str) -> int:
+        size = 1
+        for child in children_map.get(node_id, []):
+            size += count_subtree(child)
+        subtree_size[node_id] = size
+        return size
+
+    if root_id:
+        count_subtree(root_id)
+
+    denom = total_nodes - 1
+    scores = {}
+    for tid in parent_map:
+        descendants = subtree_size.get(tid, 1) - 1
+        scores[tid] = descendants / denom if denom > 0 else 0.0
+
+    return scores
+
+
+def compute_coverage_scores_windowed(
+    parent_map: dict,
+    offset_map: dict,
+    window_sec: float,
+) -> dict[str, float]:
+    """
+    時間窗口版本的 coverage_score（節點層級，Head B 用）：
+
+    coverage_score_W(v) =
+        「在 window_sec 時介入節點 v，能阻斷的後代數量」
+        ÷ (總節點數 - 1)
+
+    「能阻斷的後代」的正確定義：v 的後代裡，還沒發生、而且是透過一連串
+    同樣還沒發生的節點才會出現的那些節點——不是 v 子樹裡所有窗口後才
+    出現的節點。
+
+    如果 v 在窗口內已經有一個子節點 C 先出現了（C 已經是真實存在的
+    推文），C 之後會不會繼續被回覆是 C 自己的事，跟 v 存不存在無關——
+    移除 v 沒辦法讓已經發生的 C 消失，C 之後的子孫也不是「移除 v」
+    換來的。所以算 v 的分數時，一旦遇到窗口內已經存在的子節點，這條
+    分支要停止往下算（不計入也不繼續遞迴），只有「還沒發生的子節點」
+    才繼續往下算，因為這種節點的出現本來就是被 v 卡住的，v 消失了
+    它才真的不會出現。
+    """
+    total_nodes = len(parent_map)
+    if total_nodes <= 1:
+        return {tid: 0.0 for tid in parent_map}
+
+    children_map: dict[str, list[str]] = defaultdict(list)
+    for tid, pid in parent_map.items():
+        if pid is not None:
+            children_map[pid].append(tid)
+
+    def count_future_descendants(node_id: str) -> int:
+        """v 的後代中，透過『還沒發生的節點鏈』才會出現、且本身也還沒
+        發生（offset_sec > window_sec）的數量。撞到窗口內已存在的子節點
+        就停止，不計入也不繼續遞迴，因為那個分支的未來不是 v 決定的。"""
+        count = 0
+        for child in children_map.get(node_id, []):
+            child_offset = offset_map.get(child, 0.0)
+            if np.isnan(child_offset):
+                child_offset = 0.0
+            if child_offset > window_sec:
+                # 這個子節點還沒發生，它的出現被 node_id 卡住，
+                # 移除 node_id 才真的會讓它（以及它自己還沒發生的
+                # 子孫）不出現，繼續往下算。
+                count += 1
+                count += count_future_descendants(child)
+            # else：子節點已經存在了，這條分支的未來不是 node_id 的
+            # 功勞，不計入、也不繼續往下算。
+        return count
+
+    denom = total_nodes - 1
+    scores = {}
+    for tid in parent_map:
+        future_desc = count_future_descendants(tid)
+        scores[tid] = future_desc / denom if denom > 0 else 0.0
+
+    return scores
+
+
+def compute_thread_future_growth(
+    parent_map: dict,
+    offset_map: dict,
+    window_sec: float,
+) -> int:
+    """
+    Thread 層級（不是節點層級）的「未來成長量」：
+
+        future_growth_W = total_nodes - nodes_within_W
+
+    total_nodes    = 這棵樹全部的節點數（完整傳播樹，不截斷）
+    nodes_within_W = offset_sec <= window_sec 的節點數
+                     （offset_sec 是 NaN 的節點，即已刪除推文，時間未知，
+                     跟 thread_to_data() 截斷邏輯一致的保守處理：當作
+                     「已經在窗口內」，不算進未來成長量，避免用未知時間
+                     的節點灌水未來成長的數字）
+
+    這是新版 Head A 的迴歸目標：「這個 thread 在 window_sec 之後，
+    還會再冒出多少節點」，拿來對同一事件底下的所有 thread 排序，
+    決定預算限制下要優先介入哪些——取代原本「這是不是謠言」的分類目標
+    （is_rumour 現在是已知的篩選條件，不是要預測的東西）。
+    """
+    total_nodes = len(parent_map)
+    nodes_within = 0
+    for tid in parent_map:
+        offset = offset_map.get(tid, np.nan)
+        if np.isnan(offset) or offset <= window_sec:
+            nodes_within += 1
+    return total_nodes - nodes_within
+
+
+def parse_thread(
+    thread_path: Path,
+    is_rumour: int,
+    event_id: str,
+) -> tuple[list[dict], Optional[str]]:
+    structure_path = thread_path / "structure.json"
+    if not structure_path.exists():
+        return [], "missing_structure_json"
+    try:
+        with open(structure_path, encoding="utf-8") as f:
+            structure = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return [], "unreadable_structure_json"
+
+    if not isinstance(structure, dict) or not structure:
+        return [], "empty_structure"
+
+    parent_map, depth_map = parse_structure_with_depth(structure)
+    if not parent_map:
+        return [], "empty_structure"
+
+    tweets = {}
+    tweets.update(_load_tweets_in_folder(thread_path / "source-tweets"))
+    tweets.update(_load_tweets_in_folder(thread_path / "reactions"))
+
+    source_id = next((tid for tid, d in depth_map.items() if d == 0), None)
+    if source_id is None:
+        return [], "no_root_found"
+
+    source_tweet = tweets.get(source_id)
+    source_time = parse_twitter_time(
+        source_tweet.get("created_at") if source_tweet else None
+    )
+
+    # 先算每個節點的 offset_sec（後面算 windowed coverage / future growth 需要）
+    offset_map: dict[str, float] = {}
+    for tweet_id in parent_map:
+        if tweet_id == source_id:
+            offset_map[tweet_id] = 0.0
+        else:
+            tweet = tweets.get(tweet_id)
+            if tweet and source_time:
+                t = parse_twitter_time(tweet.get("created_at"))
+                if t and t >= source_time:
+                    offset_map[tweet_id] = (t - source_time).total_seconds()
+                else:
+                    offset_map[tweet_id] = np.nan
+            else:
+                offset_map[tweet_id] = np.nan
+
+    # 節點層級：三種 coverage_score（Head B 用）
+    coverage_scores        = compute_coverage_scores(parent_map)
+    coverage_scores_30min  = compute_coverage_scores_windowed(parent_map, offset_map, WINDOW_30MIN)
+    coverage_scores_60min  = compute_coverage_scores_windowed(parent_map, offset_map, WINDOW_60MIN)
+
+    # Thread 層級：兩種 future_growth（新版 Head A 用，整個 thread 只有一個值）
+    future_growth_30min = compute_thread_future_growth(parent_map, offset_map, WINDOW_30MIN)
+    future_growth_60min = compute_thread_future_growth(parent_map, offset_map, WINDOW_60MIN)
+
+    rows = []
+    for tweet_id, depth in depth_map.items():
+        tweet = tweets.get(tweet_id)
+        pid = parent_map.get(tweet_id)
+        parent_tweet = tweets.get(pid) if pid else None
+
+        is_source_flag = int(tweet_id == source_id)
+        is_text_available = int(tweet is not None)
+
+        offset_sec = offset_map.get(tweet_id, 0.0 if tweet_id == source_id else np.nan)
+
+        if pid and parent_tweet and tweet and source_time:
+            t_self   = parse_twitter_time(tweet.get("created_at"))
+            t_parent = parse_twitter_time(parent_tweet.get("created_at"))
+            reply_latency_sec = (
+                (t_self - t_parent).total_seconds()
+                if t_self and t_parent and t_self >= t_parent
+                else np.nan
+            )
+        else:
+            reply_latency_sec = np.nan
+
+        text = tweet.get("text", "") if tweet else None
+
+        rows.append({
+            "thread_id":            source_id,
+            "tweet_id":             tweet_id,
+            "parent_id":            pid,
+            "is_source":            is_source_flag,
+            "is_text_available":    is_text_available,
+            "depth":                depth,
+            "offset_sec":           offset_sec,           # 距 source 的秒數（原始值，建圖截斷用）
+            "reply_latency_sec":    reply_latency_sec,
+            "text":                 text,
+            EVENT_COL:              event_id,
+            LABEL_COL:              is_rumour,             # 現在是已知的篩選條件，不是預測目標
+            "coverage_score":       coverage_scores.get(tweet_id, 0.0),        # 完整版（節點層級）
+            "coverage_score_30min": coverage_scores_30min.get(tweet_id, 0.0),  # 30分鐘窗口（節點層級）
+            "coverage_score_60min": coverage_scores_60min.get(tweet_id, 0.0),  # 60分鐘窗口（節點層級）
+            "future_growth_30min":  future_growth_30min,   # thread 層級，同一個 thread 每列都一樣
+            "future_growth_60min":  future_growth_60min,   # thread 層級，同一個 thread 每列都一樣
+        })
+
+    return rows, None
+
+
+def build_reply_level_dataframe(
+    pheme_path: str,
+    cache_csv: Optional[str] = None,
+    verbose: bool = True,
+) -> pd.DataFrame:
+    import time
+    root = Path(pheme_path)
+    if not root.exists():
+        raise FileNotFoundError(f"找不到 PHEME 路徑：{root}")
+
+    all_rows = []
+    skip_counter: Counter = Counter()
+
+    event_dirs = sorted(d for d in root.iterdir() if d.is_dir())
+    run_start = time.time()
+    if verbose:
+        print(f"共 {len(event_dirs)} 個事件資料夾，開始逐一處理...")
+
+    for event_i, event_dir in enumerate(event_dirs, 1):
+        event_id = event_dir.name.replace("-all-rnr-threads", "")
+        event_thread_count = 0
+        event_node_count = 0
+        event_skip: Counter = Counter()
+        event_start = time.time()
+
+        if verbose:
+            print(f"\n[{event_i}/{len(event_dirs)}] 開始處理事件 {event_id} ...")
+
+        for label, is_rumour in [("rumours", 1), ("non-rumours", 0)]:
+            label_path = event_dir / label
+            if not label_path.exists():
+                continue
+            thread_dirs = sorted(d for d in label_path.iterdir() if d.is_dir())
+            for thread_i, thread_dir in enumerate(thread_dirs, 1):
+                rows, skip_reason = parse_thread(thread_dir, is_rumour, event_id)
+                if rows:
+                    all_rows.extend(rows)
+                    event_thread_count += 1
+                    event_node_count += len(rows)
+                else:
+                    skip_counter[skip_reason] += 1
+                    event_skip[skip_reason] += 1
+
+                # 事件內部的進度：每 200 個 thread 印一次，避免大事件
+                # （像 charliehebdo 這種有兩千多個 thread 的）處理到一半
+                # 完全沒輸出，看起來像卡住。
+                if verbose and thread_i % 200 == 0:
+                    print(f"    [{label}] 已處理 {thread_i}/{len(thread_dirs)} 個 thread"
+                          f"（累計耗時 {(time.time() - event_start):.0f} 秒）")
+
+        if verbose:
+            total_scanned = event_thread_count + sum(event_skip.values())
+            line = (
+                f"[{event_i}/{len(event_dirs)}] {event_id} 完成："
+                f"thread={event_thread_count}/{total_scanned}"
+                f"  nodes={event_node_count}"
+                f"  耗時 {(time.time() - event_start):.0f} 秒"
+            )
+            if event_skip:
+                reasons = "、".join(f"{r}={c}" for r, c in event_skip.most_common())
+                line += f"  跳過：{reasons}"
+            print(line)
+
+    if verbose:
+        print(f"\n全部事件處理完成，總耗時 {(time.time() - run_start)/60:.1f} 分鐘")
+
+    df = pd.DataFrame(all_rows)
+
+    if verbose:
+        print(f"\n總計：{len(df)} 列（推文節點）")
+        print(f"有 JSON 的節點：{df['is_text_available'].sum()}")
+        print(f"無 JSON 的節點（已刪除推文）：{(~df['is_text_available'].astype(bool)).sum()}")
+        print(f"\ncoverage_score_30min 分布（節點層級，Head B 用）：")
+        print(df["coverage_score_30min"].describe().round(4))
+
+        # future_growth 是 thread 層級的值，每個 thread 只算一次，
+        # 用 drop_duplicates 避免同一個 thread 的每個節點都重複計入統計
+        thread_level = df.drop_duplicates(subset=["thread_id"])
+        print(f"\nfuture_growth_30min 分布（thread 層級，新版 Head A 用，"
+              f"n={len(thread_level)} 個 thread）：")
+        print(thread_level["future_growth_30min"].describe().round(2))
+        pct_zero = (thread_level["future_growth_30min"] == 0).mean() * 100
+        print(f"future_growth_30min = 0 的 thread 比例: {pct_zero:.1f}%"
+              f"（這種 thread 代表 30 分鐘後完全沒有再長大，早期就已經停了）")
+
+    if cache_csv:
+        df.to_csv(cache_csv, index=False)
+        if verbose:
+            print(f"\n已快取至 {cache_csv}")
+
+    return df
+
+
+if __name__ == "__main__":
+    pheme_path = os.getenv("PHEME_PATH", "data/raw/pheme")
+    df = build_reply_level_dataframe(
+        pheme_path, cache_csv="pheme_reply_level_v3.csv", verbose=True
+    )
+    print("\n前 5 列：")
+    print(df[["thread_id", "tweet_id", "offset_sec",
+              "coverage_score_30min", "future_growth_30min", "future_growth_60min"]].head())
