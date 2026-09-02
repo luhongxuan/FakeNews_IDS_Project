@@ -1,6 +1,7 @@
 // 檔案位置：frontend/src/components/graphConfig.js
 
 export const USE_MOCK_DATA = true; 
+export const MOCK_DATA_NOTICE = '示範拓撲資料：尚未與目前事件的 PHEME 模型排序連動。';
 
 export const MOCK_ELEMENTS = [
   // --- 🌟 節點 (Nodes) 區塊：已將所有帳號完整補齊，避免連線找不到源頭 ---
@@ -54,3 +55,20 @@ export const cyStylesheet = [
 ];
 
 export const cyLayout = { name: 'concentric', padding: 60, minNodeSpacing: 65, animate: false };
+
+// --- 傳播鏈 (cascade) 專用樣式：呈現單一 thread 的回覆樹，而非整體使用者網路 ---
+// Do not auto-fit a large retrospective tree into the viewport.  Auto-fit
+// shrinks nodes and labels after post-cutoff nodes are revealed.
+export const cascadeLayout = { name: 'breadthfirst', directed: true, padding: 40, spacingFactor: 1.15, animate: false, fit: false };
+
+export const cascadeStylesheet = [
+  { selector: 'node, edge', style: { 'transition-property': 'opacity, background-color', 'transition-duration': '0.3s' } },
+  { selector: 'node', style: { 'label': 'data(label)', 'text-valign': 'bottom', 'text-margin-y': 6, 'font-size': '10px', 'font-family': 'system-ui, -apple-system, sans-serif', 'width': 24, 'height': 24, 'color': '#E8EAED', 'text-background-opacity': 0.85, 'text-background-color': '#202124', 'text-background-padding': '3px', 'text-background-shape': 'roundrectangle', 'border-width': 2 } },
+  { selector: 'node[?isSource]', style: { 'width': 40, 'height': 40, 'background-color': '#FBBC04', 'border-color': '#FDD663', 'font-size': '12px', 'font-weight': 'bold' } },
+  { selector: 'node[?observed][!isSource]', style: { 'background-color': '#8AB4F8', 'border-color': '#A8C7FA' } },
+  { selector: 'node[!observed][!isSource]', style: { 'background-color': '#5F6368', 'border-color': '#80868B', 'shape': 'round-rectangle' } },
+  { selector: 'node[?blocked]', style: { 'background-color': '#F28B82', 'border-color': '#FF8A65', 'border-style': 'dashed' } },
+  { selector: 'edge', style: { 'width': 1.5, 'target-arrow-shape': 'triangle', 'curve-style': 'bezier', 'arrow-scale': 0.8, 'line-color': '#5F6368', 'target-arrow-color': '#5F6368' } },
+  { selector: 'edge[?blockedEdge]', style: { 'line-color': '#8C4A46', 'target-arrow-color': '#8C4A46', 'line-style': 'dashed' } },
+  { selector: '.dimmed', style: { 'opacity': 0.15 } },
+];

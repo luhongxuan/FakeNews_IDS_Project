@@ -1,8 +1,11 @@
 // 檔案位置：frontend/src/App.jsx
-import React, { useState, useEffect } from 'react';
-import NetworkGraph from './components/NetworkGraph'; 
+import { useCallback, useEffect, useState } from 'react';
+import NetworkGraph from './components/NetworkGraph';
 import EventDashboard from './components/EventDashboard';
 import UserProfile from './components/UserProfile';
+import InterventionDashboard from './components/InterventionDashboard';
+
+const HISTORY_KEY = 'fakenews-navigation';
 
 function App() {
   const [currentPage, setCurrentPage] = useState(() => localStorage.getItem('currentPage') || 'dashboard');
@@ -28,41 +31,91 @@ function App() {
     else localStorage.removeItem('selectedUser');
   }, [currentPage, selectedEventId, selectedUser]);
 
-  const handleEventClick = (eventId) => {
+  const navigate = useCallback((page, eventId = selectedEventId, user = selectedUser) => {
+    const state = {
+      [HISTORY_KEY]: true,
+      page,
+      selectedEventId: eventId,
+      selectedUser: user,
+    };
+    window.history.pushState(state, '', window.location.href);
+    setCurrentPage(page);
     setSelectedEventId(eventId);
-    setCurrentPage('graph');
+    setSelectedUser(user);
+  }, [selectedEventId, selectedUser]);
+
+  useEffect(() => {
+    const currentState = window.history.state;
+    if (!currentState?.[HISTORY_KEY]) {
+      window.history.replaceState({
+        [HISTORY_KEY]: true,
+        page: currentPage,
+        selectedEventId,
+        selectedUser,
+      }, '', window.location.href);
+    }
+
+    const handlePopState = (event) => {
+      const state = event.state;
+      if (!state?.[HISTORY_KEY]) return;
+      setCurrentPage(state.page || 'dashboard');
+      setSelectedEventId(state.selectedEventId || null);
+      setSelectedUser(state.selectedUser || null);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+    // This effect initializes the current browser entry once. Navigation is
+    // handled by `navigate`, while popstate restores entries created by it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleEventClick = (eventId) => {
+    navigate('intervention', eventId);
+  };
+
+  const handleGraphClick = (eventId) => {
+    navigate('graph', eventId);
   };
 
   const handleUserClick = (userData) => {
-    setSelectedUser(userData);
-    setCurrentPage('userProfile');
+    navigate('userProfile', selectedEventId, userData);
   };
 
   const handleBackToDashboard = () => {
-    setCurrentPage('dashboard');
+    navigate('dashboard', null, null);
   };
 
   const handleBackToGraph = () => {
-    setCurrentPage('graph');
+    navigate('graph');
   };
 
   return (
     <>
       {currentPage === 'dashboard' && (
-        <EventDashboard 
-          onEventClick={handleEventClick} 
-          onLogoClick={handleBackToDashboard} 
-          onGraphNav={() => handleEventClick(null)} /* 🌟 解鎖：允許首頁直接跳轉空圖表 */
+        <EventDashboard
+          onEventClick={handleEventClick}
+          onLogoClick={handleBackToDashboard}
+          onGraphNav={() => handleGraphClick(null)} /* 🌟 解鎖：允許首頁直接跳轉空圖表 */
           onProfileNav={() => handleUserClick(null)} /* 🌟 解鎖：允許首頁直接跳轉空帳戶 */
         />
       )}
-      
-      {currentPage === 'graph' && (
-        <NetworkGraph 
-          eventId={selectedEventId} 
-          onBack={handleBackToDashboard} 
+
+      {currentPage === 'intervention' && (
+        <InterventionDashboard
+          eventId={selectedEventId}
+          onBack={handleBackToDashboard}
           onLogoClick={handleBackToDashboard}
-          onEventChange={handleEventClick} 
+          onProfileNav={() => handleUserClick(null)}
+          onGraphNav={() => handleGraphClick(selectedEventId)}
+        />
+      )}
+
+      {currentPage === 'graph' && (
+        <NetworkGraph
+          eventId={selectedEventId}
+          onBack={handleBackToDashboard}
+          onLogoClick={handleBackToDashboard}
+          onEventChange={handleGraphClick}
           onUserClick={handleUserClick}
           onProfileNav={() => handleUserClick(null)} /* 🌟 解鎖：允許圖表頁隨時切換至空帳戶 */
         />

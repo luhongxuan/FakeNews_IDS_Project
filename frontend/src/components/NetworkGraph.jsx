@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import styles from './NetworkGraph.module.css';
-import { USE_MOCK_DATA, MOCK_ELEMENTS, cyStylesheet, cyLayout } from './graphConfig';
+import { USE_MOCK_DATA, MOCK_DATA_NOTICE, MOCK_ELEMENTS, cyStylesheet, cyLayout } from './graphConfig';
 
 const NetworkGraph = ({ eventId, onBack, onLogoClick, onEventChange, onUserClick, onProfileNav }) => {
   const [selectedNode, setSelectedNode] = useState(null);
@@ -118,7 +118,7 @@ const NetworkGraph = ({ eventId, onBack, onLogoClick, onEventChange, onUserClick
           <main className={styles.mainWorkspace}>
             <div className={styles.graphContainer}>
               <div className={styles.graphHeader}>
-                <span>網絡傳播拓撲矩陣</span>
+                <span>網絡傳播拓撲矩陣 {USE_MOCK_DATA && <small className={styles.demoNotice}>{MOCK_DATA_NOTICE}</small>}</span>
                 <div className={styles.legendContainer}>
                   <div className={styles.legendItem}><div className={styles.dotBlue}></div> 正常節點</div>
                   <div className={styles.legendItem}><div className={styles.dotRed}></div> 異常/謠言節點</div>

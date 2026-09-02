@@ -5,6 +5,8 @@ from app.routers import search
 from app.routers import timeline
 from app.routers import graph
 from app.routers import events
+from app.routers import intervention
+from app.routers import verification
 
 Base.metadata.create_all(bind=engine)
 
@@ -21,6 +23,8 @@ app.include_router(search.router)
 app.include_router(timeline.router)
 app.include_router(graph.router)
 app.include_router(events.router)
+app.include_router(intervention.router)
+app.include_router(verification.router)
 
 @app.get("/")
 def root():

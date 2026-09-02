@@ -54,7 +54,11 @@ services:
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: misinfo_db
     ports:
-      - "5432:5432"
+      # Host port changed from 5432 to 15432: this dev machine already has a
+      # native PostgreSQL Windows service bound to 5432, which was shadowing
+      # this container. Only the host-side mapping changed; the backend
+      # still talks to "db:5432" inside the compose network.
+      - "15432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
