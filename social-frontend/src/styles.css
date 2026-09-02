@@ -1,0 +1,934 @@
+/* ==========================================================================
+   設計 token
+   刻意與關係圖前端（深色情報系統）走相反方向：
+   使用者端 = 明亮、日常、看不出任何風險標記
+   ========================================================================== */
+
+:root {
+  /* 版面 */
+  --canvas: #edf0ee;
+  --paper: #ffffff;
+  --hairline: #dde3e0;
+  --hairline-strong: #c8d1cd;
+
+  /* 文字 */
+  --ink: #14201d;
+  --ink-2: #46534f;
+  --ink-3: #7c8a85;
+
+  /* 品牌（松綠：刻意避開臉書藍與 Threads 黑） */
+  --accent: #0e6e5e;
+  --accent-hover: #0a5648;
+  --accent-soft: #e4f1ed;
+
+  /* 導播台（深色儀器面板，與社群介面刻意異質） */
+  --rail-bg: #101619;
+  --rail-panel: #161f23;
+  --rail-line: #243137;
+  --rail-text: #cbd8dd;
+  --rail-dim: #6d818b;
+  --rail-live: #3dd68c;
+  --rail-idle: #d4a13c;
+
+  /* AI 助手側邊欄（藍紫色調，跟導播台的綠色系明確區分開） */
+  --ai-bg: #12131e;
+  --ai-line: #272a3d;
+  --ai-text: #dadcf2;
+  --ai-dim: #7d80a3;
+  --ai-accent: #7c8cff;
+  --ai-accent-soft: rgba(124, 140, 255, 0.16);
+  --verdict-rumour: #ef6b5c;
+  --verdict-real: #3dd68c;
+
+  /* 字體 */
+  --font-sans: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'PingFang TC',
+    'Microsoft JhengHei', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* 圓角 */
+  --r-card: 10px;
+  --r-pill: 999px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+textarea,
+input,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* 鍵盤操作時焦點必須看得見 */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 捲軸 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--hairline-strong);
+  border-radius: var(--r-pill);
+  border: 3px solid var(--canvas);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+
+.shell {
+  display: flex;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+.platform {
+  flex: 1;
+  min-width: 0;
+}
+
+/* --- 平台頂欄 --- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(237, 240, 238, 0.88);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.topbarInner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 28px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+/* 品牌標記：一個開口的環，取「訊息向外擴散」之意 */
+.mark {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  border-right-color: transparent;
+  transform: rotate(-45deg);
+}
+
+.brandName {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+
+.datasetPicker {
+  display: flex;
+  align-items: center;
+}
+
+.datasetSelect {
+  max-width: 280px;
+  padding: 11px 16px;
+  background: var(--paper);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 8px;
+  font-size: 15.5px;
+  color: var(--ink);
+}
+
+/* --- 動態區 --- */
+.feed {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 28px 100px;
+}
+
+/* --- 載入中／載入失敗 --- */
+.stateNotice {
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  padding: 40px 32px;
+  text-align: center;
+  background: var(--paper);
+}
+
+.stateError {
+  border-color: rgba(180, 64, 47, 0.35);
+  background: rgba(180, 64, 47, 0.05);
+}
+
+.stateTitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.stateError .stateTitle {
+  color: #b4402f;
+}
+
+.stateBody {
+  margin: 8px 0 0;
+  font-size: 15.5px;
+  color: var(--ink-3);
+}
+
+/* --- 空狀態 --- */
+.empty {
+  border: 1px dashed var(--hairline-strong);
+  border-radius: var(--r-card);
+  padding: 64px 32px;
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.emptyBody {
+  margin: 8px 0 0;
+  font-size: 15.5px;
+  color: var(--ink-3);
+}
+
+/* --- 導播台收起後的把手 --- */
+.railHandle {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  padding: 18px 10px;
+  background: var(--rail-bg);
+  border: 1px solid var(--rail-line);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  color: var(--rail-text);
+  font-size: 13.5px;
+  letter-spacing: 0.14em;
+  writing-mode: vertical-rl;
+}
+
+.railHandle:hover {
+  background: var(--rail-panel);
+}
+
+@media (max-width: 1080px) {
+  .shell {
+    flex-direction: column;
+  }
+}
+
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  padding: 22px 24px 12px;
+}
+
+.card + .card {
+  margin-top: 14px;
+}
+
+/* 新貼文進場：輕微上移淡入，不做多餘特效 */
+@keyframes enterIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.enter {
+  animation: enterIn 240ms ease-out;
+}
+
+/* --- 轉發標頭 --- */
+.repostFlag {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: -2px 0 12px 62px;
+  font-size: 14px;
+  color: var(--ink-3);
+}
+
+.repostIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* --- 主體 --- */
+.body {
+  display: flex;
+  gap: 14px;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  line-height: 1.3;
+  font-size: 17px;
+}
+
+.name {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.verified {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.handle,
+.dot,
+.time {
+  font-size: 15px;
+  color: var(--ink-3);
+}
+
+.content {
+  margin: 8px 0 0;
+  font-size: 17px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+}
+
+/* --- 引用區塊：左側細線即為傳播路徑 --- */
+.quote {
+  margin: 14px 0 0;
+  padding: 3px 0 3px 16px;
+  border-left: 2.5px solid var(--hairline-strong);
+}
+
+.quoteMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.quoteName {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.quoteHandle {
+  font-size: 14px;
+  color: var(--ink-3);
+}
+
+.quoteText {
+  margin: 5px 0 0;
+  font-size: 16px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+
+/* --- 動作列 --- */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  margin-left: -10px;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 72px;
+  padding: 10px;
+  background: none;
+  border: none;
+  border-radius: var(--r-pill);
+  font-size: 15px;
+  color: var(--ink-3);
+  transition: color 140ms ease, background-color 140ms ease;
+}
+
+.action svg {
+  width: 21px;
+  height: 21px;
+}
+
+.action:hover {
+  color: var(--ink-2);
+  background-color: rgba(20, 32, 29, 0.05);
+}
+
+.shareAction:hover {
+  color: var(--accent);
+  background-color: var(--accent-soft);
+}
+
+.likeAction:hover {
+  color: #b4402f;
+  background-color: rgba(180, 64, 47, 0.08);
+}
+
+
+.rail {
+  width: 360px;
+  flex-shrink: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 28px 24px;
+  background: var(--rail-bg);
+  border-left: 1px solid var(--rail-line);
+  color: var(--rail-text);
+  font-size: 14.5px;
+  overflow-y: auto;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--rail-dim);
+}
+
+.title {
+  margin: 3px 0 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.collapse {
+  background: none;
+  border: 1px solid var(--rail-line);
+  border-radius: 6px;
+  padding: 6px;
+  color: var(--rail-dim);
+  display: flex;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.collapse svg {
+  width: 17px;
+  height: 17px;
+}
+
+.collapse:hover {
+  color: var(--rail-text);
+  border-color: var(--rail-dim);
+}
+
+.note {
+  margin: -8px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--rail-dim);
+}
+
+.block {
+  border-top: 1px solid var(--rail-line);
+  padding-top: 20px;
+}
+
+.blockLabel {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rail-dim);
+  margin-bottom: 12px;
+}
+
+/* --- 連線狀態 --- */
+.status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.beacon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rail-idle);
+  flex-shrink: 0;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(61, 214, 140, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(61, 214, 140, 0);
+  }
+}
+
+.beaconLive {
+  background: var(--rail-live);
+  animation: pulse 2.4s ease-out infinite;
+}
+
+.statusText {
+  color: #fff;
+  font-size: 15px;
+}
+
+.hint {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--rail-dim);
+}
+
+/* --- 事件日誌 --- */
+.logBlock {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 160px;
+}
+
+.log {
+  flex: 1;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.logEmpty {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--rail-dim);
+}
+
+.logRow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(36, 49, 55, 0.55);
+  white-space: nowrap;
+}
+
+.logTime {
+  color: var(--rail-dim);
+  flex-shrink: 0;
+}
+
+.logType {
+  flex-shrink: 0;
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+}
+
+.type_post {
+  color: #7fb3ff;
+}
+.type_share {
+  color: var(--rail-live);
+}
+.type_comment {
+  color: var(--rail-idle);
+}
+
+.logEdge {
+  color: var(--rail-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 視窗較窄時導播台改為橫向堆疊在下方 */
+@media (max-width: 1080px) {
+  .rail {
+    width: 100%;
+    height: auto;
+    position: static;
+    border-left: none;
+    border-top: 1px solid var(--rail-line);
+  }
+}
+
+
+/* ==========================================================================
+   AI 助手：浮動開關按鈕
+   ========================================================================== */
+
+.aiToggle {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 60;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--ai-bg);
+  border: 1px solid var(--ai-line);
+  color: var(--ai-accent);
+  box-shadow: 0 6px 18px rgba(18, 19, 30, 0.28);
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+
+.aiToggle svg {
+  width: 22px;
+  height: 22px;
+}
+
+.aiToggle:hover {
+  transform: scale(1.06);
+  border-color: var(--ai-accent);
+}
+
+.aiToggleActive {
+  background: var(--ai-accent);
+  color: var(--ai-bg);
+}
+
+/* ==========================================================================
+   AI 助手側邊欄
+   ========================================================================== */
+
+.aiPanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 55;
+  width: 400px;
+  max-width: 92vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 28px 24px;
+  background: var(--ai-bg);
+  border-left: 1px solid var(--ai-line);
+  color: var(--ai-text);
+  font-size: 14.5px;
+  box-shadow: -12px 0 32px rgba(10, 10, 18, 0.35);
+  transform: translateX(100%);
+  transition: transform 260ms ease;
+  overflow-y: auto;
+}
+
+.aiPanelOpen {
+  transform: translateX(0);
+}
+
+.aiHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.aiEyebrow {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ai-accent);
+}
+
+.aiTitle {
+  margin: 3px 0 0;
+  font-size: 19px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.aiClose {
+  background: none;
+  border: 1px solid var(--ai-line);
+  border-radius: 6px;
+  padding: 6px;
+  color: var(--ai-dim);
+  display: flex;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.aiClose svg {
+  width: 17px;
+  height: 17px;
+}
+
+.aiClose:hover {
+  color: var(--ai-text);
+  border-color: var(--ai-dim);
+}
+
+.aiNote {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ai-dim);
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ai-line);
+}
+
+.aiList {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.aiEmpty {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ai-dim);
+}
+
+.aiItem {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--ai-line);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.aiItemHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.aiItemUser {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ai-text);
+}
+
+.aiVerdict {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.verdictRumour {
+  color: var(--verdict-rumour);
+}
+
+.verdictReal {
+  color: var(--verdict-real);
+}
+
+.verdictPending {
+  color: var(--ai-dim);
+}
+
+.verdictLoading {
+  color: var(--ai-accent);
+}
+
+.aiItemContent {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ai-dim);
+  overflow-wrap: anywhere;
+}
+
+.aiFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ai-line);
+}
+
+.aiClearBtn {
+  padding: 9px 12px;
+  background: none;
+  border: 1px solid var(--ai-line);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--ai-dim);
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.aiClearBtn:hover {
+  color: var(--ai-text);
+  border-color: var(--ai-dim);
+}
+
+.aiCaptureBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--ai-accent);
+  border: 1px solid var(--ai-accent);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ai-bg);
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.aiCaptureBtn svg {
+  width: 17px;
+  height: 17px;
+}
+
+.aiCaptureBtn:hover {
+  background: #fff;
+  border-color: #fff;
+}
+
+.aiCaptureBtnActive {
+  background: none;
+  color: var(--verdict-rumour);
+  border-color: var(--verdict-rumour);
+}
+
+.aiCaptureBtnActive:hover {
+  background: var(--verdict-rumour);
+  color: var(--ai-bg);
+}
+
+.aiCaptureDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 1.4s ease-out infinite;
+}
+
+/* ==========================================================================
+   框選擷取層
+   ========================================================================== */
+
+.selectOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  cursor: crosshair;
+  background: rgba(18, 19, 30, 0.04);
+}
+
+.selectHint {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 9px 18px;
+  background: var(--ai-bg);
+  border: 1px solid var(--ai-line);
+  border-radius: var(--r-pill);
+  color: var(--ai-text);
+  font-size: 13px;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(18, 19, 30, 0.28);
+  pointer-events: none;
+}
+
+.selectBox {
+  position: fixed;
+  border: 1.5px solid var(--ai-accent);
+  background: var(--ai-accent-soft);
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .aiPanel {
+    width: 100vw;
+    max-width: 100vw;
+  }
+}

@@ -1,0 +1,3863 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+backend/
+  app/
+    models/
+      __init__.py
+      schema.py
+    routers/
+      graph.py
+      search.py
+      timeline.py
+    schemas/
+      __init__.py
+      response.py
+    services/
+      __init__.py
+      fact_check.py
+      gdelt.py
+    __init__.py
+    database.py
+    main.py
+  Dockerfile
+  requirements.txt
+data_pipeline/
+  collectors/
+    fact_check.py
+  notebooks/
+    fact_check_api.ipynb
+    fakenewsnet.ipynb
+    pheme.ipynb
+    pheme.py
+    test.py
+  Dockerfile
+  requirements.txt
+frontend/
+  public/
+    favicon.svg
+    icons.svg
+  src/
+    components/
+      EventDashboard.jsx
+      EventDashboard.module.css
+      graphConfig.js
+      NetworkGraph.jsx
+      NetworkGraph.module.css
+      UserProfile.jsx
+      UserProfile.module.css
+    App.jsx
+    main.jsx
+  .gitignore
+  eslint.config.js
+  index.html
+  package.json
+  README.md
+  vite.config.js
+graph_analysis/
+  __init__.py
+  builder.py
+  centrality.py
+  Dockerfile
+  intervention.py
+  requirements.txt
+  simulation.py
+.dockerignore
+.gitignore
+docker-compose.yml
+project_roadmap_5months.html
+README.md
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="backend/app/models/__init__.py">
+
+</file>
+
+<file path="backend/app/schemas/__init__.py">
+
+</file>
+
+<file path="backend/app/services/__init__.py">
+
+</file>
+
+<file path="backend/app/__init__.py">
+
+</file>
+
+<file path="backend/app/database.py">
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine) 
+Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+</file>
+
+<file path="backend/Dockerfile">
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    gcc g++ git curl \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PIP_ROOT_USER_ACTION=ignore
+RUN pip install --upgrade pip
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+</file>
+
+<file path="backend/requirements.txt">
+annotated-doc==0.0.4
+annotated-types==0.7.0
+anyio==4.13.0
+certifi==2026.2.25
+click==8.3.2
+cuda-bindings==13.2.0
+cuda-pathfinder==1.5.3
+cuda-toolkit==13.0.2
+fastapi==0.136.0
+filelock==3.28.0
+fsspec==2026.3.0
+greenlet==3.4.0
+h11==0.16.0
+hf-xet==1.4.3
+httpcore==1.0.9
+httpx==0.28.1
+huggingface_hub==1.11.0
+idna==3.11
+Jinja2==3.1.6
+joblib==1.5.3
+markdown-it-py==4.0.0
+MarkupSafe==3.0.3
+mdurl==0.1.2
+mpmath==1.3.0
+networkx==3.6.1
+numpy==2.4.4
+nvidia-cublas==13.1.0.3
+nvidia-cuda-cupti==13.0.85
+nvidia-cuda-nvrtc==13.0.88
+nvidia-cuda-runtime==13.0.96
+nvidia-cudnn-cu13==9.19.0.56
+nvidia-cufft==12.0.0.61
+nvidia-cufile==1.15.1.6
+nvidia-curand==10.4.0.35
+nvidia-cusolver==12.0.4.66
+nvidia-cusparse==12.6.3.3
+nvidia-cusparselt-cu13==0.8.0
+nvidia-nccl-cu13==2.28.9
+nvidia-nvjitlink==13.0.88
+nvidia-nvshmem-cu13==3.4.5
+nvidia-nvtx==13.0.85
+packaging==26.1
+psycopg2-binary==2.9.11
+pydantic==2.13.2
+pydantic_core==2.46.2
+Pygments==2.20.0
+python-dotenv==1.2.2
+PyYAML==6.0.3
+regex==2026.4.4
+rich==15.0.0
+safetensors==0.7.0
+scikit-learn==1.8.0
+scipy==1.17.1
+sentence-transformers==5.4.1
+setuptools==81.0.0
+shellingham==1.5.4
+SQLAlchemy==2.0.49
+starlette==1.0.0
+sympy==1.14.0
+threadpoolctl==3.6.0
+tokenizers==0.22.2
+torch==2.11.0
+tqdm==4.67.3
+transformers==5.5.4
+triton==3.6.0
+typer==0.24.1
+typing-inspection==0.4.2
+typing_extensions==4.15.0
+uvicorn==0.44.0
+</file>
+
+<file path="data_pipeline/collectors/fact_check.py">
+import os
+import httpx
+from dotenv import load_dotenv
+
+load_dotenv()
+
+API_KEY  = os.getenv("GOOGLE_FACT_CHECK_API_KEY")
+BASE_URL = "https://factchecktools.googleapis.com/v1alpha1/claims:search"
+
+def search_claims(query: str, language: str = "en", max_results: int = 10) -> dict:
+    """
+    打 Google Fact Check API，回傳原始結果
+    """
+    params = {
+        "key"         : API_KEY,
+        "query"       : query,
+        "languageCode": language,
+        "pageSize"    : max_results,
+    }
+
+    response = httpx.get(BASE_URL, params=params)
+    response.raise_for_status()
+    return response.json()
+
+
+def parse_claims(raw: dict) -> list[dict]:
+    """
+    把原始 API 回傳整理成乾淨的 list
+    """
+    results = []
+
+    for claim in raw.get("claims", []):
+        for review in claim.get("claimReview", []):
+            results.append({
+                "claim_text" : claim.get("text"),
+                "claimant"   : claim.get("claimant"),
+                "claim_date" : claim.get("claimDate"),
+                "reviewer"   : review.get("publisher", {}).get("name"),
+                "rating"     : review.get("textualRating"),
+                "review_url" : review.get("url"),
+                "review_date": review.get("reviewDate"),
+                "review_title": review.get("title"),
+            })
+
+    return results
+</file>
+
+<file path="data_pipeline/notebooks/pheme.ipynb">
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "f99d5e68",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/app\n",
+      "無法解析 JSON：data/raw/pheme/sydneysiege-all-rnr-threads/rumours/544490782183657474/source-tweets/.DS_Store\n",
+      "總推文數：6425\n",
+      "欄位：['event', 'thread_id', 'tweet_id', 'text', 'user', 'created_at', 'retweet_count', 'is_rumour', 'type']\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>event</th>\n",
+       "      <th>thread_id</th>\n",
+       "      <th>tweet_id</th>\n",
+       "      <th>text</th>\n",
+       "      <th>user</th>\n",
+       "      <th>created_at</th>\n",
+       "      <th>retweet_count</th>\n",
+       "      <th>is_rumour</th>\n",
+       "      <th>type</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>prince-toronto-all-rnr-threads</td>\n",
+       "      <td>529694805010685952</td>\n",
+       "      <td>529694805010685952</td>\n",
+       "      <td>$10 to see Prince tonight in Toronto? I'd be a...</td>\n",
+       "      <td>ajsharma95</td>\n",
+       "      <td>Tue Nov 04 18:00:57 +0000 2014</td>\n",
+       "      <td>3</td>\n",
+       "      <td>True</td>\n",
+       "      <td>source</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>prince-toronto-all-rnr-threads</td>\n",
+       "      <td>529621484130828290</td>\n",
+       "      <td>529621484130828290</td>\n",
+       "      <td>Just noticed \"HALL of desire\" in that @drfunke...</td>\n",
+       "      <td>tcote</td>\n",
+       "      <td>Tue Nov 04 13:09:36 +0000 2014</td>\n",
+       "      <td>2</td>\n",
+       "      <td>True</td>\n",
+       "      <td>source</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>prince-toronto-all-rnr-threads</td>\n",
+       "      <td>529723362894176256</td>\n",
+       "      <td>529723362894176256</td>\n",
+       "      <td>Prince fans lined up outside Massey Hall say t...</td>\n",
+       "      <td>stephaniesmyth</td>\n",
+       "      <td>Tue Nov 04 19:54:26 +0000 2014</td>\n",
+       "      <td>3</td>\n",
+       "      <td>True</td>\n",
+       "      <td>source</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>prince-toronto-all-rnr-threads</td>\n",
+       "      <td>529670383629520896</td>\n",
+       "      <td>529670383629520896</td>\n",
+       "      <td>Surprise Prince show at Massey Hall tonight? h...</td>\n",
+       "      <td>TheTorontoSun</td>\n",
+       "      <td>Tue Nov 04 16:23:54 +0000 2014</td>\n",
+       "      <td>6</td>\n",
+       "      <td>True</td>\n",
+       "      <td>source</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>prince-toronto-all-rnr-threads</td>\n",
+       "      <td>529749285198655488</td>\n",
+       "      <td>529749285198655488</td>\n",
+       "      <td>WOW. It seems as though #Prince will not be pl...</td>\n",
+       "      <td>YYZMag</td>\n",
+       "      <td>Tue Nov 04 21:37:26 +0000 2014</td>\n",
+       "      <td>2</td>\n",
+       "      <td>True</td>\n",
+       "      <td>source</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                            event           thread_id            tweet_id  \\\n",
+       "0  prince-toronto-all-rnr-threads  529694805010685952  529694805010685952   \n",
+       "1  prince-toronto-all-rnr-threads  529621484130828290  529621484130828290   \n",
+       "2  prince-toronto-all-rnr-threads  529723362894176256  529723362894176256   \n",
+       "3  prince-toronto-all-rnr-threads  529670383629520896  529670383629520896   \n",
+       "4  prince-toronto-all-rnr-threads  529749285198655488  529749285198655488   \n",
+       "\n",
+       "                                                text            user  \\\n",
+       "0  $10 to see Prince tonight in Toronto? I'd be a...      ajsharma95   \n",
+       "1  Just noticed \"HALL of desire\" in that @drfunke...           tcote   \n",
+       "2  Prince fans lined up outside Massey Hall say t...  stephaniesmyth   \n",
+       "3  Surprise Prince show at Massey Hall tonight? h...   TheTorontoSun   \n",
+       "4  WOW. It seems as though #Prince will not be pl...          YYZMag   \n",
+       "\n",
+       "                       created_at  retweet_count  is_rumour    type  \n",
+       "0  Tue Nov 04 18:00:57 +0000 2014              3       True  source  \n",
+       "1  Tue Nov 04 13:09:36 +0000 2014              2       True  source  \n",
+       "2  Tue Nov 04 19:54:26 +0000 2014              3       True  source  \n",
+       "3  Tue Nov 04 16:23:54 +0000 2014              6       True  source  \n",
+       "4  Tue Nov 04 21:37:26 +0000 2014              2       True  source  "
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import os\n",
+    "import json\n",
+    "import pandas as pd\n",
+    "\n",
+    "# ── 載入所有推文 ──────────────────────────────────────\n",
+    "def load_pheme(base_path):\n",
+    "    records = []\n",
+    "    \n",
+    "    for event in os.listdir(base_path):\n",
+    "        event_path = os.path.join(base_path, event)\n",
+    "        if not os.path.isdir(event_path):\n",
+    "            continue\n",
+    "            \n",
+    "        for label in [\"rumours\", \"non-rumours\"]:\n",
+    "            label_path = os.path.join(event_path, label)\n",
+    "            if not os.path.exists(label_path):\n",
+    "                continue\n",
+    "                \n",
+    "            for thread_id in os.listdir(label_path):\n",
+    "                thread_path = os.path.join(label_path, thread_id)\n",
+    "                \n",
+    "                # 讀原始推文\n",
+    "                source_path = os.path.join(thread_path, \"source-tweets\")\n",
+    "                if os.path.exists(source_path):\n",
+    "                    for fname in os.listdir(source_path):\n",
+    "                        if fname.startswith(\"._\"):\n",
+    "                            continue\n",
+    "                        fpath = os.path.join(source_path, fname)\n",
+    "                        if os.path.getsize(fpath) == 0:\n",
+    "                            continue\n",
+    "                        try:\n",
+    "                            with open(os.path.join(source_path, fname), encoding=\"utf-8\", errors=\"ignore\") as f:\n",
+    "                                tweet = json.load(f)\n",
+    "                                records.append({\n",
+    "                                    \"event\"     : event,\n",
+    "                                    \"thread_id\" : thread_id,\n",
+    "                                    \"tweet_id\"  : tweet.get(\"id_str\"),\n",
+    "                                    \"text\"      : tweet.get(\"text\"),\n",
+    "                                    \"user\"      : tweet.get(\"user\", {}).get(\"screen_name\"),\n",
+    "                                    \"created_at\": tweet.get(\"created_at\"),\n",
+    "                                    \"retweet_count\": tweet.get(\"retweet_count\"),\n",
+    "                                    \"is_rumour\" : label == \"rumours\",\n",
+    "                                    \"type\"      : \"source\"\n",
+    "                                })\n",
+    "                        except json.JSONDecodeError:\n",
+    "                            print(f\"無法解析 JSON：{fpath}\")\n",
+    "                            continue\n",
+    "    return pd.DataFrame(records)\n",
+    "\n",
+    "# ── 載入資料 ──────────────────────────────────────────\n",
+    "print(os.getcwd())\n",
+    "df = load_pheme(\"data/raw/pheme\")\n",
+    "print(f\"總推文數：{len(df)}\")\n",
+    "print(f\"欄位：{df.columns.tolist()}\")\n",
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "e57e6bab",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "event\n",
+      "charliehebdo-all-rnr-threads         2079\n",
+      "ebola-essien-all-rnr-threads           14\n",
+      "ferguson-all-rnr-threads             1143\n",
+      "germanwings-crash-all-rnr-threads     469\n",
+      "gurlitt-all-rnr-threads               138\n",
+      "ottawashooting-all-rnr-threads        890\n",
+      "prince-toronto-all-rnr-threads        233\n",
+      "putinmissing-all-rnr-threads          238\n",
+      "sydneysiege-all-rnr-threads          1221\n",
+      "dtype: int64\n",
+      "is_rumour\n",
+      "False    4023\n",
+      "True     2402\n",
+      "Name: count, dtype: int64\n",
+      "event            0\n",
+      "thread_id        0\n",
+      "tweet_id         0\n",
+      "text             0\n",
+      "user             0\n",
+      "created_at       0\n",
+      "retweet_count    0\n",
+      "is_rumour        0\n",
+      "type             0\n",
+      "dtype: int64\n"
+     ]
+    }
+   ],
+   "source": [
+    "#print(df.head())\n",
+    "\n",
+    "print(df.groupby(\"event\").size())\n",
+    "\n",
+    "print(df[\"is_rumour\"].value_counts())\n",
+    "\n",
+    "print(df.isna().sum())"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
+</file>
+
+<file path="data_pipeline/notebooks/pheme.py">
+import os
+import json
+import pandas as pd
+
+# ── 載入所有推文 ──────────────────────────────────────
+def load_pheme(base_path):
+    records = []
+    
+    for event in os.listdir(base_path):
+        event_path = os.path.join(base_path, event)
+        if not os.path.isdir(event_path):
+            continue
+            
+        for label in ["rumours", "non-rumours"]:
+            label_path = os.path.join(event_path, label)
+            if not os.path.exists(label_path):
+                continue
+                
+            for thread_id in os.listdir(label_path):
+                thread_path = os.path.join(label_path, thread_id)
+                
+                # 讀原始推文
+                source_path = os.path.join(thread_path, "source-tweets")
+                if os.path.exists(source_path):
+                    for fname in os.listdir(source_path):
+                        if fname.startswith("._"):
+                            continue
+                        fpath = os.path.join(source_path, fname)
+                        if os.path.getsize(fpath) == 0:
+                            continue
+                        try:
+                            with open(os.path.join(source_path, fname), encoding="utf-8", errors="ignore") as f:
+                                tweet = json.load(f)
+                                records.append({
+                                    "event"     : event,
+                                    "thread_id" : thread_id,
+                                    "tweet_id"  : tweet.get("id_str"),
+                                    "text"      : tweet.get("text"),
+                                    "user"      : tweet.get("user", {}).get("screen_name"),
+                                    "created_at": tweet.get("created_at"),
+                                    "retweet_count": tweet.get("retweet_count"),
+                                    "is_rumour" : label == "rumours",
+                                    "type"      : "source"
+                                })
+                        except json.JSONDecodeError:
+                            print(f"無法解析 JSON：{fpath}")
+                            continue
+    return pd.DataFrame(records)
+
+# ── 載入資料 ──────────────────────────────────────────
+print(os.getcwd())
+df = load_pheme("data/raw/pheme")
+print(f"總推文數：{len(df)}")
+print(f"欄位：{df.columns.tolist()}")
+df.head()
+</file>
+
+<file path="data_pipeline/notebooks/test.py">
+import os
+print(os.getcwd())
+</file>
+
+<file path="frontend/public/favicon.svg">
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="46" fill="none" viewBox="0 0 48 46"><path fill="#863bff" d="M25.946 44.938c-.664.845-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.287c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.497 0-3.578-1.842-3.578H1.237c-.92 0-1.456-1.04-.92-1.788L10.013.474c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.579 1.842 3.579h11.377c.943 0 1.473 1.088.89 1.83L25.947 44.94z" style="fill:#863bff;fill:color(display-p3 .5252 .23 1);fill-opacity:1"/><mask id="a" width="48" height="46" x="0" y="0" maskUnits="userSpaceOnUse" style="mask-type:alpha"><path fill="#000" d="M25.842 44.938c-.664.844-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.183c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.498 0-3.579-1.842-3.579H1.133c-.92 0-1.456-1.04-.92-1.787L9.91.473c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.578 1.842 3.578h11.377c.943 0 1.473 1.088.89 1.832L25.843 44.94z" style="fill:#000;fill-opacity:1"/></mask><g mask="url(#a)"><g filter="url(#b)"><ellipse cx="5.508" cy="14.704" fill="#ede6ff" rx="5.508" ry="14.704" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -4.47 31.516)"/></g><g filter="url(#c)"><ellipse cx="10.399" cy="29.851" fill="#ede6ff" rx="10.399" ry="29.851" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -39.328 7.883)"/></g><g filter="url(#d)"><ellipse cx="5.508" cy="30.487" fill="#7e14ff" rx="5.508" ry="30.487" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.814 -25.913 -14.639)scale(1 -1)"/></g><g filter="url(#e)"><ellipse cx="5.508" cy="30.599" fill="#7e14ff" rx="5.508" ry="30.599" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.814 -32.644 -3.334)scale(1 -1)"/></g><g filter="url(#f)"><ellipse cx="5.508" cy="30.599" fill="#7e14ff" rx="5.508" ry="30.599" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -34.34 30.47)"/></g><g filter="url(#g)"><ellipse cx="14.072" cy="22.078" fill="#ede6ff" rx="14.072" ry="22.078" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="rotate(93.35 24.506 48.493)scale(-1 1)"/></g><g filter="url(#h)"><ellipse cx="3.47" cy="21.501" fill="#7e14ff" rx="3.47" ry="21.501" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.009 28.708 47.59)scale(-1 1)"/></g><g filter="url(#i)"><ellipse cx="3.47" cy="21.501" fill="#7e14ff" rx="3.47" ry="21.501" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.009 28.708 47.59)scale(-1 1)"/></g><g filter="url(#j)"><ellipse cx=".387" cy="8.972" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(39.51 .387 8.972)"/></g><g filter="url(#k)"><ellipse cx="47.523" cy="-6.092" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 47.523 -6.092)"/></g><g filter="url(#l)"><ellipse cx="41.412" cy="6.333" fill="#47bfff" rx="5.971" ry="9.665" style="fill:#47bfff;fill:color(display-p3 .2799 .748 1);fill-opacity:1" transform="rotate(37.892 41.412 6.333)"/></g><g filter="url(#m)"><ellipse cx="-1.879" cy="38.332" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 -1.88 38.332)"/></g><g filter="url(#n)"><ellipse cx="-1.879" cy="38.332" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 -1.88 38.332)"/></g><g filter="url(#o)"><ellipse cx="35.651" cy="29.907" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 35.651 29.907)"/></g><g filter="url(#p)"><ellipse cx="38.418" cy="32.4" fill="#47bfff" rx="5.971" ry="15.297" style="fill:#47bfff;fill:color(display-p3 .2799 .748 1);fill-opacity:1" transform="rotate(37.892 38.418 32.4)"/></g></g><defs><filter id="b" width="60.045" height="41.654" x="-19.77" y="16.149" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="c" width="90.34" height="51.437" x="-54.613" y="-7.533" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="d" width="79.355" height="29.4" x="-49.64" y="2.03" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="e" width="79.579" height="29.4" x="-45.045" y="20.029" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="f" width="79.579" height="29.4" x="-43.513" y="21.178" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="g" width="74.749" height="58.852" x="15.756" y="-17.901" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="h" width="61.377" height="25.362" x="23.548" y="2.284" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="i" width="61.377" height="25.362" x="23.548" y="2.284" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="j" width="56.045" height="63.649" x="-27.636" y="-22.853" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="k" width="54.814" height="64.646" x="20.116" y="-38.415" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="l" width="33.541" height="35.313" x="24.641" y="-11.323" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="m" width="54.814" height="64.646" x="-29.286" y="6.009" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="n" width="54.814" height="64.646" x="-29.286" y="6.009" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="o" width="54.814" height="64.646" x="8.244" y="-2.416" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="p" width="39.409" height="43.623" x="18.713" y="10.588" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter></defs></svg>
+</file>
+
+<file path="frontend/public/icons.svg">
+<svg xmlns="http://www.w3.org/2000/svg">
+  <symbol id="bluesky-icon" viewBox="0 0 16 17">
+    <g clip-path="url(#bluesky-clip)"><path fill="#08060d" d="M7.75 7.735c-.693-1.348-2.58-3.86-4.334-5.097-1.68-1.187-2.32-.981-2.74-.79C.188 2.065.1 2.812.1 3.251s.241 3.602.398 4.13c.52 1.744 2.367 2.333 4.07 2.145-2.495.37-4.71 1.278-1.805 4.512 3.196 3.309 4.38-.71 4.987-2.746.608 2.036 1.307 5.91 4.93 2.746 2.72-2.746.747-4.143-1.747-4.512 1.702.189 3.55-.4 4.07-2.145.156-.528.397-3.691.397-4.13s-.088-1.186-.575-1.406c-.42-.19-1.06-.395-2.741.79-1.755 1.24-3.64 3.752-4.334 5.099"/></g>
+    <defs><clipPath id="bluesky-clip"><path fill="#fff" d="M.1.85h15.3v15.3H.1z"/></clipPath></defs>
+  </symbol>
+  <symbol id="discord-icon" viewBox="0 0 20 19">
+    <path fill="#08060d" d="M16.224 3.768a14.5 14.5 0 0 0-3.67-1.153c-.158.286-.343.67-.47.976a13.5 13.5 0 0 0-4.067 0c-.128-.306-.317-.69-.476-.976A14.4 14.4 0 0 0 3.868 3.77C1.546 7.28.916 10.703 1.231 14.077a14.7 14.7 0 0 0 4.5 2.306q.545-.748.965-1.587a9.5 9.5 0 0 1-1.518-.74q.191-.14.372-.293c2.927 1.369 6.107 1.369 8.999 0q.183.152.372.294-.723.437-1.52.74.418.838.963 1.588a14.6 14.6 0 0 0 4.504-2.308c.37-3.911-.63-7.302-2.644-10.309m-9.13 8.234c-.878 0-1.599-.82-1.599-1.82 0-.998.705-1.82 1.6-1.82.894 0 1.614.82 1.599 1.82.001 1-.705 1.82-1.6 1.82m5.91 0c-.878 0-1.599-.82-1.599-1.82 0-.998.705-1.82 1.6-1.82.893 0 1.614.82 1.599 1.82 0 1-.706 1.82-1.6 1.82"/>
+  </symbol>
+  <symbol id="documentation-icon" viewBox="0 0 21 20">
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="m15.5 13.333 1.533 1.322c.645.555.967.833.967 1.178s-.322.623-.967 1.179L15.5 18.333m-3.333-5-1.534 1.322c-.644.555-.966.833-.966 1.178s.322.623.966 1.179l1.534 1.321"/>
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="M17.167 10.836v-4.32c0-1.41 0-2.117-.224-2.68-.359-.906-1.118-1.621-2.08-1.96-.599-.21-1.349-.21-2.848-.21-2.623 0-3.935 0-4.983.369-1.684.591-3.013 1.842-3.641 3.428C3 6.449 3 7.684 3 10.154v2.122c0 2.558 0 3.838.706 4.726q.306.383.713.671c.76.536 1.79.64 3.581.66"/>
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="M3 10a2.78 2.78 0 0 1 2.778-2.778c.555 0 1.209.097 1.748-.047.48-.129.854-.503.982-.982.145-.54.048-1.194.048-1.749a2.78 2.78 0 0 1 2.777-2.777"/>
+  </symbol>
+  <symbol id="github-icon" viewBox="0 0 19 19">
+    <path fill="#08060d" fill-rule="evenodd" d="M9.356 1.85C5.05 1.85 1.57 5.356 1.57 9.694a7.84 7.84 0 0 0 5.324 7.44c.387.079.528-.168.528-.376 0-.182-.013-.805-.013-1.454-2.165.467-2.616-.935-2.616-.935-.349-.91-.864-1.143-.864-1.143-.71-.48.051-.48.051-.48.787.051 1.2.805 1.2.805.695 1.194 1.817.857 2.268.649.064-.507.27-.857.49-1.052-1.728-.182-3.545-.857-3.545-3.87 0-.857.31-1.558.8-2.104-.078-.195-.349-1 .077-2.078 0 0 .657-.208 2.14.805a7.5 7.5 0 0 1 1.946-.26c.657 0 1.328.092 1.946.26 1.483-1.013 2.14-.805 2.14-.805.426 1.078.155 1.883.078 2.078.502.546.799 1.247.799 2.104 0 3.013-1.818 3.675-3.558 3.87.284.247.528.714.528 1.454 0 1.052-.012 1.896-.012 2.156 0 .208.142.455.528.377a7.84 7.84 0 0 0 5.324-7.441c.013-4.338-3.48-7.844-7.773-7.844" clip-rule="evenodd"/>
+  </symbol>
+  <symbol id="social-icon" viewBox="0 0 20 20">
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="M12.5 6.667a4.167 4.167 0 1 0-8.334 0 4.167 4.167 0 0 0 8.334 0"/>
+    <path fill="none" stroke="#aa3bff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35" d="M2.5 16.667a5.833 5.833 0 0 1 8.75-5.053m3.837.474.513 1.035c.07.144.257.282.414.309l.93.155c.596.1.736.536.307.965l-.723.73a.64.64 0 0 0-.152.531l.207.903c.164.715-.213.991-.84.618l-.872-.52a.63.63 0 0 0-.577 0l-.872.52c-.624.373-1.003.094-.84-.618l.207-.903a.64.64 0 0 0-.152-.532l-.723-.729c-.426-.43-.289-.864.306-.964l.93-.156a.64.64 0 0 0 .412-.31l.513-1.034c.28-.562.735-.562 1.012 0"/>
+  </symbol>
+  <symbol id="x-icon" viewBox="0 0 19 19">
+    <path fill="#08060d" fill-rule="evenodd" d="M1.893 1.98c.052.072 1.245 1.769 2.653 3.77l2.892 4.114c.183.261.333.48.333.486s-.068.089-.152.183l-.522.593-.765.867-3.597 4.087c-.375.426-.734.834-.798.905a1 1 0 0 0-.118.148c0 .01.236.017.664.017h.663l.729-.83c.4-.457.796-.906.879-.999a692 692 0 0 0 1.794-2.038c.034-.037.301-.34.594-.675l.551-.624.345-.392a7 7 0 0 1 .34-.374c.006 0 .93 1.306 2.052 2.903l2.084 2.965.045.063h2.275c1.87 0 2.273-.003 2.266-.021-.008-.02-1.098-1.572-3.894-5.547-2.013-2.862-2.28-3.246-2.273-3.266.008-.019.282-.332 2.085-2.38l2-2.274 1.567-1.782c.022-.028-.016-.03-.65-.03h-.674l-.3.342a871 871 0 0 1-1.782 2.025c-.067.075-.405.458-.75.852a100 100 0 0 1-.803.91c-.148.172-.299.344-.99 1.127-.304.343-.32.358-.345.327-.015-.019-.904-1.282-1.976-2.808L6.365 1.85H1.8zm1.782.91 8.078 11.294c.772 1.08 1.413 1.973 1.425 1.984.016.017.241.02 1.05.017l1.03-.004-2.694-3.766L7.796 5.75 5.722 2.852l-1.039-.004-1.039-.004z" clip-rule="evenodd"/>
+  </symbol>
+</svg>
+</file>
+
+<file path="frontend/src/components/EventDashboard.jsx">
+// 檔案位置：frontend/src/components/EventDashboard.jsx
+import React, { useState } from 'react';
+import styles from './EventDashboard.module.css';
+
+const MOCK_EVENTS = [
+  { id: 'sydneysiege', title: '雪梨人質事件', date: '2014-12-15', nodes: 1221, rumours: 522, status: 'monitoring', severity: 'high', description: '發生於澳洲雪梨的咖啡館人質挾持事件，社群媒體上出現大量關於嫌犯身份的未經證實消息。' },
+  { id: 'charliehebdo', title: '查理週刊槍擊案', date: '2015-01-07', nodes: 2079, rumours: 458, status: 'monitoring', severity: 'high', description: '法國巴黎《查理週刊》總部遭恐怖攻擊，Twitter 上迅速爆發大規模聲援與陰謀論。' },
+  { id: 'covid19-5g', title: '5G 傳播新冠病毒', date: '2020-04-05', nodes: 5600, rumours: 3200, status: 'monitoring', severity: 'high', description: '疫情期間，網路上謠傳 5G 基地台會傳播新冠病毒，導致多地基地台遭縱火。' },
+  { id: 'election2020', title: '美國大選舞弊指控', date: '2020-11-04', nodes: 8900, rumours: 4500, status: 'monitoring', severity: 'high', description: '美國總統大選期間，社群媒體上出現大量關於計票機作弊的虛假訊息。' },
+  { id: 'vaccine-microchip', title: '疫苗植入微晶片', date: '2020-12-10', nodes: 3100, rumours: 2100, status: 'monitoring', severity: 'medium', description: '陰謀論指控藉由新冠疫苗向人體植入追蹤微晶片。' },
+  
+  { id: 'ottawashooting', title: '渥太華槍擊案', date: '2014-10-22', nodes: 890, rumours: 310, status: 'pending', severity: 'high', description: '加拿大國會山莊發生槍擊，初期 Twitter 出現關於多名槍手的錯誤警報。' },
+  { id: 'putinmissing', title: '普丁失蹤傳聞', date: '2015-03-11', nodes: 238, rumours: 115, status: 'pending', severity: 'low', description: '俄羅斯總統普丁連續數日未公開露面，社群湧現政變甚至身亡的陰謀論。' },
+  { id: 'ukraine-ghost', title: '基輔之鬼', date: '2022-02-25', nodes: 1500, rumours: 800, status: 'pending', severity: 'medium', description: '俄烏戰爭初期，流傳一名烏克蘭王牌飛行員擊落多架俄軍戰機的故事。' },
+  { id: 'taiwan-quake', title: '花蓮地震不實畫面', date: '2024-04-03', nodes: 950, rumours: 320, status: 'pending', severity: 'low', description: '台灣花蓮發生強震，社群平台上混雜了過去其他地震的舊畫面。' },
+  { id: 'paris-olympics', title: '巴黎奧運假新聞', date: '2024-07-26', nodes: 1200, rumours: 400, status: 'pending', severity: 'medium', description: '奧運期間針對選手性別、賽事安排的各類錯假訊息傳播。' },
+
+  { id: 'bostonbombing', title: '波士頓馬拉松爆炸案', date: '2013-04-15', nodes: 3450, rumours: 890, status: 'archived', severity: 'high', description: '終點線發生爆炸，網路上湧現大量尋人與假嫌犯指控。' },
+  { id: 'ferguson', title: '佛格森騷亂', date: '2014-08-09', nodes: 1143, rumours: 284, status: 'archived', severity: 'medium', description: '美國密蘇里州非裔青年遭警察槍殺引發抗議，網路上充斥對立假訊息。' },
+  { id: 'hurricanesandy', title: '颶風珊迪假照片', date: '2012-10-29', nodes: 2100, rumours: 1050, status: 'archived', severity: 'medium', description: '颶風侵襲美國東岸期間，Twitter 上瘋傳多張合成的淹水假照片。' },
+  { id: 'mh370', title: '馬航 MH370 失聯', date: '2014-03-08', nodes: 4200, rumours: 1800, status: 'archived', severity: 'high', description: '航班失聯，網路上出現各種關於航班下落與劫機的陰謀論。' },
+  { id: 'germanwings', title: '德國之翼空難', date: '2015-03-24', nodes: 469, rumours: 112, status: 'archived', severity: 'medium', description: '德國之翼航空墜毀，網傳副機長動機與機械故障的猜測。' },
+  { id: 'ebola-essien', title: '埃辛感染伊波拉謠言', date: '2014-10-12', nodes: 14, rumours: 14, status: 'archived', severity: 'low', description: '網傳知名足球員 Michael Essien 感染伊波拉病毒，為惡作劇。' },
+  { id: 'gurlitt', title: '古利特藝術品收藏案', date: '2013-11-03', nodes: 138, rumours: 45, status: 'archived', severity: 'low', description: '慕尼黑發現納粹掠奪藝術品，推特上出現去向錯誤資訊。' },
+];
+
+const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav }) => {
+  const [isLeftMenuOpen, setIsLeftMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterSeverity, setFilterSeverity] = useState('all');
+
+  const filteredEvents = MOCK_EVENTS.filter(event => {
+    const matchSearch = event.title.includes(searchQuery) || event.description.includes(searchQuery) || event.id.includes(searchQuery);
+    const matchSeverity = filterSeverity === 'all' || event.severity === filterSeverity;
+    return matchSearch && matchSeverity;
+  });
+
+  const pendingEvents = filteredEvents.filter(e => e.status === 'pending');
+  const monitoringEvents = filteredEvents.filter(e => e.status === 'monitoring');
+  const archivedEvents = filteredEvents.filter(e => e.status === 'archived');
+
+  const getSeverityTag = (severity) => {
+    switch (severity) {
+      case 'high': return <span className={`${styles.tag} ${styles.tagHigh}`}>高風險</span>;
+      case 'medium': return <span className={`${styles.tag} ${styles.tagMedium}`}>中風險</span>;
+      case 'low': return <span className={`${styles.tag} ${styles.tagLow}`}>低風險</span>;
+      default: return null;
+    }
+  };
+
+  const renderCard = (event) => (
+    <div key={event.id} className={styles.eventCard} onClick={() => onEventClick(event.id)}>
+      <div className={styles.cardTitle}>
+        {event.title}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div className={styles.cardDesc}>{event.description}</div>
+      <div className={styles.cardTags}>
+        <span className={styles.tag}>{event.id}</span>
+        {getSeverityTag(event.severity)}
+      </div>
+      <div className={styles.cardFooter}>
+        <div className={styles.stats}>
+          <div className={styles.statItem}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            {event.nodes}
+          </div>
+          <div className={styles.statItem} style={{ color: '#F28B82' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            {event.rumours}
+          </div>
+        </div>
+        <div>{event.date}</div>
+      </div>
+    </div>
+  );
+
+  // 🌟 修正：首頁專屬「純靜態、無條紋跑動、無文字提示」的工業風虛線留白框
+  const renderEmptyPlaceholders = () => (
+    [1, 2, 3].map(id => (
+      <div 
+        key={id} 
+        style={{
+          backgroundColor: 'rgba(30, 31, 34, 0.4)',
+          border: '1px dashed rgba(60, 64, 67, 0.4)',
+          borderRadius: '8px',
+          height: '140px',
+          width: '100%',
+          marginBottom: '16px',
+          pointerEvents: 'none'
+        }}
+      ></div>
+    ))
+  );
+
+  return (
+    <div className={styles.dashboard}>
+      <header className={styles.topNav}>
+        <div className={styles.navLeft}>
+          <button className={styles.menuBtn} onClick={() => setIsLeftMenuOpen(!isLeftMenuOpen)}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div className={styles.navTitle} onClick={onLogoClick} style={{ cursor: 'pointer' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8AB4F8" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            情報追蹤系統
+          </div>
+        </div>
+
+        <div className={styles.navCenter}>
+          <div className={styles.searchBar}>
+            <svg className={styles.searchIcon} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input 
+              type="text" 
+              className={styles.searchInput} 
+              placeholder="搜尋事件名稱、描述或 ID..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className={styles.navRight}>
+          <div className={styles.searchFilterWrapper}>
+            <select className={styles.selectInput} value={filterSeverity} onChange={(e) => setFilterSeverity(e.target.value)}>
+              <option value="all">所有風險</option>
+              <option value="high">高風險</option>
+              <option value="medium">中風險</option>
+              <option value="low">低風險</option>
+            </select>
+          </div>
+        </div>
+      </header>
+
+      <div className={styles.bodyLayout}>
+        {/* 🌟 修正：完全解鎖首頁側邊欄！移除 cursor 限制並綁定對應的隨時切換路由處理器 */}
+        <aside className={`${styles.leftSidebar} ${!isLeftMenuOpen ? styles.leftSidebarClosed : ''}`}>
+          <div className={styles.menuItemActive}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            事件總覽看板
+          </div>
+          <div className={styles.menuItem} onClick={onGraphNav} style={{ cursor: 'pointer' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+            當前拓撲分析
+          </div>
+          <div className={styles.menuItem} onClick={onProfileNav} style={{ cursor: 'pointer' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            實體關聯檔案
+          </div>
+        </aside>
+
+        <div className={styles.kanbanBoard}>
+          <div className={styles.kanbanColumn}>
+            <div className={styles.columnHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#9AA0A6' }}></div>
+                待分析事件
+              </div>
+              <span className={styles.columnCount}>{pendingEvents.length}</span>
+            </div>
+            <div className={styles.columnBody}>
+              {pendingEvents.length > 0 ? pendingEvents.map(renderCard) : renderEmptyPlaceholders()}
+            </div>
+          </div>
+
+          <div className={styles.kanbanColumn}>
+            <div className={styles.columnHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#8AB4F8' }}></div>
+                分析與監控中
+              </div>
+              <span className={styles.columnCount}>{monitoringEvents.length}</span>
+            </div>
+            <div className={styles.columnBody}>
+              {monitoringEvents.length > 0 ? monitoringEvents.map(renderCard) : renderEmptyPlaceholders()}
+            </div>
+          </div>
+
+          <div className={styles.kanbanColumn}>
+            <div className={styles.columnHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#81C995' }}></div>
+                已結案 / 歸檔
+              </div>
+              <span className={styles.columnCount}>{archivedEvents.length}</span>
+            </div>
+            <div className={styles.columnBody}>
+              {archivedEvents.length > 0 ? archivedEvents.map(renderCard) : renderEmptyPlaceholders()}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EventDashboard;
+</file>
+
+<file path="frontend/src/components/EventDashboard.module.css">
+/* 檔案位置：frontend/src/components/EventDashboard.module.css */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #5F6368 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #444746;
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #5F6368;
+}
+
+.dashboard {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw; height: 100vh;
+  background-color: #131314;
+  color: #E3E3E3;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* --- 🌟 修正 3：完美對稱的導覽列佈局 --- */
+.topNav {
+  height: 56px; 
+  flex-shrink: 0;
+  background-color: #1E1F22;
+  border-bottom: 1px solid #3C4043;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+/* 左右兩側設定固定寬度，確保中間區塊絕對置中 */
+.navLeft { width: 280px; display: flex; align-items: center; gap: 16px; }
+.navRight { width: 280px; display: flex; justify-content: flex-end; align-items: center; }
+
+/* 中央搜尋列區域 */
+.navCenter {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  margin: 0 20px;
+}
+
+.searchBar {
+  width: 100%;
+  max-width: 600px; /* 控制搜尋框的最大寬度 */
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: #9AA0A6;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  background-color: #282A2C;
+  border: 1px solid #3C4043;
+  border-radius: 6px; 
+  padding: 6px 12px 6px 36px;
+  color: #E3E3E3;
+  font-size: 13px;
+  outline: none;
+  transition: border 0.2s, background-color 0.2s;
+}
+
+.searchInput:focus { 
+  border: 1px solid #8AB4F8; 
+  background-color: #202124;
+}
+
+.selectInput {
+  background-color: #282A2C;
+  border: 1px solid #3C4043;
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: #E3E3E3;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+}
+
+.menuBtn { background: transparent; border: none; color: #9AA0A6; cursor: pointer; padding: 6px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+.menuBtn:hover { background-color: rgba(255, 255, 255, 0.08); color: #E3E3E3; }
+.navTitle { font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 8px; color: #E3E3E3; cursor: pointer; }
+
+/* --- 側邊欄與畫布 --- */
+.bodyLayout { display: flex; flex: 1; overflow: hidden; }
+
+.leftSidebar {
+  width: 240px; background-color: #131314; border-right: 1px solid #3C4043; display: flex; flex-direction: column; padding: 16px 8px; gap: 4px; transition: width 0.2s, padding 0.2s, opacity 0.2s; white-space: nowrap; overflow: hidden; flex-shrink: 0;
+}
+.leftSidebarClosed { width: 0; padding: 16px 0; border-right: none; opacity: 0; }
+.menuItem { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 6px; color: #9AA0A6; font-size: 13px; font-weight: 500; cursor: pointer; }
+.menuItem:hover { background-color: rgba(255, 255, 255, 0.04); color: #E3E3E3;}
+.menuItemActive { composes: menuItem; background-color: rgba(138, 180, 248, 0.1); color: #8AB4F8; }
+
+.kanbanBoard {
+  display: flex; flex: 1; gap: 20px; padding: 20px 24px; overflow-x: auto; align-items: flex-start; background-color: #131314; width: 100%; box-sizing: border-box;
+}
+
+.kanbanColumn {
+  flex: 1; min-width: 300px; background-color: #1E1F22; border: 1px solid #3C4043; border-radius: 8px; display: flex; flex-direction: column; max-height: calc(100vh - 100px);
+}
+
+.columnHeader { padding: 14px 16px; font-weight: 500; font-size: 14px; border-bottom: 1px solid #3C4043; display: flex; justify-content: space-between; align-items: center; color: #E3E3E3;}
+.columnCount { background-color: #282A2C; color: #9AA0A6; font-size: 12px; padding: 2px 8px; border-radius: 10px; }
+
+/* 讓 Column Body 佔滿剩餘空間並自動產生捲軸 */
+.columnBody { 
+  flex: 1;
+  padding: 12px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 10px; 
+  overflow-y: auto; 
+}
+
+.eventCard { background-color: #282A2C; border: 1px solid transparent; border-radius: 6px; padding: 14px; cursor: pointer; transition: background-color 0.15s, border-color 0.15s; }
+.eventCard:hover { background-color: #313335; border-color: #5F6368;}
+.cardTitle { font-size: 14px; font-weight: 500; color: #E3E3E3; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
+.cardDesc { font-size: 12px; color: #9AA0A6; line-height: 1.5; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cardTags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+
+.tag { font-size: 11px; padding: 2px 6px; border-radius: 4px; border: 1px solid #444746; color: #C4C7C5; background-color: transparent; }
+.tagHigh { color: #F28B82; border-color: rgba(242,139,130,0.3); }
+.tagMedium { color: #FDD663; border-color: rgba(253,214,99,0.3); }
+.tagLow { color: #81C995; border-color: rgba(129,201,149,0.3); }
+
+.cardFooter { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #5F6368; }
+.stats { display: flex; gap: 12px; color: #9AA0A6; }
+.statItem { display: flex; align-items: center; gap: 4px; }
+</file>
+
+<file path="frontend/src/components/graphConfig.js">
+// 檔案位置：frontend/src/components/graphConfig.js
+
+export const USE_MOCK_DATA = true; 
+
+export const MOCK_ELEMENTS = [
+  // --- 🌟 節點 (Nodes) 區塊：已將所有帳號完整補齊，避免連線找不到源頭 ---
+  { data: { id: 'source_media', label: '官方新聞源', pagerank: 45, is_rumour: false, followers: '1.2M', account_age: '8 年', source_device: 'TweetDeck', activity_level: '極高', participated_events: [{ id: 'bostonbombing', title: '波士頓馬拉松爆炸案', date: '2013-04-15', impact_score: 40 }] } },
+  { data: { id: 'user_verified_01', label: '認證機構帳號', pagerank: 35, is_rumour: false, followers: '450K', account_age: '5 年', source_device: 'Web App', activity_level: '高', participated_events: [{ id: 'charliehebdo', title: '查理週刊槍擊案', date: '2015-01-07', impact_score: 35 }] } },
+  
+  // 這裡就是原本被我不小心刪掉的 user_normal_02，現在補回來了！
+  { data: { id: 'user_normal_02', label: '中繼轉發節點 A', pagerank: 22, is_rumour: false, followers: '1,204', account_age: '2 年', source_device: 'iPhone', activity_level: '中', participated_events: [] } },
+  { data: { id: 'user_normal_03', label: '中繼轉發節點 B', pagerank: 25, is_rumour: false, followers: '3,420', account_age: '3 年', source_device: 'Android', activity_level: '中', participated_events: [{ id: 'taiwan-quake', title: '花蓮地震不實畫面', date: '2024-04-03', impact_score: 15 }] } },
+  
+  // 謠言核心與網軍節點
+  { data: { 
+    id: 'rumour_center', label: '謠言擴散源頭', pagerank: 38, is_rumour: true, followers: '85K', account_age: '1.5 年', source_device: 'Web App', activity_level: '極高 (異常)', 
+    participated_events: [
+      { id: 'covid19-5g', title: '5G 傳播新冠病毒', date: '2020-04-05', impact_score: 95, description: '該節點在此事件中作為第一波假消息發射源。' }, 
+      { id: 'election2020', title: '美國大選舞弊指控', date: '2020-11-04', impact_score: 88, description: '大量轉發未經驗證的計票機作弊影片。' }, 
+      { id: 'ukraine-ghost', title: '基輔之鬼', date: '2022-02-25', impact_score: 72, description: '發布遊戲畫面偽裝成真實戰爭影片。' },
+      { id: 'paris-olympics', title: '巴黎奧運假新聞', date: '2024-07-26', impact_score: 65, description: '散播針對特定選手性別的惡意言論。' },
+      { id: 'taiwan-quake', title: '花蓮地震不實畫面', date: '2024-04-03', impact_score: 80, description: '將日本海嘯舊畫面移花接木為台灣地震。' },
+      { id: 'putinmissing', title: '普丁失蹤傳聞', date: '2015-03-11', impact_score: 45, description: '參與早期的政治陰謀論擴散。' }
+    ] 
+  } },
+  { data: { id: 'bot_01', label: '異常帳號 Alpha', pagerank: 20, is_rumour: true, followers: '12', account_age: '3 天', source_device: 'API/Bot', activity_level: '高 (自動化)', participated_events: [{ id: 'election2020', title: '美國大選舞弊指控', date: '2020-11-04', impact_score: 10 }] } },
+  { data: { id: 'bot_02', label: '異常帳號 Beta', pagerank: 20, is_rumour: true, followers: '8', account_age: '2 天', source_device: 'API/Bot', activity_level: '高 (自動化)', participated_events: [{ id: 'putinmissing', title: '普丁失蹤傳聞', date: '2015-03-11', impact_score: 5 }] } },
+  { data: { id: 'bot_03', label: '自動化轉發機器人', pagerank: 20, is_rumour: true, followers: '150', account_age: '1 個月', source_device: 'API/Bot', activity_level: '高 (批次處理)', participated_events: [{ id: 'hurricanesandy', title: '颶風珊迪假照片', date: '2012-10-29', impact_score: 25 }, { id: 'mh370', title: '馬航 MH370 失聯', date: '2014-03-08', impact_score: 30 }] } },
+  { data: { id: 'user_misled_04', label: '受影響受眾 X', pagerank: 24, is_rumour: true, followers: '450', account_age: '4 年', source_device: 'iPhone', activity_level: '低', participated_events: [] } },
+  { data: { id: 'user_misled_05', label: '受影響受眾 Y', pagerank: 22, is_rumour: true, followers: '890', account_age: '5 年', source_device: 'Android', activity_level: '低', participated_events: [] } },
+
+  // --- 🌟 連線 (Edges) 區塊：確保上面的節點全部都在，才不會報錯 ---
+  { data: { source: 'source_media', target: 'user_verified_01', is_rumour: false } },
+  { data: { source: 'source_media', target: 'user_normal_02', is_rumour: false } },
+  { data: { source: 'user_verified_01', target: 'user_normal_03', is_rumour: false } },
+  { data: { source: 'user_normal_02', target: 'rumour_center', is_rumour: true } }, 
+  { data: { source: 'rumour_center', target: 'bot_01', is_rumour: true } },
+  { data: { source: 'rumour_center', target: 'bot_02', is_rumour: true } },
+  { data: { source: 'rumour_center', target: 'bot_03', is_rumour: true } },
+  { data: { source: 'bot_01', target: 'user_misled_04', is_rumour: true } },
+  { data: { source: 'bot_02', target: 'user_misled_05', is_rumour: true } },
+  { data: { source: 'user_normal_03', target: 'user_misled_04', is_rumour: true } }
+];
+
+export const cyStylesheet = [
+  { selector: 'node, edge', style: { 'transition-property': 'opacity', 'transition-duration': '0.3s' } },
+  { selector: 'node', style: { 'label': 'data(label)', 'text-valign': 'bottom', 'text-margin-y': 6, 'font-size': '11px', 'font-family': 'system-ui, -apple-system, sans-serif', 'width': 'data(pagerank)', 'height': 'data(pagerank)', 'color': '#E8EAED', 'text-background-opacity': 0.85, 'text-background-color': '#202124', 'text-background-padding': '4px', 'text-background-shape': 'roundrectangle', 'border-width': 1.5 } },
+  { selector: 'node[!is_rumour]', style: { 'background-color': '#8AB4F8', 'border-color': '#A8C7FA' } },
+  { selector: 'node[?is_rumour]', style: { 'background-color': '#F28B82', 'border-color': '#FF8A65' } },
+  { selector: 'edge', style: { 'width': 1.5, 'target-arrow-shape': 'triangle', 'curve-style': 'bezier', 'arrow-scale': 1.0 } },
+  { selector: 'edge[!is_rumour]', style: { 'line-color': '#5F6368', 'target-arrow-color': '#5F6368' } },
+  { selector: 'edge[?is_rumour]', style: { 'line-color': '#8C4A46', 'target-arrow-color': '#8C4A46' } },
+  { selector: '.dimmed', style: { 'opacity': 0.15 } }
+];
+
+export const cyLayout = { name: 'concentric', padding: 60, minNodeSpacing: 65, animate: false };
+</file>
+
+<file path="frontend/src/components/NetworkGraph.module.css">
+/* 檔案位置：frontend/src/components/NetworkGraph.module.css */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #5F6368 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #444746;
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #5F6368;
+}
+
+.dashboard {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #131314; /* 🌟 完美還原：Gemini 曜石黑底色 */
+  color: #E3E3E3; 
+  font-family: system-ui, -apple-system, "Microsoft JhengHei", sans-serif;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* 導覽列 */
+.topNav {
+  height: 56px;
+  flex-shrink: 0;
+  background-color: #1E1F22;
+  border-bottom: 1px solid #3C4043;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.navLeft { width: 280px; display: flex; align-items: center; gap: 16px; }
+.navRight { width: 280px; display: flex; justify-content: flex-end; align-items: center; }
+
+.navCenter {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  margin: 0 20px;
+}
+
+.searchBar {
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: #9AA0A6;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  background-color: #282A2C;
+  border: 1px solid #3C4043;
+  border-radius: 6px;
+  padding: 6px 12px 6px 36px;
+  color: #E3E3E3;
+  font-size: 13px;
+  outline: none;
+  transition: border 0.2s, background-color 0.2s;
+}
+
+.searchInput:focus { 
+  border: 1px solid #8AB4F8; 
+  background-color: #202124;
+}
+
+.menuBtn { background: transparent; border: none; color: #9AA0A6; cursor: pointer; padding: 6px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+.menuBtn:hover { background-color: rgba(255, 255, 255, 0.08); color: #E3E3E3; }
+.navTitle { font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 8px; color: #E3E3E3; cursor: pointer; }
+
+/* 下半部佈局 */
+.bodyLayout { display: flex; flex: 1; overflow: hidden; }
+
+.leftSidebar {
+  width: 240px; background-color: #131314; border-right: 1px solid #3C4043; display: flex; flex-direction: column; padding: 16px 8px; gap: 4px; transition: width 0.2s, padding 0.2s, opacity 0.2s; white-space: nowrap; overflow: hidden; flex-shrink: 0;
+}
+.leftSidebarClosed { width: 0; padding: 16px 0; border-right: none; opacity: 0; }
+.menuItem { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 6px; color: #9AA0A6; font-size: 13px; font-weight: 500; cursor: pointer; }
+.menuItem:hover { background-color: rgba(255, 255, 255, 0.04); color: #E3E3E3;}
+.menuItemActive { composes: menuItem; background-color: rgba(138, 180, 248, 0.1); color: #8AB4F8; }
+
+.contentWrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+.kpiGrid { display: flex; gap: 16px; padding: 24px 24px 0 24px; flex-shrink: 0; }
+.card { flex: 1; background-color: #1E1F22; border: 1px solid #3C4043; border-radius: 8px; padding: 16px 20px; }
+.kpiLabel { font-size: 12px; color: #9AA0A6; margin-bottom: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpiValue { font-size: 24px; font-weight: 500; color: #E3E3E3; }
+.kpiValueDanger { composes: kpiValue; color: #F28B82; }
+
+.mainWorkspace { flex: 1; display: flex; padding: 20px 24px 24px 24px; min-height: 0; }
+
+/* 🌟 完美還原：深淵黑畫布＋極細坐標網格 */
+.graphContainer {
+  flex: 1;
+  background-color: #0A0A0B; 
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 24px 24px;
+  border: 1px solid #3C4043;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.graphHeader { padding: 14px 20px; border-bottom: 1px solid #3C4043; display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 500; color: #E3E3E3; z-index: 10; background-color: rgba(30, 31, 34, 0.85); backdrop-filter: blur(4px); }
+.legendContainer { display: flex; gap: 16px; font-size: 12px; color: #9AA0A6; }
+.legendItem { display: flex; align-items: center; gap: 6px; }
+.dotBlue { width: 8px; height: 8px; border-radius: 50%; background-color: #8AB4F8; }
+.dotRed { width: 8px; height: 8px; border-radius: 50%; background-color: #F28B82; }
+
+/* 🌟 修正：控制按鈕移至「左下角」，永遠不被側邊欄遮擋 */
+.zoomControls {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;  /* 從 right 改為 left */
+  display: flex;
+  flex-direction: column;
+  background-color: #2D2E30;
+  border: 1px solid #3C4043;
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 15;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.zoomBtn { background: transparent; border: none; color: #9AA0A6; padding: 8px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #3C4043; transition: background-color 0.2s, color 0.2s; }
+.zoomBtn:last-child { border-bottom: none; }
+.zoomBtn:hover { background-color: rgba(255, 255, 255, 0.08); color: #E8EAED; }
+
+/* 屬性側邊面板 */
+.sidePanel {
+  position: absolute; top: 0; right: 0; width: 360px; height: 100%; background-color: #1E1F22; border-left: 1px solid #3C4043; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; z-index: 999; box-shadow: -8px 0 24px rgba(0,0,0,0.4);
+}
+.sidePanelOpen { transform: translateX(0); }
+
+.panelHeader { padding: 14px 20px; border-bottom: 1px solid #3C4043; display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 500; color: #E3E3E3; }
+.closeBtn { background: transparent; border: none; color: #9AA0A6; font-size: 18px; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; }
+.closeBtn:hover { color: #E3E3E3; }
+
+.panelContent { padding: 24px 20px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; }
+
+.nodeIdentity { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background-color: #131314; border: 1px solid #444746; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 500; color: #9AA0A6; }
+.nodeTitles { display: flex; flex-direction: column; }
+.nodeName { font-size: 15px; font-weight: 500; color: #E3E3E3; }
+.nodeId { font-size: 12px; color: #9AA0A6; font-family: monospace; }
+
+.statusPill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; width: fit-content; }
+.statusPillSafe { composes: statusPill; background-color: rgba(138, 180, 248, 0.1); color: #8AB4F8; border: 1px solid rgba(138, 180, 248, 0.2); }
+.statusPillDanger { composes: statusPill; background-color: rgba(242, 139, 130, 0.1); color: #F28B82; border: 1px solid rgba(242, 139, 130, 0.2); }
+.pulseDotBlue { width: 6px; height: 6px; border-radius: 50%; background-color: #8AB4F8; }
+.pulseDotRed { width: 6px; height: 6px; border-radius: 50%; background-color: #F28B82; }
+
+.divider { height: 1px; background-color: #444746; width: 100%; }
+.statsGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.statBox { display: flex; flex-direction: column; gap: 4px; }
+.statLabel { font-size: 12px; color: #9AA0A6; }
+.statValue { font-size: 14px; color: #E3E3E3; font-weight: 500; }
+
+/* 檔案位置：frontend/src/components/NetworkGraph.module.css */
+
+* { scrollbar-width: thin; scrollbar-color: #5F6368 transparent; }
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background-color: #444746; border-radius: 10px; }
+*::-webkit-scrollbar-thumb:hover { background-color: #5F6368; }
+
+.dashboard { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; background-color: #131314; color: #E3E3E3; font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; margin: 0; padding: 0; overflow: hidden; box-sizing: border-box; }
+
+.topNav { height: 56px; flex-shrink: 0; background-color: #1E1F22; border-bottom: 1px solid #3C4043; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+.navLeft { width: 280px; display: flex; align-items: center; gap: 16px; }
+.navRight { width: 280px; display: flex; justify-content: flex-end; align-items: center; }
+.navCenter { flex: 1; display: flex; justify-content: center; margin: 0 20px; }
+
+.searchBar { width: 100%; max-width: 600px; position: relative; display: flex; align-items: center; }
+.searchIcon { position: absolute; left: 12px; color: #9AA0A6; pointer-events: none; }
+.searchInput { width: 100%; background-color: #282A2C; border: 1px solid #3C4043; border-radius: 6px; padding: 6px 12px 6px 36px; color: #E3E3E3; font-size: 13px; outline: none; transition: border 0.2s, background-color 0.2s; }
+.searchInput:focus { border: 1px solid #8AB4F8; background-color: #202124; }
+.menuBtn { background: transparent; border: none; color: #9AA0A6; cursor: pointer; padding: 6px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+.menuBtn:hover { background-color: rgba(255, 255, 255, 0.08); color: #E3E3E3; }
+.navTitle { font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 8px; color: #E3E3E3; cursor: pointer; }
+
+.bodyLayout { display: flex; flex: 1; overflow: hidden; }
+.leftSidebar { width: 240px; background-color: #131314; border-right: 1px solid #3C4043; display: flex; flex-direction: column; padding: 16px 8px; gap: 4px; transition: width 0.2s, padding 0.2s, opacity 0.2s; white-space: nowrap; overflow: hidden; flex-shrink: 0; }
+.leftSidebarClosed { width: 0; padding: 16px 0; border-right: none; opacity: 0; }
+.menuItem { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 6px; color: #9AA0A6; font-size: 13px; font-weight: 500; cursor: pointer; }
+.menuItem:hover { background-color: rgba(255, 255, 255, 0.04); color: #E3E3E3;}
+.menuItemActive { composes: menuItem; background-color: rgba(138, 180, 248, 0.1); color: #8AB4F8; }
+
+.contentWrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.kpiGrid { display: flex; gap: 16px; padding: 24px 24px 0 24px; flex-shrink: 0; }
+.card { flex: 1; background-color: #1E1F22; border: 1px solid #3C4043; border-radius: 8px; padding: 16px 20px; }
+.kpiLabel { font-size: 12px; color: #9AA0A6; margin-bottom: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpiValue { font-size: 24px; font-weight: 500; color: #E3E3E3; }
+.kpiValueDanger { composes: kpiValue; color: #F28B82; }
+.mainWorkspace { flex: 1; display: flex; padding: 20px 24px 24px 24px; min-height: 0; }
+
+.graphContainer { flex: 1; background-color: #0A0A0B; background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px); background-size: 24px 24px; border: 1px solid #3C4043; border-radius: 8px; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+.graphHeader { padding: 14px 20px; border-bottom: 1px solid #3C4043; display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 500; color: #E3E3E3; z-index: 10; background-color: rgba(30, 31, 34, 0.85); backdrop-filter: blur(4px); }
+.legendContainer { display: flex; gap: 16px; font-size: 12px; color: #9AA0A6; }
+.legendItem { display: flex; align-items: center; gap: 6px; }
+.dotBlue { width: 8px; height: 8px; border-radius: 50%; background-color: #8AB4F8; }
+.dotRed { width: 8px; height: 8px; border-radius: 50%; background-color: #F28B82; }
+
+.zoomControls { position: absolute; bottom: 24px; left: 24px; display: flex; flex-direction: column; background-color: #2D2E30; border: 1px solid #3C4043; border-radius: 8px; overflow: hidden; z-index: 15; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.zoomBtn { background: transparent; border: none; color: #9AA0A6; padding: 8px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #3C4043; transition: background-color 0.2s, color 0.2s; }
+.zoomBtn:last-child { border-bottom: none; }
+.zoomBtn:hover { background-color: rgba(255, 255, 255, 0.08); color: #E8EAED; }
+
+.sidePanel { position: absolute; top: 0; right: 0; width: 360px; height: 100%; background-color: #1E1F22; border-left: 1px solid #3C4043; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; z-index: 999; box-shadow: -8px 0 24px rgba(0,0,0,0.4); }
+.sidePanelOpen { transform: translateX(0); }
+.panelHeader { padding: 14px 20px; border-bottom: 1px solid #3C4043; display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 500; color: #E3E3E3; }
+.closeBtn { background: transparent; border: none; color: #9AA0A6; font-size: 18px; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; }
+.closeBtn:hover { color: #E3E3E3; }
+.panelContent { padding: 24px 20px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; }
+
+.nodeIdentity { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background-color: #131314; border: 1px solid #444746; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 500; color: #9AA0A6; }
+.nodeTitles { display: flex; flex-direction: column; }
+.nodeName { font-size: 15px; font-weight: 500; color: #E3E3E3; }
+.nodeId { font-size: 12px; color: #9AA0A6; font-family: monospace; }
+.statusPill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; width: fit-content; }
+.statusPillSafe { composes: statusPill; background-color: rgba(138, 180, 248, 0.1); color: #8AB4F8; border: 1px solid rgba(138, 180, 248, 0.2); }
+.statusPillDanger { composes: statusPill; background-color: rgba(242, 139, 130, 0.1); color: #F28B82; border: 1px solid rgba(242, 139, 130, 0.2); }
+.pulseDotBlue { width: 6px; height: 6px; border-radius: 50%; background-color: #8AB4F8; }
+.pulseDotRed { width: 6px; height: 6px; border-radius: 50%; background-color: #F28B82; }
+.divider { height: 1px; background-color: #444746; width: 100%; flex-shrink: 0; }
+.statsGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.statBox { display: flex; flex-direction: column; gap: 4px; }
+.statLabel { font-size: 12px; color: #9AA0A6; }
+.statValue { font-size: 14px; color: #E3E3E3; font-weight: 500; }
+
+/* 🌟 新增：跨事件歷史追蹤的字卡樣式 */
+.historySection { display: flex; flex-direction: column; gap: 12px; }
+.sectionTitle { font-size: 13px; font-weight: 500; color: #E3E3E3; margin-bottom: 4px; }
+.historyCard { background-color: #1E1F22; border: 1px solid #3C4043; border-radius: 8px; padding: 12px 16px; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; display: flex; flex-direction: column; gap: 6px; }
+.historyCard:hover { background-color: #282A2C; border-color: #8AB4F8; }
+.historyTitle { font-size: 13px; font-weight: 500; color: #E3E3E3; display: flex; align-items: center; justify-content: space-between; }
+.historyDate { font-size: 11px; color: #9AA0A6; }
+.historyEmpty { font-size: 13px; color: #5F6368; padding: 12px; text-align: center; border: 1px dashed #3C4043; border-radius: 8px; }
+
+.historySection { display: flex; flex-direction: column; gap: 12px; }
+.sectionTitle { font-size: 13px; font-weight: 500; color: #E3E3E3; margin-bottom: 4px; }
+.historyCard { background-color: #1E1F22; border: 1px solid #3C4043; border-radius: 8px; padding: 12px 16px; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; display: flex; flex-direction: column; gap: 6px; }
+.historyCard:hover { background-color: #282A2C; border-color: #8AB4F8; }
+.historyTitle { font-size: 13px; font-weight: 500; color: #E3E3E3; display: flex; align-items: center; justify-content: space-between; }
+.historyDate { font-size: 11px; color: #9AA0A6; }
+.historyEmpty { font-size: 13px; color: #5F6368; padding: 12px; text-align: center; border: 1px dashed #3C4043; border-radius: 8px; }
+
+/* 🌟 新增：使用者頭像 Hover 提示與查看更多按鈕 */
+.nodeIdentityClickable { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 8px; border-radius: 8px; transition: background-color 0.2s; margin: -8px; }
+.nodeIdentityClickable:hover { background-color: rgba(255,255,255,0.05); }
+
+.viewMoreBtn { width: 100%; background: transparent; border: 1px solid #3C4043; border-radius: 8px; color: #8AB4F8; padding: 10px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s; text-align: center; }
+.viewMoreBtn:hover { background: rgba(138, 180, 248, 0.08); }
+</file>
+
+<file path="frontend/src/components/UserProfile.jsx">
+// 檔案位置：frontend/src/components/UserProfile.jsx
+import React, { useState } from 'react';
+import styles from './UserProfile.module.css';
+import { MOCK_ELEMENTS } from './graphConfig';
+
+const UserProfile = ({ user, onBack, onEventClick, onLogoClick, onUserClick }) => {
+  const [isLeftMenuOpen, setIsLeftMenuOpen] = useState(false);
+  const [sortKey, setSortKey] = useState('impact-desc');
+
+  // 🌟 核心防呆與空白判定：若從選單點擊進入且無傳入資料，建立佔位骨架物件
+  const isDataEmpty = !user;
+  const userToDisplay = user || {
+    id: '---',
+    label: '未選取實體 (請使用上方搜尋欄)',
+    followers: '-',
+    source_device: '-',
+    activity_level: '-',
+    is_rumour: false,
+    participated_events: []
+  };
+
+  const eventsArray = Array.isArray(userToDisplay.participated_events) ? userToDisplay.participated_events : [];
+  
+  const sortedEvents = [...eventsArray].sort((a, b) => {
+    if (sortKey === 'impact-desc') return (b.impact_score || 0) - (a.impact_score || 0);
+    if (sortKey === 'impact-asc') return (a.impact_score || 0) - (b.impact_score || 0);
+    
+    const timeA = a.date ? new Date(a.date).getTime() : 0;
+    const timeB = b.date ? new Date(b.date).getTime() : 0;
+    if (sortKey === 'date-desc') return timeB - timeA;
+    if (sortKey === 'date-asc') return timeA - timeB;
+    return 0;
+  });
+
+  const eventCount = eventsArray.length;
+  const maxImpact = eventCount > 0 ? [...eventsArray].sort((a, b) => b.impact_score - a.impact_score)[0].impact_score : 0;
+  
+  // 專業級 OSINT 評級分析演算法
+  let riskScore = 0;
+  let riskLevel = 'safe';
+  let riskLabel = '🔵 官方源 / 認證安全節點';
+  let scoreLabel = '公眾影響力 (Influence)';
+
+  if (userToDisplay.is_rumour) {
+    scoreLabel = '綜合威脅指數 (Threat Index)';
+    riskScore = Math.min(99, Math.round(40 + (maxImpact * 0.4) + (eventCount * 5)));
+    if (riskScore >= 80) {
+      riskLevel = 'critical';
+      riskLabel = '🔴 核心作惡節點 (APT / 網軍頭目)';
+    } else if (riskScore >= 60) {
+      riskLevel = 'high';
+      riskLabel = '🟠 高風險異常實體 (側翼 / 機器人)';
+    } else {
+      riskLevel = 'medium';
+      riskLabel = '🟡 中等風險 (受誤導之傳播者)';
+    }
+  } else {
+    riskScore = Math.min(99, Math.round((maxImpact * 0.5) + (eventCount * 2) + (userToDisplay.pagerank || 0)));
+  }
+
+  const displayScore = eventCount > 0 ? riskScore : (userToDisplay.pagerank || 0);
+
+  return (
+    <div className={styles.dashboard}>
+      <header className={styles.topNav}>
+        <div className={styles.navLeft}>
+          <button className={styles.menuBtn} onClick={() => setIsLeftMenuOpen(!isLeftMenuOpen)}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          <div className={styles.navTitle} onClick={onLogoClick} style={{ cursor: 'pointer' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8AB4F8" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            情報追蹤系統
+          </div>
+        </div>
+
+        {/* 🌟 修正：在帳戶頁面中央精確嵌入全域搜尋欄位，支援 Enter 檢索反查帳號 */}
+        <div className={styles.navCenter}>
+          <div className={styles.searchBar}>
+            <svg className={styles.searchIcon} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input 
+              type="text" 
+              className={styles.searchInput} 
+              placeholder="輸入帳號 ID 進行全局檢索 (例如: rumour_center)..." 
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.target.value && onUserClick) {
+                  const targetId = e.target.value.trim();
+                  const found = MOCK_ELEMENTS.find(el => el.data.id === targetId || el.data.label === targetId);
+                  if (found) onUserClick(found.data);
+                  else alert(`系統情報庫中查無此節點實體: ${targetId}`);
+                }
+              }}
+            />
+          </div>
+        </div>
+
+        <div className={styles.navRight}>
+          <button className={styles.backBtn} onClick={onBack}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            返回拓撲圖
+          </button>
+        </div>
+      </header>
+
+      <div className={styles.bodyLayout}>
+        <aside className={`${styles.leftSidebar} ${!isLeftMenuOpen ? styles.leftSidebarClosed : ''}`}>
+          <div className={styles.menuItem} onClick={onLogoClick}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>事件總覽看板
+          </div>
+          <div className={styles.menuItem} onClick={onBack}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>當前拓撲分析
+          </div>
+          <div className={styles.menuItemActive}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>實體關聯檔案
+          </div>
+        </aside>
+
+        <main className={styles.mainWorkspace}>
+          <section className={styles.profileCard}>
+            <div className={styles.avatarSection}>
+              <div className={styles.avatar}>{userToDisplay.label ? userToDisplay.label.substring(0, 1) : '@'}</div>
+            </div>
+
+            <div className={styles.infoSection}>
+              <div className={styles.nameBlock}>
+                {/* 🌟 修正 1：對齊新視覺標準 —— 名稱 ➔ ID ➔ 縮小化情報標籤 */}
+                <div className={styles.userName}>@{userToDisplay.label}</div>
+                <div className={styles.userId}>ID: {userToDisplay.id}</div>
+                {!isDataEmpty && (
+                  <div className={`${styles.riskText} ${styles[riskLevel]}`} style={{ fontSize: '11px', fontWeight: '500', marginTop: '6px', opacity: 0.95 }}>
+                    {riskLabel}
+                  </div>
+                )}
+              </div>
+              <div className={styles.statsGrid}>
+                <div className={styles.statBox}>
+                  <span className={styles.statLabel}>{scoreLabel}</span>
+                  <span className={`${styles.statValue} ${userToDisplay.is_rumour ? styles.riskCriticalText : ''}`}>{isDataEmpty ? '-' : displayScore} <span style={{fontSize: 12, color: '#5F6368'}}>{!isDataEmpty && '/ 99'}</span></span>
+                </div>
+                <div className={styles.statBox}><span className={styles.statLabel}>跨事件活動次數</span><span className={styles.statValue}>{isDataEmpty ? '-' : eventCount} <span style={{fontSize: 12, color: '#5F6368'}}>{!isDataEmpty && '次'}</span></span></div>
+                <div className={styles.statBox}><span className={styles.statLabel}>主要發文設備</span><span className={styles.statValue}>{userToDisplay.source_device || '-'}</span></div>
+                <div className={styles.statBox}><span className={styles.statLabel}>帳號活躍度</span><span className={styles.statValue}>{userToDisplay.activity_level || '-'}</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.eventsSection}>
+            <div className={styles.sectionHeader}>
+              <div className={styles.sectionTitle}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA0A6" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                歷史活動軌跡 (Historical Trace)
+              </div>
+              {!isDataEmpty && (
+                <select className={styles.selectInput} value={sortKey} onChange={(e) => setSortKey(e.target.value)}>
+                  <option value="impact-desc">權重指標：從高到低</option>
+                  <option value="impact-asc">權重指標：從低到高</option>
+                  <option value="date-desc">事件年份：從新到舊</option>
+                  <option value="date-asc">事件年份：從舊到新</option>
+                </select>
+              )}
+            </div>
+            
+            {/* 🌟 修正 2：當無資料導入時，卡片絕不塌陷消失，改用純靜態、內部無跑馬燈流動線條的留白虛線框，且不顯示任何文字提醒 */}
+            {isDataEmpty ? (
+              <div className={styles.cardList}>
+                {[1, 2, 3].map((placeholderId) => (
+                  <div key={placeholderId} className={styles.skeletonCardStatic}></div>
+                ))}
+              </div>
+            ) : sortedEvents.length > 0 ? (
+              <div className={styles.cardList}>
+                {sortedEvents.map(ev => (
+                  <div key={ev.id} className={styles.eventCard} onClick={() => onEventClick(ev.id)}>
+                    <div className={styles.eventCardHeader}>
+                      <div className={styles.eventCardTitle}>
+                        {ev.title}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8AB4F8" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                      </div>
+                      <span className={styles.eventDate}>{ev.date}</span>
+                    </div>
+                    <div className={styles.eventCardBody}>
+                      <div className={styles.eventImpactBadge}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        個體涉入權重: {ev.impact_score}
+                      </div>
+                      <p className={styles.eventDesc}>{ev.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </section>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default UserProfile;
+</file>
+
+<file path="frontend/src/components/UserProfile.module.css">
+/* 檔案位置：frontend/src/components/UserProfile.module.css */
+
+* { scrollbar-width: thin; scrollbar-color: #5F6368 transparent; }
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background-color: #444746; border-radius: 10px; }
+*::-webkit-scrollbar-thumb:hover { background-color: #5F6368; }
+
+.dashboard { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; background-color: #131314; color: #E3E3E3; font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box; }
+
+.topNav { height: 56px; flex-shrink: 0; background-color: #1E1F22; border-bottom: 1px solid #3C4043; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+.navLeft { width: 280px; display: flex; align-items: center; gap: 16px; }
+.navRight { width: 280px; display: flex; justify-content: flex-end; align-items: center; }
+
+/* 🌟 新增：帳戶頁面頂部中央搜尋區佈局樣式 */
+.navCenter {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  margin: 0 20px;
+}
+
+.searchBar {
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: #9AA0A6;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  background-color: #282A2C;
+  border: 1px solid #3C4043;
+  border-radius: 6px;
+  padding: 6px 12px 6px 36px;
+  color: #E3E3E3;
+  font-size: 13px;
+  outline: none;
+  transition: border 0.2s, background-color 0.2s;
+}
+
+.searchInput:focus { 
+  border: 1px solid #8AB4F8; 
+  background-color: #202124;
+}
+
+.menuBtn { background: transparent; border: none; color: #9AA0A6; cursor: pointer; padding: 6px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+.menuBtn:hover { background-color: rgba(255, 255, 255, 0.08); color: #E3E3E3; }
+.navTitle { font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 8px; color: #E3E3E3; cursor: pointer; }
+
+.backBtn { background: transparent; border: 1px solid #3C4043; color: #9AA0A6; padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s, color 0.2s; }
+.backBtn:hover { background: #282A2C; color: #E3E3E3; }
+
+.bodyLayout { display: flex; flex: 1; overflow: hidden; background-color: #131314; }
+.leftSidebar { width: 240px; background-color: #131314; border-right: 1px solid #3C4043; display: flex; flex-direction: column; padding: 16px 8px; gap: 4px; transition: width 0.2s, padding 0.2s, opacity 0.2s; white-space: nowrap; overflow: hidden; flex-shrink: 0; }
+.leftSidebarClosed { width: 0; padding: 16px 0; border-right: none; opacity: 0; }
+.menuItem { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 6px; color: #9AA0A6; font-size: 13px; font-weight: 500; cursor: pointer; background-color: transparent; }
+.menuItem:hover { background-color: rgba(255, 255, 255, 0.04); color: #E3E3E3;}
+.menuItemActive { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 6px; color: #8AB4F8; font-size: 13px; font-weight: 500; cursor: pointer; background-color: rgba(138, 180, 248, 0.1); }
+
+.mainWorkspace { flex: 1; padding: 32px 40px; display: flex; flex-direction: column; gap: 32px; overflow-y: auto; max-width: 1400px; margin: 0 auto; width: 100%; }
+
+.profileCard { background-color: #1E1F22; border: 1px solid #3C4043; border-radius: 12px; padding: 32px; display: flex; gap: 32px; align-items: center; }
+.avatarSection { display: flex; flex-direction: column; align-items: center; gap: 16px; min-width: 160px; }
+.avatar { width: 96px; height: 96px; border-radius: 50%; background-color: #131314; border: 2px solid #3C4043; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 500; color: #9AA0A6; }
+.infoSection { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+.nameBlock { display: flex; flex-direction: column; gap: 6px; }
+.userName { font-size: 28px; font-weight: 600; color: #E3E3E3; }
+.userId { font-size: 14px; color: #9AA0A6; font-family: monospace; }
+.statsGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.statBox { background-color: #131314; border: 1px solid #3C4043; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.statLabel { font-size: 13px; color: #9AA0A6; font-weight: 500; }
+.statValue { font-size: 20px; color: #E3E3E3; font-weight: 600; font-family: monospace; }
+.riskCriticalText { color: #F28B82; }
+
+.riskText { font-family: system-ui, -apple-system, sans-serif; font-weight: 500; }
+.critical { color: #F28B82; }
+.high { color: #F6AEA9; }
+.medium { color: #FDD663; }
+.safe { color: #8AB4F8; }
+
+.eventsSection { display: flex; flex-direction: column; gap: 16px; flex: 1; }
+.sectionHeader { display: flex; justify-content: space-between; align-items: center; padding-bottom: 4px; }
+.sectionTitle { font-size: 14px; font-weight: 500; color: #E3E3E3; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.selectInput { background-color: #1E1F22; border: 1px solid #3C4043; border-radius: 6px; padding: 6px 14px; color: #E3E3E3; font-size: 13px; outline: none; cursor: pointer; transition: border-color 0.2s; }
+.selectInput:focus { border-color: #8AB4F8; }
+
+.cardList { display: flex; flex-direction: column; gap: 14px; }
+.eventCard { background-color: #1E1F22; border: 1px solid #3C4043; border-radius: 8px; padding: 20px 24px; cursor: pointer; display: flex; flex-direction: column; gap: 12px; transition: background-color 0.15s, border-color 0.15s, transform 0.15s; }
+.eventCard:hover { background-color: #282A2C; border-color: #5F6368; transform: translateY(-2px); }
+.eventCardHeader { display: flex; justify-content: space-between; align-items: center; }
+.eventCardTitle { font-size: 15px; font-weight: 500; color: #E3E3E3; display: flex; align-items: center; gap: 6px; }
+.eventDate { font-size: 12px; color: #9AA0A6; font-family: monospace; }
+.eventCardBody { display: flex; flex-direction: column; gap: 10px; }
+.eventImpactBadge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #FDD663; background-color: rgba(253, 214, 99, 0.08); border: 1px solid rgba(253, 214, 99, 0.15); padding: 4px 8px; border-radius: 4px; width: fit-content; font-weight: 500; font-family: monospace; }
+.eventDesc { font-size: 13px; color: #9AA0A6; line-height: 1.6; margin: 0; }
+.emptyLog { padding: 40px; text-align: center; color: #5F6368; font-size: 14px; border: 1px dashed #3C4043; border-radius: 8px; }
+
+/* 🌟 新增：空白初始狀態下的「骨架卡片佔位屏」動畫樣式表 */
+.skeletonCard {
+  background-color: #1E1F22;
+  border: 1px solid rgba(60, 64, 67, 0.3);
+  border-radius: 8px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  pointer-events: none;
+}
+
+.skeletonHeader { display: flex; justify-content: space-between; align-items: center; }
+
+.skeletonTitle {
+  width: 200px; height: 14px;
+  background: linear-gradient(90deg, #282A2C 25%, #313335 50%, #282A2C 75%);
+  background-size: 200% 100%;
+  animation: loadingShimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.skeletonDate { width: 70px; height: 11px; background-color: #282A2C; border-radius: 3px; }
+.skeletonBody { display: flex; flex-direction: column; gap: 12px; }
+.skeletonBadge { width: 120px; height: 20px; background-color: rgba(253, 214, 99, 0.03); border: 1px solid rgba(253, 214, 99, 0.05); border-radius: 4px; }
+
+.skeletonLine {
+  width: 95%; height: 12px;
+  background: linear-gradient(90deg, #282A2C 25%, #313335 50%, #282A2C 75%);
+  background-size: 200% 100%;
+  animation: loadingShimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.skeletonLineShort { composes: skeletonLine; width: 60%; }
+
+@keyframes loadingShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+</file>
+
+<file path="frontend/src/main.jsx">
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import App from './App.jsx'
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+</file>
+
+<file path="frontend/.gitignore">
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+</file>
+
+<file path="frontend/eslint.config.js">
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{js,jsx}'],
+    extends: [
+      js.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      globals: globals.browser,
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+  },
+])
+</file>
+
+<file path="frontend/index.html">
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+</file>
+
+<file path="frontend/README.md">
+# React + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+</file>
+
+<file path="frontend/vite.config.js">
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react()],
+})
+</file>
+
+<file path="graph_analysis/__init__.py">
+
+</file>
+
+<file path="graph_analysis/Dockerfile">
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    gcc g++ git curl \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PIP_ROOT_USER_ACTION=ignore
+RUN pip install --upgrade pip
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+</file>
+
+<file path="graph_analysis/requirements.txt">
+
+</file>
+
+<file path=".dockerignore">
+.Trash-0
+.Trash-*/
+__pycache__/
+*.pyc
+venv/
+/data_pipeline/.env
+</file>
+
+<file path="project_roadmap_5months.html">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .wrap { padding: 16px 0 24px; font-size: 14px; color: var(--color-text-primary); }
+  h2 { font-size: 18px; font-weight: 500; margin: 0 0 4px; }
+  .subtitle { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 20px; }
+  .phase { border-radius: var(--border-radius-lg); border: 1px solid var(--color-border-tertiary); margin-bottom: 14px; overflow: hidden; }
+  .phase-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; user-select: none; }
+  .phase-header:hover { background: var(--color-background-secondary); }
+  .badge { border-radius: 6px; font-size: 11px; font-weight: 500; padding: 3px 8px; white-space: nowrap; }
+  .m1 .badge { background: #EEEDFE; color: #3C3489; }
+  .m2 .badge { background: #E1F5EE; color: #085041; }
+  .m3 .badge { background: #E6F1FB; color: #0C447C; }
+  .m4 .badge { background: #FAEEDA; color: #633806; }
+  .m5 .badge { background: #FAECE7; color: #712B13; }
+  @media (prefers-color-scheme: dark) {
+    .m1 .badge { background: #3C3489; color: #CECBF6; }
+    .m2 .badge { background: #085041; color: #9FE1CB; }
+    .m3 .badge { background: #0C447C; color: #B5D4F4; }
+    .m4 .badge { background: #633806; color: #FAC775; }
+    .m5 .badge { background: #712B13; color: #F5C4B3; }
+  }
+  .phase-title { font-weight: 500; font-size: 15px; flex: 1; }
+  .phase-weeks { font-size: 12px; color: var(--color-text-secondary); }
+  .chevron { font-size: 12px; color: var(--color-text-tertiary); transition: transform 0.2s; }
+  .chevron.open { transform: rotate(90deg); }
+  .phase-body { padding: 0 16px 16px; display: none; }
+  .phase-body.open { display: block; }
+  .goal { font-size: 13px; color: var(--color-text-secondary); margin: 0 0 12px; border-left: 3px solid var(--color-border-secondary); padding-left: 10px; line-height: 1.6; }
+  .section-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); margin: 14px 0 6px; }
+  .tasks { display: flex; flex-direction: column; gap: 6px; }
+  .task { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.5; }
+  .task-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+  .m1 .task-dot { background: #7F77DD; }
+  .m2 .task-dot { background: #1D9E75; }
+  .m3 .task-dot { background: #378ADD; }
+  .m4 .task-dot { background: #BA7517; }
+  .m5 .task-dot { background: #D85A30; }
+  .tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .tool { font-size: 11px; padding: 3px 8px; border-radius: 5px; background: var(--color-background-secondary); border: 1px solid var(--color-border-tertiary); color: var(--color-text-secondary); }
+  .team-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .member { font-size: 12px; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--color-border-tertiary); color: var(--color-text-secondary); }
+  .divider { height: 1px; background: var(--color-border-tertiary); margin: 10px 0; }
+  .milestone { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--color-text-secondary); margin-top: 10px; background: var(--color-background-secondary); border-radius: 8px; padding: 8px 12px; }
+  .ms-icon { font-size: 14px; }
+  .progress-bar { display: flex; gap: 3px; margin-bottom: 20px; }
+  .prog-seg { flex: 1; height: 5px; border-radius: 3px; }
+  .s1 { background: #7F77DD; }
+  .s2 { background: #1D9E75; }
+  .s3 { background: #378ADD; }
+  .s4 { background: #BA7517; }
+  .s5 { background: #D85A30; }
+</style>
+<div class="wrap">
+  <h2>5 個月專題開發路線圖</h2>
+  <div class="subtitle">假訊息查核 × 擴散追蹤 × 干預模擬平台 ｜ 3 人團隊</div>
+  <div class="progress-bar">
+    <div class="prog-seg s1"></div>
+    <div class="prog-seg s1"></div>
+    <div class="prog-seg s2"></div>
+    <div class="prog-seg s2"></div>
+    <div class="prog-seg s3"></div>
+    <div class="prog-seg s3"></div>
+    <div class="prog-seg s4"></div>
+    <div class="prog-seg s4"></div>
+    <div class="prog-seg s5"></div>
+  </div>
+
+  <!-- Phase 1 -->
+  <div class="phase m1">
+    <div class="phase-header" onclick="toggle(this)">
+      <span class="badge">第 1 個月</span>
+      <span class="phase-title">研究規劃 & 資料探索</span>
+      <span class="phase-weeks">週 1－4</span>
+      <span class="chevron open">▶</span>
+    </div>
+    <div class="phase-body open">
+      <p class="goal">把所有理想用「能不能真的做出來」來驗證，確認技術可行性，選定資料集，寫好文件。</p>
+      <div class="section-label">核心任務</div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot"></div><span>下載並探索 PHEME、FakeNewsNet 資料集，了解欄位結構與限制</span></div>
+        <div class="task"><div class="task-dot"></div><span>試打 Google Fact Check Tools API，確認查詢效果與回傳格式</span></div>
+        <div class="task"><div class="task-dot"></div><span>試用 GDELT API 做新聞事件查詢，評估資料量與品質</span></div>
+        <div class="task"><div class="task-dot"></div><span>定義系統架構：前後端分工、API 設計、資料庫結構</span></div>
+        <div class="task"><div class="task-dot"></div><span>確定三人分工：後端 / 圖分析 / 前端視覺化</span></div>
+      </div>
+      <div class="section-label">使用工具</div>
+      <div class="tools">
+        <span class="tool">Python (pandas)</span>
+        <span class="tool">Jupyter Notebook</span>
+        <span class="tool">Google Fact Check API</span>
+        <span class="tool">GDELT API</span>
+        <span class="tool">Figma（系統設計稿）</span>
+      </div>
+      <div class="section-label">建議分工</div>
+      <div class="team-row">
+        <span class="member">A — 資料集探索 + API 評估</span>
+        <span class="member">B — 系統架構設計</span>
+        <span class="member">C — UI wireframe</span>
+      </div>
+      <div class="milestone"><span class="ms-icon">🎯</span><span>里程碑：能用 Fact Check API 查到一個 claim 的完整回傳結果</span></div>
+    </div>
+  </div>
+
+  <!-- Phase 2 -->
+  <div class="phase m2">
+    <div class="phase-header" onclick="toggle(this)">
+      <span class="badge">第 2 個月</span>
+      <span class="phase-title">後端核心 MVP</span>
+      <span class="phase-weeks">週 5－8</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="phase-body">
+      <p class="goal">做出可以接受使用者輸入、完成查核搜尋、抓取新聞資料的後端 pipeline。</p>
+      <div class="section-label">核心任務</div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot"></div><span>實作 claim 輸入 → Fact Check API 查詢 → 結構化回傳</span></div>
+        <div class="task"><div class="task-dot"></div><span>實作 GDELT 新聞抓取 → 去重 → 時間排序 pipeline</span></div>
+        <div class="task"><div class="task-dot"></div><span>設計並建立資料庫（PostgreSQL 或 SQLite）儲存查核結果快取</span></div>
+        <div class="task"><div class="task-dot"></div><span>用 sentence-transformers 做基礎 Claim Clustering（相似 claim 合併）</span></div>
+        <div class="task"><div class="task-dot"></div><span>建立 FastAPI 後端，定義 /search、/timeline、/graph 三個端點</span></div>
+      </div>
+      <div class="section-label">使用工具</div>
+      <div class="tools">
+        <span class="tool">FastAPI</span>
+        <span class="tool">PostgreSQL / SQLite</span>
+        <span class="tool">sentence-transformers</span>
+        <span class="tool">requests / httpx</span>
+        <span class="tool">Pydantic</span>
+      </div>
+      <div class="section-label">建議分工</div>
+      <div class="team-row">
+        <span class="member">A — Fact Check + GDELT pipeline</span>
+        <span class="member">B — FastAPI 架設 + DB schema</span>
+        <span class="member">C — Claim Clustering</span>
+      </div>
+      <div class="milestone"><span class="ms-icon">🎯</span><span>里程碑：輸入「COVID vaccine DNA」，後端回傳查核結果 + 5 篇相關新聞 + 時間排序</span></div>
+    </div>
+  </div>
+
+  <!-- Phase 3 -->
+  <div class="phase m3">
+    <div class="phase-header" onclick="toggle(this)">
+      <span class="badge">第 3 個月</span>
+      <span class="phase-title">圖分析 & 擴散模型</span>
+      <span class="phase-weeks">週 9－12</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="phase-body">
+      <p class="goal">把新聞與來源關係轉成圖結構，分析關鍵節點，跑擴散模擬與干預策略比較。</p>
+      <div class="section-label">核心任務</div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot"></div><span>從 PHEME 資料集建構傳播圖（節點 = 帳號/媒體，邊 = 轉貼/引用）</span></div>
+        <div class="task"><div class="task-dot"></div><span>用 NetworkX 計算 degree / betweenness / PageRank，找出關鍵放大節點</span></div>
+        <div class="task"><div class="task-dot"></div><span>用 NDlib 跑 SIR 模型模擬假訊息擴散過程</span></div>
+        <div class="task"><div class="task-dot"></div><span>實作 4 種干預策略：random / degree / betweenness / greedy，比較效果</span></div>
+        <div class="task"><div class="task-dot"></div><span>設計「干預前後」的比較輸出格式，串接 API</span></div>
+      </div>
+      <div class="section-label">使用工具</div>
+      <div class="tools">
+        <span class="tool">NetworkX</span>
+        <span class="tool">NDlib</span>
+        <span class="tool">NumPy / SciPy</span>
+        <span class="tool">matplotlib（初步驗證圖）</span>
+      </div>
+      <div class="section-label">建議分工</div>
+      <div class="team-row">
+        <span class="member">A — 圖建構 + centrality 分析</span>
+        <span class="member">B — NDlib 擴散模擬</span>
+        <span class="member">C — 干預策略實作 + 比較</span>
+      </div>
+      <div class="milestone"><span class="ms-icon">🎯</span><span>里程碑：能對一個 PHEME 事件跑出 4 種策略的干預效果比較圖</span></div>
+    </div>
+  </div>
+
+  <!-- Phase 4 -->
+  <div class="phase m4">
+    <div class="phase-header" onclick="toggle(this)">
+      <span class="badge">第 4 個月</span>
+      <span class="phase-title">前端視覺化 & 整合</span>
+      <span class="phase-weeks">週 13－17</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="phase-body">
+      <p class="goal">把後端所有結果呈現成可操作的前端介面，完成三層完整 demo 流程。</p>
+      <div class="section-label">核心任務</div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot"></div><span>實作查核入口介面：輸入框 → 查核結果卡 → 可信度量尺</span></div>
+        <div class="task"><div class="task-dot"></div><span>實作新聞時間線：橫軸時間、縱軸平台、事件點可點擊展開</span></div>
+        <div class="task"><div class="task-dot"></div><span>用 Cytoscape.js 或 D3.js 實作互動式擴散圖（點節點看詳細資訊）</span></div>
+        <div class="task"><div class="task-dot"></div><span>實作干預模擬面板：選策略 → 選 k 值 → 顯示干預前後擴散量比較</span></div>
+        <div class="task"><div class="task-dot"></div><span>串接所有 FastAPI 端點，完成 end-to-end 流程</span></div>
+        <div class="task"><div class="task-dot"></div><span>加入 PDF 報告匯出功能</span></div>
+      </div>
+      <div class="section-label">使用工具</div>
+      <div class="tools">
+        <span class="tool">React</span>
+        <span class="tool">Cytoscape.js / D3.js</span>
+        <span class="tool">Recharts（時間線 / 比較圖）</span>
+        <span class="tool">TailwindCSS</span>
+        <span class="tool">jsPDF（報告匯出）</span>
+      </div>
+      <div class="section-label">建議分工</div>
+      <div class="team-row">
+        <span class="member">A — 查核入口 + 時間線</span>
+        <span class="member">B — 擴散圖視覺化</span>
+        <span class="member">C — 干預模擬面板 + 報告匯出</span>
+      </div>
+      <div class="milestone"><span class="ms-icon">🎯</span><span>里程碑：完整 demo 跑通一個案例（從輸入 → 查核 → 擴散圖 → 干預比較）</span></div>
+    </div>
+  </div>
+
+  <!-- Phase 5 -->
+  <div class="phase m5">
+    <div class="phase-header" onclick="toggle(this)">
+      <span class="badge">第 5 個月</span>
+      <span class="phase-title">優化、文件與發表準備</span>
+      <span class="phase-weeks">週 18－20</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="phase-body">
+      <p class="goal">把系統從「能跑」變成「能說服人」，準備好 demo 腳本、論文、簡報。</p>
+      <div class="section-label">核心任務</div>
+      <div class="tasks">
+        <div class="task"><div class="task-dot"></div><span>選定 3 個 case study（一個已知假訊息事件 replay）做 demo 腳本</span></div>
+        <div class="task"><div class="task-dot"></div><span>UI 細節優化：載入速度、空狀態提示、錯誤處理</span></div>
+        <div class="task"><div class="task-dot"></div><span>寫專題報告：動機 → 架構 → 實驗設計 → 結果 → 未來展望</span></div>
+        <div class="task"><div class="task-dot"></div><span>製作發表簡報：突出三層架構亮點，準備 live demo</span></div>
+        <div class="task"><div class="task-dot"></div><span>部署到雲端（Render / Vercel / Railway），讓老師可以線上試用</span></div>
+      </div>
+      <div class="section-label">使用工具</div>
+      <div class="tools">
+        <span class="tool">Render / Railway（後端部署）</span>
+        <span class="tool">Vercel（前端部署）</span>
+        <span class="tool">Docker（環境打包）</span>
+        <span class="tool">Notion / Overleaf（報告）</span>
+      </div>
+      <div class="section-label">建議分工</div>
+      <div class="team-row">
+        <span class="member">A — 部署 + case study</span>
+        <span class="member">B — 報告撰寫</span>
+        <span class="member">C — 簡報製作</span>
+      </div>
+      <div class="milestone"><span class="ms-icon">🎯</span><span>里程碑：系統上線、demo 腳本跑順、報告初稿完成</span></div>
+    </div>
+  </div>
+</div>
+<script>
+function toggle(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.chevron');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chevron.classList.toggle('open', !isOpen);
+}
+</script>
+</file>
+
+<file path="README.md">
+# FakeNews_IDS_Project
+</file>
+
+<file path="backend/app/models/schema.py">
+from sqlalchemy import Column, String, DateTime, Boolean, Text, Float
+from sqlalchemy.dialects.postgresql import UUID
+from datetime import datetime, timezone
+import uuid
+from app.database import Base
+
+class ClaimCache(Base):
+    __tablename__ = "claim_cache"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    query = Column(Text, index=True, nullable=False)
+    claim_text = Column(Text, nullable=False)
+    claimant = Column(String, nullable=True)
+    claim_date = Column(DateTime, nullable=True)
+    rating = Column(String, nullable=True)
+    reviewer = Column(String, nullable=True)
+    review_url = Column(String, nullable=True)
+    review_date = Column(DateTime, nullable=True)
+    review_title = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+
+class Newscache(Base):
+    __tablename__ = "news_cache"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    query = Column(Text, index=True, nullable=False)
+    title = Column(String, nullable=False)
+    url = Column(String, unique=True, nullable=False)
+    source = Column(String, nullable=True)
+    date = Column(DateTime, nullable=True)
+    country = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+</file>
+
+<file path="backend/app/services/fact_check.py">
+import os
+import httpx
+from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
+
+API_KEY = os.getenv("GOOGLE_FACT_CHECK_API_KEY")
+BASE_URL = "https://factchecktools.googleapis.com/v1alpha1/claims:search"
+
+async def fetch_claims(query: str, max_results: int = 10) -> dict:
+    params = {
+        "key": API_KEY,
+        "query": query,
+        "languageCode": "en",
+        "pageSize": max_results,
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.get(BASE_URL, params=params)
+        response.raise_for_status()
+        raw = response.json()
+    
+    results = []
+    for claim in raw.get("claims", []):
+        for review in claim.get("claimReview", []):
+
+            results.append({
+                "claim_text": claim.get("text"),
+                "claimant": claim.get("claimant"),
+                #2023-09-20T00:00:00Z
+                "claim_date": datetime.strptime(claim.get("claimDate"), "%Y-%m-%dT%H:%M:%SZ") if claim.get("claimDate") else None,
+                "reviewer": review.get("publisher", {}).get("name"),
+                "rating": review.get("textualRating"),
+                "review_url": review.get("url"),
+                "review_date": datetime.strptime(review.get("reviewDate"), "%Y-%m-%dT%H:%M:%SZ") if review.get("reviewDate") else None,
+                "review_title": review.get("title"),
+            })
+    
+    return results[:max_results]
+</file>
+
+<file path="backend/app/services/gdelt.py">
+import httpx
+from datetime import datetime
+
+BASE_URL = "https://api.gdeltproject.org/api/v2/doc/doc"
+
+async def fetch_news(query: str, max_results: int = 20) -> list[dict]:
+    params = {
+        "query"     : query,
+        "mode"      : "artlist",
+        "maxrecords": max_results,
+        "format"    : "json",
+        "sort"      : "DateDesc",
+    }
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        response = await client.get(BASE_URL, params=params)
+        response.raise_for_status()
+        data = response.json()
+
+    articles = []
+    seen_urls = set()
+
+    for article in data.get("articles", []):
+        url = article.get("url")
+        if url and url in seen_urls:
+            continue
+        seen_urls.add(url)
+
+        articles.append({
+            "title"  : article.get("title"),
+            "url"    : url,
+            "source" : article.get("domain"),
+            #20260421T061500Z
+            "date"   : datetime.strptime(article.get("seendate"), "%Y%m%dT%H%M%SZ") if article.get("seendate") else None,
+            "country": article.get("countrycode"),
+        })
+
+    articles.sort(key=lambda x: x["date"] or "", reverse=True)
+
+    return articles[:max_results]
+</file>
+
+<file path="data_pipeline/notebooks/fakenewsnet.ipynb">
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "47967730",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "總新聞數：22140\n",
+      "欄位：['id', 'news_url', 'title', 'tweet_ids', 'label']\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>news_url</th>\n",
+       "      <th>title</th>\n",
+       "      <th>tweet_ids</th>\n",
+       "      <th>label</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>gossipcop-2493749932</td>\n",
+       "      <td>www.dailymail.co.uk/tvshowbiz/article-5874213/...</td>\n",
+       "      <td>Did Miley Cyrus and Liam Hemsworth secretly ge...</td>\n",
+       "      <td>284329075902926848\\t284332744559968256\\t284335...</td>\n",
+       "      <td>fake</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>gossipcop-4580247171</td>\n",
+       "      <td>hollywoodlife.com/2018/05/05/paris-jackson-car...</td>\n",
+       "      <td>Paris Jackson &amp; Cara Delevingne Enjoy Night Ou...</td>\n",
+       "      <td>992895508267130880\\t992897935418503169\\t992899...</td>\n",
+       "      <td>fake</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>gossipcop-941805037</td>\n",
+       "      <td>variety.com/2017/biz/news/tax-march-donald-tru...</td>\n",
+       "      <td>Celebrities Join Tax March in Protest of Donal...</td>\n",
+       "      <td>853359353532829696\\t853359576543920128\\t853359...</td>\n",
+       "      <td>fake</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>gossipcop-2547891536</td>\n",
+       "      <td>www.dailymail.co.uk/femail/article-3499192/Do-...</td>\n",
+       "      <td>Cindy Crawford's daughter Kaia Gerber wears a ...</td>\n",
+       "      <td>988821905196158981\\t988824206556172288\\t988825...</td>\n",
+       "      <td>fake</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>gossipcop-5476631226</td>\n",
+       "      <td>variety.com/2018/film/news/list-2018-oscar-nom...</td>\n",
+       "      <td>Full List of 2018 Oscar Nominations – Variety</td>\n",
+       "      <td>955792793632432131\\t955795063925301249\\t955798...</td>\n",
+       "      <td>fake</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                     id                                           news_url  \\\n",
+       "0  gossipcop-2493749932  www.dailymail.co.uk/tvshowbiz/article-5874213/...   \n",
+       "1  gossipcop-4580247171  hollywoodlife.com/2018/05/05/paris-jackson-car...   \n",
+       "2   gossipcop-941805037  variety.com/2017/biz/news/tax-march-donald-tru...   \n",
+       "3  gossipcop-2547891536  www.dailymail.co.uk/femail/article-3499192/Do-...   \n",
+       "4  gossipcop-5476631226  variety.com/2018/film/news/list-2018-oscar-nom...   \n",
+       "\n",
+       "                                               title  \\\n",
+       "0  Did Miley Cyrus and Liam Hemsworth secretly ge...   \n",
+       "1  Paris Jackson & Cara Delevingne Enjoy Night Ou...   \n",
+       "2  Celebrities Join Tax March in Protest of Donal...   \n",
+       "3  Cindy Crawford's daughter Kaia Gerber wears a ...   \n",
+       "4      Full List of 2018 Oscar Nominations – Variety   \n",
+       "\n",
+       "                                           tweet_ids label  \n",
+       "0  284329075902926848\\t284332744559968256\\t284335...  fake  \n",
+       "1  992895508267130880\\t992897935418503169\\t992899...  fake  \n",
+       "2  853359353532829696\\t853359576543920128\\t853359...  fake  \n",
+       "3  988821905196158981\\t988824206556172288\\t988825...  fake  \n",
+       "4  955792793632432131\\t955795063925301249\\t955798...  fake  "
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import pandas as pd\n",
+    "\n",
+    "# FakeNewsNet 有兩個來源：politifact 和 gossipcop\n",
+    "politifact_fake = pd.read_csv(\"data/raw/FakeNewsNet/dataset/gossipcop_fake.csv\")\n",
+    "politifact_real = pd.read_csv(\"data/raw/FakeNewsNet/dataset/gossipcop_real.csv\")\n",
+    "\n",
+    "politifact_fake[\"label\"] = \"fake\"\n",
+    "politifact_real[\"label\"] = \"real\"\n",
+    "\n",
+    "df = pd.concat([politifact_fake, politifact_real], ignore_index=True)\n",
+    "\n",
+    "print(f\"總新聞數：{len(df)}\")\n",
+    "print(f\"欄位：{df.columns.tolist()}\")\n",
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "738cc428",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "=== fake vs real ===\n",
+      "label\n",
+      "real    16817\n",
+      "fake     5323\n",
+      "Name: count, dtype: int64\n",
+      "\n",
+      "=== 缺失值 ===\n",
+      "id              0\n",
+      "news_url      269\n",
+      "title           0\n",
+      "tweet_ids    1246\n",
+      "label           0\n",
+      "dtype: int64\n",
+      "\n",
+      "=== 標題長度分佈 ===\n",
+      "count    22140.000000\n",
+      "mean        68.704652\n",
+      "std         22.756737\n",
+      "min         10.000000\n",
+      "25%         55.000000\n",
+      "50%         68.000000\n",
+      "75%         84.000000\n",
+      "max        200.000000\n",
+      "Name: title_len, dtype: float64\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"=== fake vs real ===\")\n",
+    "print(df[\"label\"].value_counts())\n",
+    "\n",
+    "print(\"\\n=== 缺失值 ===\")\n",
+    "print(df.isnull().sum())\n",
+    "\n",
+    "print(\"\\n=== 標題長度分佈 ===\")\n",
+    "df[\"title_len\"] = df[\"title\"].str.len()\n",
+    "print(df[\"title_len\"].describe())"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
+</file>
+
+<file path="data_pipeline/Dockerfile">
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    gcc g++ git curl \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PIP_ROOT_USER_ACTION=ignore
+RUN pip install --upgrade pip
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8888
+</file>
+
+<file path="frontend/package.json">
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "cytoscape": "^3.33.3",
+    "react": "^19.2.5",
+    "react-cytoscapejs": "^2.0.0",
+    "react-dom": "^19.2.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^10.2.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.5.0",
+    "vite": "^8.0.10"
+  }
+}
+</file>
+
+<file path="graph_analysis/centrality.py">
+import networkx as nx
+import os
+from graph_analysis.builder import build_graph_from_pheme
+from dotenv import load_dotenv
+
+
+load_dotenv()
+PHEME_PATH = os.getenv("PHEME_PATH")
+
+G = build_graph_from_pheme(PHEME_PATH, "charliehebdo")
+
+def compute_centrality(G: nx.DiGraph) -> dict:
+    """
+    計算三種中心性，回傳 dict
+    """
+    UG = G.to_undirected()
+
+    degree    = nx.degree_centrality(UG)
+    between   = nx.betweenness_centrality(UG, normalized=True, k=500)
+    pagerank  = nx.pagerank(G, alpha=0.85)
+
+    nodes_info = {}
+    for node in G.nodes():
+        nodes_info[node] = {
+            "degree_centrality":      round(degree.get(node, 0), 4),
+            "betweenness_centrality": round(between.get(node, 0), 4),
+            "pagerank":               round(pagerank.get(node, 0), 4),
+            "degree":                 G.degree(node),
+        }
+
+    return nodes_info
+
+
+def get_top_nodes(centrality_data: dict, metric: str, top_k: int = 10) -> list:
+    """
+    取特定指標排名前 k 的節點
+    metric: 'degree_centrality' | 'betweenness_centrality' | 'pagerank'
+    """
+    print(centrality_data)
+    sorted_nodes = sorted(
+        centrality_data.items(),
+        key=lambda x: x[1][metric],
+        reverse=True
+    )
+    return [{"node": n, **data} for n, data in sorted_nodes[:top_k]]
+
+centrality_data = compute_centrality(G)
+# print(centrality_data)
+top_degree = get_top_nodes(centrality_data, "degree_centrality")
+top_betweenness = get_top_nodes(centrality_data, "betweenness_centrality")
+top_pagerank = get_top_nodes(centrality_data, "pagerank")
+</file>
+
+<file path="graph_analysis/intervention.py">
+import random
+import networkx as nx
+from graph_analysis.builder import build_graph_from_pheme
+from graph_analysis.simulation import run_sir_simulation
+from graph_analysis.centrality import compute_centrality, get_top_nodes
+</file>
+
+<file path="graph_analysis/simulation.py">
+import networkx as nx
+import os
+import matplotlib.pyplot as plt
+import ndlib.models.ModelConfig as mc
+import ndlib.models.epidemics as ep
+from graph_analysis.builder import build_graph_from_pheme
+from dotenv import load_dotenv
+
+def run_sir_simulation(
+    G: nx.Graph,
+    beta: float = 0.1,
+    gamma: float = 0.05,
+    infected_nodes: list = None,
+    iterations: int = 50
+) -> dict:
+    """
+    跑 SIR 模擬
+    回傳每一輪的 S/I/R 數量變化
+    """
+    UG = G.to_undirected() if G.is_directed() else G
+
+    model = ep.SIRModel(UG)
+
+    cfg = mc.Configuration()
+    cfg.add_model_parameter("beta", beta)
+    cfg.add_model_parameter("gamma", gamma)
+
+    if infected_nodes:
+        cfg.add_model_parameter("fraction_infected", 0)
+        cfg.add_model_initial_configuration("Infected", infected_nodes)
+    else:
+        cfg.add_model_parameter("fraction_infected", 0.05)
+
+    model.set_initial_status(cfg)
+
+    iterations_result = model.iteration_bunch(iterations)
+
+    trends = model.build_trends(iterations_result)
+
+    print(trends)
+
+    return {
+        "iterations": iterations_result,
+        "trends": {
+            "susceptible": trends[0]["trends"]["node_count"][0],
+            "infected":    trends[0]["trends"]["node_count"][1],
+            "removed":     trends[0]["trends"]["node_count"][2],
+        },
+        "total_nodes": UG.number_of_nodes(),
+        "peak_infected": max(trends[0]["trends"]["node_count"][1]),
+    }
+
+
+load_dotenv()
+
+PHEME_PATH = os.getenv("PHEME_PATH")
+
+G = build_graph_from_pheme(PHEME_PATH, "charliehebdo")
+result = run_sir_simulation(G, beta=0.1, gamma=0.05, iterations=50)
+trends = result["trends"]
+
+x = range(len(trends["susceptible"]))
+
+plt.figure(figsize=(10, 5))
+plt.plot(x, trends["susceptible"], label="Susceptible", color="blue")
+plt.plot(x, trends["infected"],    label="Infected",    color="red")
+plt.plot(x, trends["removed"],     label="Removed",     color="green")
+
+plt.axvline(
+    x=trends["infected"].index(max(trends["infected"])),
+    color="red", linestyle="--", alpha=0.5,
+    label=f"Peak Infected: {result['peak_infected']} nodes"
+)
+
+plt.xlabel("Iteration")
+plt.ylabel("Node Count")
+plt.title("SIR Simulation — charliehebdo Event")
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+plt.savefig("/home/luhongxuan/FakeNews_IDS_Project/data/sir_simulation.png", dpi=150, bbox_inches="tight")
+plt.close()
+</file>
+
+<file path="backend/app/routers/timeline.py">
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from datetime import datetime
+from app.database import get_db
+from app.services.gdelt import fetch_news
+from app.services.fact_check import fetch_claims
+from app.schemas.response import TimelineResponse, TimelineItem
+from app.models.schema import ClaimCache, Newscache
+
+router = APIRouter()
+
+@router.get("/timeline", response_model=TimelineResponse)
+async def timeline(query: str, db: Session = Depends(get_db)):
+    
+    timeline_items = []
+
+    cached_Claims = db.query(ClaimCache).filter(ClaimCache.query == query).all()
+
+    if cached_Claims:
+        for claim in cached_Claims:
+            if claim.review_date:
+                timeline_items.append(TimelineItem(
+                    date=claim.review_date,
+                    type="fact_check",
+                    title=claim.claim_text,
+                    url=claim.review_url,
+                    source=claim.reviewer,
+                    rating=claim.rating
+                ))
+            if claim.claim_date:
+                timeline_items.append(TimelineItem(
+                    date=claim.claim_date,
+                    type="rumour" ,
+                    title=claim.claim_text,
+                    url=None,
+                    source=claim.claimant,
+                    rating=None
+                ))
+    else:
+        claims = await fetch_claims(query)
+
+        for claim in claims:
+            if claim["review_date"]:
+                timeline_items.append(TimelineItem(
+                    date=claim["review_date"],
+                    type="fact_check",
+                    title=claim["claim_text"],
+                    url=claim["review_url"],
+                    source=claim["reviewer"],
+                    rating=claim["rating"]
+                ))
+            if claim["claim_date"]:
+                timeline_items.append(TimelineItem(
+                    date=claim["claim_date"],
+                    type="rumour",
+                    title=claim["claim_text"],
+                    url=None,
+                    source=claim["claimant"],
+                    rating=None
+                ))
+
+            db.add(ClaimCache(query=query, **claim))
+        db.commit()
+    
+    cached_News = db.query(Newscache).filter(Newscache.query == query).all()
+
+    if cached_News:
+        for new in cached_News:
+            if new.date:
+                timeline_items.append(TimelineItem(
+                    date=new.date,
+                    type="news",
+                    title=new.title,
+                    url=new.url,
+                    source=new.source,
+                    rating=None
+                ))
+    else:
+        news = await fetch_news(query, max_results=30)
+
+        for new in news:
+            if new["date"]:
+                timeline_items.append(TimelineItem(
+                    date=new["date"],
+                    type="news",
+                    title=new["title"],
+                    url=new["url"],
+                    source=new["source"],
+                    rating=None
+                ))
+
+            db.add(Newscache(query=query, **new))
+        db.commit()
+    
+    timeline_items.sort(key=lambda x: x.date, reverse=True)
+
+    return TimelineResponse(
+        query=query,
+        total=len(timeline_items),
+        items=timeline_items
+    )
+</file>
+
+<file path="backend/app/main.py">
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.database import Base, engine
+from app.routers import search
+from app.routers import timeline
+from app.routers import graph
+
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(search.router)
+app.include_router(timeline.router)
+app.include_router(graph.router)
+
+@app.get("/")
+def root():
+    return {"status": "ok"}
+</file>
+
+<file path="data_pipeline/notebooks/fact_check_api.ipynb">
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "09b60745",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "原始回傳：\n",
+      "{'claims': [{'text': \"A German study found that mRNA vaccines are linked to cancer and 'VAIDS'.\", 'claimant': 'Social media users', 'claimDate': '2025-04-04T11:00:00Z', 'claimReview': [{'publisher': {'name': 'AAP', 'site': 'aap.com.au'}, 'url': 'https://www.aap.com.au/factcheck/study-did-not-link-covid-19-vaccines-to-cancer-or-vaids/', 'title': \"Study did not link COVID-19 vaccines to cancer or 'VAIDS'\", 'reviewDate': '2025-05-09T17:10:04Z', 'textualRating': \"False. Two of the study's lead authors say the findings have been misrepresented.\", 'languageCode': 'en'}]}, {'text': 'The new Covid-19 vaccines were DNA-altering technology.', 'claimReview': [{'publisher': {'name': 'Full Fact', 'site': 'fullfact.org'}, 'url': 'https://fullfact.org/health/covid-vaccines-not-dna-altering/', 'title': \"Covid-19 vaccines don't alter your DNA – Full Fact\", 'reviewDate': '2024-01-29T00:00:00Z', 'textualRating': 'False. Neither the mRNA nor the viral vector vaccines against Covid-19 could change people’s DNA.', 'languageCode': 'en'}]}, {'text': 'The Pfizer Covid-19 vaccines contain “cancer-causing SV40”, a virus which was used in experiments to cause mice to develop tumours.', 'claimReview': [{'publisher': {'name': 'Full Fact', 'site': 'fullfact.org'}, 'url': 'https://fullfact.org/health/covid-19-vaccines-do-not-contain-cancer-causing-sv40-monkey-virus/', 'title': \"Covid-19 vaccines do not contain 'cancer-causing' SV40 monkey ...\", 'reviewDate': '2025-11-07T00:00:00Z', 'textualRating': 'This is not correct. The vaccine does not contain the SV40 virus, which has been used to induce cancer in laboratory animals. It uses a fragment of the SV40 DNA sequence, which does not cause cancer or produce an infectious virus.', 'languageCode': 'en'}]}, {'text': '“SV40, a cancer causing sequence” was “put in the Covid Vaccine.”', 'claimant': 'Social media posts', 'claimDate': '2023-09-20T00:00:00Z', 'claimReview': [{'publisher': {'name': 'FactCheck.org', 'site': 'factcheck.org'}, 'url': 'https://www.factcheck.org/2023/10/scicheck-covid-19-vaccines-have-not-been-shown-to-alter-dna-cause-cancer/', 'title': 'COVID-19 Vaccines Have Not Been Shown to Alter DNA, Cause ...', 'textualRating': 'Misleading', 'languageCode': 'en'}]}, {'text': 'Pfizer’s COVID-19 vaccine contains a DNA sequence called Simian Virus 40 that can cause health problems, including cancer.', 'claimant': 'social media users', 'claimDate': '2023-11-20T23:06:58Z', 'claimReview': [{'publisher': {'name': 'AP News', 'site': 'apnews.com'}, 'url': 'https://apnews.com/article/fact-check-covid-vaccine-pfizer-SV40-DNA-853343189368', 'title': 'No evidence that DNA sequence used in Pfizer shot leads to cancer ...', 'textualRating': 'False', 'languageCode': 'en'}]}, {'text': 'Study verifies that the Pfizer Covid-19 vaccine causes cancer.', 'claimReview': [{'publisher': {'name': 'Full Fact', 'site': 'fullfact.org'}, 'url': 'https://fullfact.org/health/pfizer-vaccine-study-cancer/', 'title': 'Study does not show that the Pfizer Covid-19 vaccine causes cancer ...', 'reviewDate': '2024-07-31T00:00:00Z', 'textualRating': 'The study did not show that the Pfizer vaccine causes cancer.', 'languageCode': 'en'}]}, {'text': 'Coronavirus vaccines will change recipients\\' DNA and \"the Covid-19 vaccines are designed to make us into genetically modified organisms.\"', 'claimant': 'Carrie Madej', 'claimDate': '2020-06-25T00:00:00Z', 'claimReview': [{'publisher': {'name': 'BBC', 'site': 'bbc.co.uk'}, 'url': 'https://www.bbc.co.uk/news/53525002', 'title': 'Coronavirus: False and misleading claims about vaccines debunked', 'reviewDate': '2020-07-26T00:00:00Z', 'textualRating': 'This is false. There are 25 different candidate vaccines in clinical trials around the world according to the World Health Organization (WHO), but none of them will alter human DNA', 'languageCode': 'en'}]}, {'text': 'Vaccines killed 50 million people during the 1918 Spanish flu pandemic', 'claimant': 'Various - shared on social media', 'claimReview': [{'publisher': {'name': 'BBC', 'site': 'bbc.co.uk'}, 'url': 'https://www.bbc.co.uk/news/53525002', 'title': 'Coronavirus: False and misleading claims about vaccines debunked', 'reviewDate': '2020-07-26T00:00:00Z', 'textualRating': 'This is false - there was no vaccine at the time.', 'languageCode': 'en'}]}, {'text': 'FDA\\'s \"own guidelines dictate\" testing for integration into the human genome of residual DNA from mRNA vaccines.', 'claimant': 'Joseph Ladapo', 'claimDate': '2024-01-03T00:00:00Z', 'claimReview': [{'publisher': {'name': 'FactCheck.org', 'site': 'factcheck.org'}, 'url': 'https://www.factcheck.org/2024/01/faulty-science-underpins-florida-surgeon-generals-call-to-halt-mrna-covid-19-vaccination/', 'title': 'Faulty Science Underpins Florida Surgeon General’s Call to Halt ...', 'reviewDate': '2024-01-05T22:01:52Z', 'textualRating': 'False', 'languageCode': 'en'}]}, {'text': 'Ladapo: No one should get an mRNA COVID-19 vaccine due to risk of DNA contamination.', 'claimant': 'Joseph Ladapo', 'claimDate': '2024-01-03T00:00:00Z', 'claimReview': [{'publisher': {'name': 'FactCheck.org', 'site': 'factcheck.org'}, 'url': 'https://www.factcheck.org/2024/01/faulty-science-underpins-florida-surgeon-generals-call-to-halt-mrna-covid-19-vaccination/', 'title': 'Faulty Science Underpins Florida Surgeon General’s Call to Halt ...', 'reviewDate': '2024-01-05T22:01:52Z', 'textualRating': 'Unsupported', 'languageCode': 'en'}]}], 'nextPageToken': 'CAo'}\n"
+     ]
+    }
+   ],
+   "source": [
+    "import sys\n",
+    "sys.path.append(\"/app\")  # 確保找得到 collectors 模組\n",
+    "\n",
+    "from collectors.fact_check import search_claims, parse_claims\n",
+    "import pandas as pd\n",
+    "\n",
+    "\n",
+    "# ── 試打一個查詢 ──────────────────────────────────────\n",
+    "raw = search_claims(\"COVID vaccine DNA\")\n",
+    "print(\"原始回傳：\")\n",
+    "print(raw)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "14a6b255",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "找到 10 筆查核結果\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>claim_text</th>\n",
+       "      <th>claimant</th>\n",
+       "      <th>claim_date</th>\n",
+       "      <th>reviewer</th>\n",
+       "      <th>rating</th>\n",
+       "      <th>review_url</th>\n",
+       "      <th>review_date</th>\n",
+       "      <th>review_title</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>A German study found that mRNA vaccines are li...</td>\n",
+       "      <td>Social media users</td>\n",
+       "      <td>2025-04-04T11:00:00Z</td>\n",
+       "      <td>AAP</td>\n",
+       "      <td>False. Two of the study's lead authors say the...</td>\n",
+       "      <td>https://www.aap.com.au/factcheck/study-did-not...</td>\n",
+       "      <td>2025-05-09T17:10:04Z</td>\n",
+       "      <td>Study did not link COVID-19 vaccines to cancer...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>The new Covid-19 vaccines were DNA-altering te...</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Full Fact</td>\n",
+       "      <td>False. Neither the mRNA nor the viral vector v...</td>\n",
+       "      <td>https://fullfact.org/health/covid-vaccines-not...</td>\n",
+       "      <td>2024-01-29T00:00:00Z</td>\n",
+       "      <td>Covid-19 vaccines don't alter your DNA – Full ...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>The Pfizer Covid-19 vaccines contain “cancer-c...</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Full Fact</td>\n",
+       "      <td>This is not correct. The vaccine does not cont...</td>\n",
+       "      <td>https://fullfact.org/health/covid-19-vaccines-...</td>\n",
+       "      <td>2025-11-07T00:00:00Z</td>\n",
+       "      <td>Covid-19 vaccines do not contain 'cancer-causi...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>“SV40, a cancer causing sequence” was “put in ...</td>\n",
+       "      <td>Social media posts</td>\n",
+       "      <td>2023-09-20T00:00:00Z</td>\n",
+       "      <td>FactCheck.org</td>\n",
+       "      <td>Misleading</td>\n",
+       "      <td>https://www.factcheck.org/2023/10/scicheck-cov...</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>COVID-19 Vaccines Have Not Been Shown to Alter...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>Pfizer’s COVID-19 vaccine contains a DNA seque...</td>\n",
+       "      <td>social media users</td>\n",
+       "      <td>2023-11-20T23:06:58Z</td>\n",
+       "      <td>AP News</td>\n",
+       "      <td>False</td>\n",
+       "      <td>https://apnews.com/article/fact-check-covid-va...</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>No evidence that DNA sequence used in Pfizer s...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>5</th>\n",
+       "      <td>Study verifies that the Pfizer Covid-19 vaccin...</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Full Fact</td>\n",
+       "      <td>The study did not show that the Pfizer vaccine...</td>\n",
+       "      <td>https://fullfact.org/health/pfizer-vaccine-stu...</td>\n",
+       "      <td>2024-07-31T00:00:00Z</td>\n",
+       "      <td>Study does not show that the Pfizer Covid-19 v...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6</th>\n",
+       "      <td>Coronavirus vaccines will change recipients' D...</td>\n",
+       "      <td>Carrie Madej</td>\n",
+       "      <td>2020-06-25T00:00:00Z</td>\n",
+       "      <td>BBC</td>\n",
+       "      <td>This is false. There are 25 different candidat...</td>\n",
+       "      <td>https://www.bbc.co.uk/news/53525002</td>\n",
+       "      <td>2020-07-26T00:00:00Z</td>\n",
+       "      <td>Coronavirus: False and misleading claims about...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7</th>\n",
+       "      <td>Vaccines killed 50 million people during the 1...</td>\n",
+       "      <td>Various - shared on social media</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>BBC</td>\n",
+       "      <td>This is false - there was no vaccine at the time.</td>\n",
+       "      <td>https://www.bbc.co.uk/news/53525002</td>\n",
+       "      <td>2020-07-26T00:00:00Z</td>\n",
+       "      <td>Coronavirus: False and misleading claims about...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>8</th>\n",
+       "      <td>FDA's \"own guidelines dictate\" testing for int...</td>\n",
+       "      <td>Joseph Ladapo</td>\n",
+       "      <td>2024-01-03T00:00:00Z</td>\n",
+       "      <td>FactCheck.org</td>\n",
+       "      <td>False</td>\n",
+       "      <td>https://www.factcheck.org/2024/01/faulty-scien...</td>\n",
+       "      <td>2024-01-05T22:01:52Z</td>\n",
+       "      <td>Faulty Science Underpins Florida Surgeon Gener...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9</th>\n",
+       "      <td>Ladapo: No one should get an mRNA COVID-19 vac...</td>\n",
+       "      <td>Joseph Ladapo</td>\n",
+       "      <td>2024-01-03T00:00:00Z</td>\n",
+       "      <td>FactCheck.org</td>\n",
+       "      <td>Unsupported</td>\n",
+       "      <td>https://www.factcheck.org/2024/01/faulty-scien...</td>\n",
+       "      <td>2024-01-05T22:01:52Z</td>\n",
+       "      <td>Faulty Science Underpins Florida Surgeon Gener...</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                                          claim_text  \\\n",
+       "0  A German study found that mRNA vaccines are li...   \n",
+       "1  The new Covid-19 vaccines were DNA-altering te...   \n",
+       "2  The Pfizer Covid-19 vaccines contain “cancer-c...   \n",
+       "3  “SV40, a cancer causing sequence” was “put in ...   \n",
+       "4  Pfizer’s COVID-19 vaccine contains a DNA seque...   \n",
+       "5  Study verifies that the Pfizer Covid-19 vaccin...   \n",
+       "6  Coronavirus vaccines will change recipients' D...   \n",
+       "7  Vaccines killed 50 million people during the 1...   \n",
+       "8  FDA's \"own guidelines dictate\" testing for int...   \n",
+       "9  Ladapo: No one should get an mRNA COVID-19 vac...   \n",
+       "\n",
+       "                           claimant            claim_date       reviewer  \\\n",
+       "0                Social media users  2025-04-04T11:00:00Z            AAP   \n",
+       "1                               NaN                   NaN      Full Fact   \n",
+       "2                               NaN                   NaN      Full Fact   \n",
+       "3                Social media posts  2023-09-20T00:00:00Z  FactCheck.org   \n",
+       "4                social media users  2023-11-20T23:06:58Z        AP News   \n",
+       "5                               NaN                   NaN      Full Fact   \n",
+       "6                      Carrie Madej  2020-06-25T00:00:00Z            BBC   \n",
+       "7  Various - shared on social media                   NaN            BBC   \n",
+       "8                     Joseph Ladapo  2024-01-03T00:00:00Z  FactCheck.org   \n",
+       "9                     Joseph Ladapo  2024-01-03T00:00:00Z  FactCheck.org   \n",
+       "\n",
+       "                                              rating  \\\n",
+       "0  False. Two of the study's lead authors say the...   \n",
+       "1  False. Neither the mRNA nor the viral vector v...   \n",
+       "2  This is not correct. The vaccine does not cont...   \n",
+       "3                                         Misleading   \n",
+       "4                                              False   \n",
+       "5  The study did not show that the Pfizer vaccine...   \n",
+       "6  This is false. There are 25 different candidat...   \n",
+       "7  This is false - there was no vaccine at the time.   \n",
+       "8                                              False   \n",
+       "9                                        Unsupported   \n",
+       "\n",
+       "                                          review_url           review_date  \\\n",
+       "0  https://www.aap.com.au/factcheck/study-did-not...  2025-05-09T17:10:04Z   \n",
+       "1  https://fullfact.org/health/covid-vaccines-not...  2024-01-29T00:00:00Z   \n",
+       "2  https://fullfact.org/health/covid-19-vaccines-...  2025-11-07T00:00:00Z   \n",
+       "3  https://www.factcheck.org/2023/10/scicheck-cov...                   NaN   \n",
+       "4  https://apnews.com/article/fact-check-covid-va...                   NaN   \n",
+       "5  https://fullfact.org/health/pfizer-vaccine-stu...  2024-07-31T00:00:00Z   \n",
+       "6                https://www.bbc.co.uk/news/53525002  2020-07-26T00:00:00Z   \n",
+       "7                https://www.bbc.co.uk/news/53525002  2020-07-26T00:00:00Z   \n",
+       "8  https://www.factcheck.org/2024/01/faulty-scien...  2024-01-05T22:01:52Z   \n",
+       "9  https://www.factcheck.org/2024/01/faulty-scien...  2024-01-05T22:01:52Z   \n",
+       "\n",
+       "                                        review_title  \n",
+       "0  Study did not link COVID-19 vaccines to cancer...  \n",
+       "1  Covid-19 vaccines don't alter your DNA – Full ...  \n",
+       "2  Covid-19 vaccines do not contain 'cancer-causi...  \n",
+       "3  COVID-19 Vaccines Have Not Been Shown to Alter...  \n",
+       "4  No evidence that DNA sequence used in Pfizer s...  \n",
+       "5  Study does not show that the Pfizer Covid-19 v...  \n",
+       "6  Coronavirus: False and misleading claims about...  \n",
+       "7  Coronavirus: False and misleading claims about...  \n",
+       "8  Faulty Science Underpins Florida Surgeon Gener...  \n",
+       "9  Faulty Science Underpins Florida Surgeon Gener...  "
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "claims = parse_claims(raw)\n",
+    "df = pd.DataFrame(claims)\n",
+    "\n",
+    "print(f\"找到 {len(df)} 筆查核結果\")\n",
+    "df"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "83b7e4fe",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "=== 查核評級分佈 ===\n",
+      "rating\n",
+      "False                                                                                                                                                                                                                                     2\n",
+      "False. Two of the study's lead authors say the findings have been misrepresented.                                                                                                                                                         1\n",
+      "False. Neither the mRNA nor the viral vector vaccines against Covid-19 could change people’s DNA.                                                                                                                                         1\n",
+      "This is not correct. The vaccine does not contain the SV40 virus, which has been used to induce cancer in laboratory animals. It uses a fragment of the SV40 DNA sequence, which does not cause cancer or produce an infectious virus.    1\n",
+      "Misleading                                                                                                                                                                                                                                1\n",
+      "The study did not show that the Pfizer vaccine causes cancer.                                                                                                                                                                             1\n",
+      "This is false. There are 25 different candidate vaccines in clinical trials around the world according to the World Health Organization (WHO), but none of them will alter human DNA                                                      1\n",
+      "This is false - there was no vaccine at the time.                                                                                                                                                                                         1\n",
+      "Unsupported                                                                                                                                                                                                                               1\n",
+      "Name: count, dtype: int64\n",
+      "\n",
+      "=== 查核機構 ===\n",
+      "reviewer\n",
+      "Full Fact        3\n",
+      "FactCheck.org    3\n",
+      "BBC              2\n",
+      "AAP              1\n",
+      "AP News          1\n",
+      "Name: count, dtype: int64\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"=== 查核評級分佈 ===\")\n",
+    "print(df[\"rating\"].value_counts())\n",
+    "\n",
+    "print(\"\\n=== 查核機構 ===\")\n",
+    "print(df[\"reviewer\"].value_counts())"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
+</file>
+
+<file path="data_pipeline/requirements.txt">
+anyio==4.13.0
+argon2-cffi==25.1.0
+argon2-cffi-bindings==25.1.0
+arrow==1.4.0
+asttokens==3.0.1
+async-lru==2.3.0
+attrs==26.1.0
+babel==2.18.0
+beautifulsoup4==4.14.3
+bleach==6.3.0
+certifi==2026.2.25
+cffi==2.0.0
+charset-normalizer==3.4.7
+comm==0.2.3
+debugpy==1.8.20
+decorator==5.2.1
+defusedxml==0.7.1
+executing==2.2.1
+fastjsonschema==2.21.2
+fqdn==1.5.1
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.28.1
+idna==3.11
+ipykernel==7.2.0
+ipython==9.10.1
+ipython_pygments_lexers==1.1.1
+isoduration==20.11.0
+jedi==0.19.2
+Jinja2==3.1.6
+json5==0.14.0
+jsonpointer==3.1.1
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+jupyter-events==0.12.0
+jupyter-lsp==2.3.1
+jupyter_client==8.8.0
+jupyter_core==5.9.1
+jupyter_server==2.17.0
+jupyter_server_terminals==0.5.4
+jupyterlab==4.5.6
+jupyterlab_pygments==0.3.0
+jupyterlab_server==2.28.0
+lark==1.3.1
+MarkupSafe==3.0.3
+matplotlib-inline==0.2.1
+mistune==3.2.0
+nbclient==0.10.4
+nbconvert==7.17.1
+nbformat==5.10.4
+nest-asyncio==1.6.0
+notebook_shim==0.2.4
+numpy==2.4.4
+packaging==26.1
+pandas==3.0.2
+pandocfilters==1.5.1
+parso==0.8.6
+pexpect==4.9.0
+platformdirs==4.9.6
+prometheus_client==0.25.0
+prompt_toolkit==3.0.52
+psutil==7.2.2
+ptyprocess==0.7.0
+pure_eval==0.2.3
+pycparser==3.0
+Pygments==2.20.0
+python-dateutil==2.9.0.post0
+python-dotenv==1.2.2
+python-json-logger==4.1.0
+PyYAML==6.0.3
+pyzmq==27.1.0
+referencing==0.37.0
+requests==2.33.1
+rfc3339-validator==0.1.4
+rfc3986-validator==0.1.1
+rfc3987-syntax==1.1.0
+rpds-py==0.30.0
+Send2Trash==2.1.0
+setuptools==82.0.1
+six==1.17.0
+soupsieve==2.8.3
+stack-data==0.6.3
+terminado==0.18.1
+tinycss2==1.4.0
+tornado==6.5.5
+traitlets==5.14.3
+typing_extensions==4.15.0
+tzdata==2026.1
+uri-template==1.3.0
+urllib3==2.6.3
+wcwidth==0.6.0
+webcolors==25.10.0
+webencodings==0.5.1
+websocket-client==1.9.0
+</file>
+
+<file path="frontend/src/App.jsx">
+// 檔案位置：frontend/src/App.jsx
+import React, { useState, useEffect } from 'react';
+import NetworkGraph from './components/NetworkGraph'; 
+import EventDashboard from './components/EventDashboard';
+import UserProfile from './components/UserProfile';
+
+function App() {
+  const [currentPage, setCurrentPage] = useState(() => localStorage.getItem('currentPage') || 'dashboard');
+  const [selectedEventId, setSelectedEventId] = useState(() => localStorage.getItem('selectedEventId') || null);
+  
+  const [selectedUser, setSelectedUser] = useState(() => {
+    try {
+      const item = localStorage.getItem('selectedUser');
+      if (item && item !== 'undefined' && item !== 'null' && item !== '[object Object]') {
+        return JSON.parse(item);
+      }
+      return null;
+    } catch (error) {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('currentPage', currentPage);
+    if (selectedEventId) localStorage.setItem('selectedEventId', selectedEventId);
+    else localStorage.removeItem('selectedEventId');
+    if (selectedUser) localStorage.setItem('selectedUser', JSON.stringify(selectedUser));
+    else localStorage.removeItem('selectedUser');
+  }, [currentPage, selectedEventId, selectedUser]);
+
+  const handleEventClick = (eventId) => {
+    setSelectedEventId(eventId);
+    setCurrentPage('graph');
+  };
+
+  const handleUserClick = (userData) => {
+    setSelectedUser(userData);
+    setCurrentPage('userProfile');
+  };
+
+  const handleBackToDashboard = () => {
+    setCurrentPage('dashboard');
+  };
+
+  const handleBackToGraph = () => {
+    setCurrentPage('graph');
+  };
+
+  return (
+    <>
+      {currentPage === 'dashboard' && (
+        <EventDashboard 
+          onEventClick={handleEventClick} 
+          onLogoClick={handleBackToDashboard} 
+          onGraphNav={() => handleEventClick(null)} /* 🌟 解鎖：允許首頁直接跳轉空圖表 */
+          onProfileNav={() => handleUserClick(null)} /* 🌟 解鎖：允許首頁直接跳轉空帳戶 */
+        />
+      )}
+      
+      {currentPage === 'graph' && (
+        <NetworkGraph 
+          eventId={selectedEventId} 
+          onBack={handleBackToDashboard} 
+          onLogoClick={handleBackToDashboard}
+          onEventChange={handleEventClick} 
+          onUserClick={handleUserClick}
+          onProfileNav={() => handleUserClick(null)} /* 🌟 解鎖：允許圖表頁隨時切換至空帳戶 */
+        />
+      )}
+
+      {currentPage === 'userProfile' && (
+        <UserProfile 
+          user={selectedUser}
+          onBack={handleBackToGraph} 
+          onEventClick={handleEventClick} 
+          onLogoClick={handleBackToDashboard}
+          onUserClick={handleUserClick}
+        />
+      )}
+    </>
+  );
+}
+
+export default App;
+</file>
+
+<file path="graph_analysis/builder.py">
+import os, json
+import networkx as nx
+from dotenv import load_dotenv
+
+load_dotenv()
+
+PHEME_PATH = os.getenv("PHEME_PATH")
+
+def build_graph_from_pheme(base_path: str, event: str) -> nx.DiGraph:
+    """
+    從單一 PHEME 事件建構傳播圖
+    回傳 DiGraph，節點是 user，邊是傳播方向
+    """
+    G = nx.DiGraph()
+    event_path = os.path.join(base_path, event + "-all-rnr-threads")
+
+    for label in ["rumours", "non-rumours"]:
+        label_path = os.path.join(event_path, label)
+        if not os.path.exists(label_path):
+            continue
+
+        for thread_id in os.listdir(label_path):
+            thread_path = os.path.join(label_path, thread_id)
+            is_rumour = (label == "rumours")
+
+            source_user = _read_source_user(thread_path)
+            if not source_user:
+                continue
+
+            reactions_path = os.path.join(thread_path, "reactions")
+            if not os.path.exists(reactions_path):
+                continue
+
+            for fname in os.listdir(reactions_path):
+                fpath = os.path.join(reactions_path, fname)
+                try:
+                    with open(fpath, encoding="utf-8", errors="ignore") as f:
+                        tweet = json.load(f)
+                        reply_user = tweet.get("user", {}).get("screen_name")
+                        if reply_user and source_user:
+                            # 邊方向：source → reply（訊息往外擴散）
+                            G.add_edge(source_user, reply_user,
+                                       thread_id=thread_id,
+                                       is_rumour=is_rumour)
+                except:
+                    continue
+
+    return G
+
+def _read_source_user(thread_path: str):
+    source_path = os.path.join(thread_path, "source-tweets")
+    if not os.path.exists(source_path):
+        return None
+    for fname in os.listdir(source_path):
+        if fname.startswith("._"):
+            continue
+        fpath = os.path.join(source_path, fname)
+        try:
+            with open(fpath, encoding="utf-8", errors="ignore") as f:
+                tweet = json.load(f)
+                return tweet.get("user", {}).get("screen_name")
+        except:
+            continue
+    return None
+</file>
+
+<file path="backend/app/routers/search.py">
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.services.fact_check import fetch_claims
+from app.services.gdelt import fetch_news
+from app.schemas.response import SearchResponse
+from app.models.schema import ClaimCache, Newscache
+
+router = APIRouter()
+
+@router.get("/search", response_model=SearchResponse)
+async def search(query: str, db: Session = Depends(get_db)):
+    
+    cached_Claims = db.query(ClaimCache).filter(ClaimCache.query == query).all()
+    
+    if cached_Claims:
+        # claims = []
+        # for claim in cached_Claims:
+        #     claims.append({
+        #         "claim_text": claim.claim_text,
+        #         "claimant": claim.claimant,
+        #         "claim_date": claim.claim_date,
+        #         "reviewer": claim.reviewer,
+        #         "rating": claim.rating,
+        #         "review_url": claim.review_url,
+        #         "review_date": claim.review_date,
+        #         "review_title": claim.review_title
+        #     })
+        #claims = [claim.__dict__ for claim in cached_Claims]
+        claims = cached_Claims
+    else:
+        claims = await fetch_claims(query)
+
+        for claim in claims:
+            # claim_cache = ClaimCache(
+            #     query=query,
+            #     claim_text = claim["claim_text"],
+            #     claimant = claim["claimant"],
+            #     claim_date = claim["claim_date"],
+            #     reviewer = claim["reviewer"],
+            #     rating = claim["rating"],
+            #     review_url = claim["review_url"],
+            #     review_date = claim["review_date"],
+            #     review_title = claim["review_title"],
+            # )
+            db.add(ClaimCache(query=query, **claim))
+        db.commit()
+
+    cached_News = db.query(Newscache).filter(Newscache.query == query).all()
+
+    if cached_News:
+        # for new in cached_News:
+        #     news.append({
+        #         "title": new.title,
+        #         "url": new.url,
+        #         "source": new.source,
+        #         "date": new.date,
+        #         "country": new.country
+        #     })
+        #news = [new.__dict__ for new in cached_News]
+        news = cached_News
+    else:
+        news = await fetch_news(query)
+
+        for new in news:
+            # news_cache = Newscache(
+            #     query=query,
+            #     title = new["title"],
+            #     url = new["url"],
+            #     source = new["source"],
+            #     date = new["date"],
+            #     country = new["country"]
+            # )
+            db.add(Newscache(query=query, **new))
+        db.commit()
+
+    return SearchResponse(query=query, claims=claims, news=news)
+</file>
+
+<file path="frontend/src/components/NetworkGraph.jsx">
+// 檔案位置：frontend/src/components/NetworkGraph.jsx
+import React, { useState, useRef, useEffect } from 'react';
+import CytoscapeComponent from 'react-cytoscapejs';
+import styles from './NetworkGraph.module.css';
+import { USE_MOCK_DATA, MOCK_ELEMENTS, cyStylesheet, cyLayout } from './graphConfig';
+
+const NetworkGraph = ({ eventId, onBack, onLogoClick, onEventChange, onUserClick, onProfileNav }) => {
+  const [selectedNode, setSelectedNode] = useState(null);
+  const [elements, setElements] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isLeftMenuOpen, setIsLeftMenuOpen] = useState(false);
+  const cyRef = useRef(null);
+
+  useEffect(() => {
+    closePanel();
+    if (USE_MOCK_DATA) {
+      setLoading(true); setElements([]);
+      const timer = setTimeout(() => { setElements(MOCK_ELEMENTS); setLoading(false); }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [eventId]);
+
+  const closePanel = () => {
+    setSelectedNode(null);
+    if (cyRef.current) {
+      cyRef.current.elements().unselect(); 
+      cyRef.current.elements().removeClass('dimmed'); 
+    }
+  };
+
+  // 🌟 實體按鈕：依據畫面正中央為基準點進行縮放
+  const handleZoomIn = () => { 
+    if (cyRef.current) {
+      const cy = cyRef.current;
+      cy.zoom({
+        level: cy.zoom() * 1.2,
+        renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 }
+      });
+    }
+  };
+
+  const handleZoomOut = () => { 
+    if (cyRef.current) {
+      const cy = cyRef.current;
+      cy.zoom({
+        level: cy.zoom() * 0.8,
+        renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 }
+      });
+    } 
+  };
+
+  const handleFit = () => { if (cyRef.current) { cyRef.current.fit(); cyRef.current.center(); } };
+
+  const eventsArray = Array.isArray(selectedNode?.participated_events) ? selectedNode.participated_events : [];
+  const sortedEvents = [...eventsArray].sort((a, b) => (b.impact_score || 0) - (a.impact_score || 0));
+  const top5Events = sortedEvents.slice(0, 5);
+  const hasMoreEvents = sortedEvents.length > 5;
+
+  return (
+    <div className={styles.dashboard}>
+      <header className={styles.topNav}>
+        <div className={styles.navLeft}>
+          <button className={styles.menuBtn} onClick={() => setIsLeftMenuOpen(!isLeftMenuOpen)}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          <div className={styles.navTitle} onClick={onLogoClick} style={{ cursor: 'pointer' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8AB4F8" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            情報追蹤系統
+          </div>
+        </div>
+        <div className={styles.navCenter}>
+          <div className={styles.searchBar}>
+            <svg className={styles.searchIcon} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input 
+              type="text" 
+              className={styles.searchInput} 
+              placeholder="輸入事件 ID 搜尋 (例如: election2020)..." 
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.target.value) onEventChange(e.target.value);
+              }}
+            />
+          </div>
+        </div>
+        <div className={styles.navRight}></div>
+      </header>
+
+      <div className={styles.bodyLayout}>
+        <aside className={`${styles.leftSidebar} ${!isLeftMenuOpen ? styles.leftSidebarClosed : ''}`}>
+          <div className={styles.menuItem} onClick={onBack}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>事件總覽看板
+          </div>
+          <div className={styles.menuItemActive}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>當前拓撲分析
+          </div>
+          <div className={styles.menuItem} onClick={onProfileNav} style={{ cursor: 'pointer' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>實體關聯檔案
+          </div>
+        </aside>
+
+        <div className={styles.contentWrapper}>
+          <section className={styles.kpiGrid}>
+            <div className={styles.card}>
+              <div className={styles.kpiLabel}>分析節點總數</div>
+              <div className={styles.kpiValue}>{loading ? '-' : elements.filter(e => e.data.id && !e.data.source).length}</div>
+            </div>
+            <div className={styles.card}>
+              <div className={styles.kpiLabel}>異常涉入帳號</div>
+              <div className={styles.kpiValueDanger}>{loading ? '-' : elements.filter(e => e.data.is_rumour && !e.data.source).length}</div>
+            </div>
+            <div className={styles.card}>
+              <div className={styles.kpiLabel}>當前分析事件集</div>
+              <div className={styles.kpiValue} style={{ color: '#E3E3E3', fontSize: '18px', marginTop: '4px' }}>
+                {loading ? '載入中...' : (eventId ? eventId.toUpperCase() : '未選取事件 (請搜尋)')}
+              </div>
+            </div>
+          </section>
+
+          <main className={styles.mainWorkspace}>
+            <div className={styles.graphContainer}>
+              <div className={styles.graphHeader}>
+                <span>網絡傳播拓撲矩陣</span>
+                <div className={styles.legendContainer}>
+                  <div className={styles.legendItem}><div className={styles.dotBlue}></div> 正常節點</div>
+                  <div className={styles.legendItem}><div className={styles.dotRed}></div> 異常/謠言節點</div>
+                </div>
+              </div>
+
+              {/* 🌟 核心修改區：接管滑鼠滾輪，使用一致的比例縮放，並跟隨滑鼠座標 */}
+              <div 
+                style={{ flex: 1, position: 'relative' }}
+                onWheel={(e) => {
+                  if (!cyRef.current || loading || elements.length === 0) return;
+                  const cy = cyRef.current;
+                  const oldZoom = cy.zoom();
+                  
+                  // 使用 1.15 倍率進行比例縮放 (適中且平滑的速度，不會忽快忽慢)
+                  const zoomFactor = 1.15;
+                  let newZoom = e.deltaY < 0 ? oldZoom * zoomFactor : oldZoom / zoomFactor;
+                  
+                  if (newZoom < 0.3) newZoom = 0.3;
+                  if (newZoom > 3) newZoom = 3;
+
+                  // 取得滑鼠在畫布中的相對座標，讓縮放中心緊緊跟隨滑鼠
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  cy.zoom({
+                    level: newZoom,
+                    renderedPosition: { 
+                      x: e.clientX - rect.left, 
+                      y: e.clientY - rect.top 
+                    }
+                  });
+                }}
+              >
+                {!loading && elements.length > 0 && (
+                  <div className={styles.zoomControls}>
+                    <button className={styles.zoomBtn} onClick={handleZoomIn}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                    <button className={styles.zoomBtn} onClick={handleZoomOut}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                    <button className={styles.zoomBtn} onClick={handleFit}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path></svg></button>
+                  </div>
+                )}
+                
+                {!loading && elements.length === 0 && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#5F6368', fontSize: '14px' }}>
+                    請由上方搜尋列輸入事件 ID (如: sydneysiege) 以初始化傳播矩陣
+                  </div>
+                )}
+
+                {elements.length > 0 && (
+                  <CytoscapeComponent 
+                    elements={elements} 
+                    stylesheet={cyStylesheet} 
+                    layout={cyLayout} 
+                    userZoomingEnabled={false} /* 關閉原生縮放，改用上方完美的自訂滑鼠縮放 */
+                    minZoom={0.3} 
+                    maxZoom={3} 
+                    style={{ width: '100%', height: '100%' }}
+                    cy={(cy) => {
+                      cyRef.current = cy; cy.removeAllListeners('tap');
+                      cy.on('tap', 'node', (event) => {
+                        const node = event.target; setSelectedNode(JSON.parse(JSON.stringify(node.data())));
+                        cy.elements().removeClass('dimmed'); cy.elements().not(node.closedNeighborhood()).addClass('dimmed');
+                        cy.animate({ center: { eles: node }, zoom: Math.max(cy.zoom(), 1.5) }, { duration: 400, easing: 'ease-out-cubic' });
+                      });
+                      cy.on('tap', (event) => { if (event.target === cy) closePanel(); });
+                    }}
+                  />
+                )}
+              </div>
+
+              <aside className={`${styles.sidePanel} ${selectedNode ? styles.sidePanelOpen : ''}`}>
+                <div className={styles.panelHeader}>
+                  節點屬性
+                  <button className={styles.closeBtn} onClick={closePanel}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                </div>
+
+                {selectedNode && (
+                  <div className={styles.panelContent}>
+                    
+                    <div className={styles.nodeIdentityClickable} onClick={() => onUserClick(selectedNode)} title="查看完整使用者分析檔案">
+                      <div className={styles.avatar}>{selectedNode.label ? selectedNode.label.substring(0, 1) : '@'}</div>
+                      <div className={styles.nodeTitles}>
+                        <div style={{ fontSize: '11px', fontWeight: '500', marginBottom: '6px', fontFamily: 'system-ui, sans-serif', opacity: 0.9 }}>
+                          {(() => {
+                            const evs = Array.isArray(selectedNode.participated_events) ? selectedNode.participated_events : [];
+                            const sortedEvs = [...evs].sort((a, b) => (b.impact_score || 0) - (a.impact_score || 0));
+                            const eCount = evs.length;
+                            const mImpact = eCount > 0 ? (sortedEvs[0].impact_score || 0) : 0;
+                            if (selectedNode.is_rumour) {
+                              const score = Math.min(99, Math.round(40 + (mImpact * 0.4) + (eCount * 5)));
+                              if (score >= 80) return '🔴 核心作惡節點 (APT / 網軍頭目)';
+                              if (score >= 60) return '🟠 高風險異常實體 (側翼 / 機器人)';
+                              return '🟡 中等風險 (受誤導之傳播者)';
+                            } else {
+                              return '🔵 官方源 / 認證安全節點';
+                            }
+                          })()}
+                        </div>
+                        
+                        <div className={styles.nodeName} style={{ fontSize: '18px', fontWeight: '600', color: '#E3E3E3' }}>@{selectedNode.label || '未知'}</div>
+                        <div style={{ fontSize: '13px', color: '#9AA0A6', fontFamily: 'monospace', marginTop: '4px' }}>ID: {selectedNode.id}</div>
+                      </div>
+                    </div>
+
+                    <div className={styles.divider}></div>
+
+                    <div className={styles.statsGrid}>
+                      <div className={styles.statBox}><span className={styles.statLabel}>PageRank 權重</span><span className={styles.statValue}>{selectedNode.pagerank || '0.0'}</span></div>
+                      <div className={styles.statBox}><span className={styles.statLabel}>追蹤人數</span><span className={styles.statValue}>{selectedNode.followers || '-'}</span></div>
+                      <div className={styles.statBox}><span className={styles.statLabel}>帳號建立年份</span><span className={styles.statValue}>{selectedNode.account_age || '-'}</span></div>
+                      <div className={styles.statBox}><span className={styles.statLabel}>發文設備</span><span className={styles.statValue}>{selectedNode.source_device || '-'}</span></div>
+                    </div>
+
+                    <div className={styles.divider}></div>
+
+                    <div className={styles.historySection}>
+                      <div className={styles.sectionTitle}>高影響力參與事件 (Top 5)</div>
+                      {top5Events.length > 0 ? (
+                        top5Events.map(ev => (
+                          <div key={ev.id} className={styles.historyCard} onClick={() => onEventChange(ev.id)}>
+                            <div className={styles.historyTitle}>
+                              {ev.title}
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8AB4F8" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                            </div>
+                            <div className={styles.historyDate}>影響力評分：{ev.impact_score}</div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className={styles.historyEmpty}>此帳號無跨事件參與紀錄</div>
+                      )}
+
+                      {hasMoreEvents && (
+                        <button className={styles.viewMoreBtn} onClick={() => onUserClick(selectedNode)}>
+                          查看所有事件 ({sortedEvents.length})
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </aside>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default NetworkGraph;
+</file>
+
+<file path="docker-compose.yml">
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./data:/app/data
+      - ./graph_analysis:/app/graph_analysis
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
+
+  jupyter:
+    build: ./data_pipeline
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./data_pipeline:/app
+      - ./data:/app/data
+    env_file:
+      - ./data_pipeline/.env
+    command: >
+      jupyter lab
+      --ip=0.0.0.0
+      --port=8888
+      --no-browser
+      --allow-root
+      --IdentityProvider.token=''
+      --ServerApp.password=''
+      --ServerApp.disable_check_xsrf=True
+    depends_on:
+      - db
+
+  pipeline:
+    build: ./data_pipeline
+    volumes:
+      - ./data_pipeline:/app
+      - ./data:/app/data
+    env_file:
+      - ./data_pipeline/.env
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: misinfo_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+</file>
+
+<file path="backend/app/routers/graph.py">
+# 檔案位置：backend/app/routers/graph.py
+from fastapi import APIRouter
+import os
+import sys
+import networkx as nx
+import networkx as nx  # <--- 🌟 確保這裡有引入 networkx
+
+sys.path.append("/app")
+from graph_analysis.builder import build_graph_from_pheme
+
+router = APIRouter()
+
+@router.get("/api/graph")
+async def get_graph():
+    PHEME_PATH = os.getenv("PHEME_PATH", "/app/data/raw/pheme")
+    event_name = "sydneysiege"  
+    
+    G = build_graph_from_pheme(PHEME_PATH, event_name)
+    elements = []
+    
+    if G.number_of_nodes() > 0:
+        # 🌟 演算法更換：雪球擴展法 (BFS)
+        
+        # 1. 找出全網度數 (連線數) 最高的「核心源頭節點」
+        degrees = dict(G.degree())
+        top_nodes = sorted(degrees, key=degrees.get, reverse=True)[:100]
+        subG = G.subgraph(top_nodes)
+        
+        # 1. 轉換節點 (Nodes) 資料格式
+        for node in subG.nodes():
+            elements.append({
+                "data": {
+                    "id": str(node),
+                    "label": str(node),
+                    # 視覺化大小調整：依照在「子圖」中的重要性來放大縮小
+                    "pagerank": min(sub_degrees.get(node, 1) * 3 + 15, 60), 
+                    "is_rumour": False 
+                }
+            })
+            
+        # 轉換 Edges
+        for u, v, data in subG.edges(data=True):
+            elements.append({
+                "data": {
+                    "source": str(u),
+                    "target": str(v),
+                    "is_rumour": data.get("is_rumour", False)
+                }
+            })
+
+    return {"elements": elements}
+</file>
+
+<file path="backend/app/schemas/response.py">
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+class ClaimResult(BaseModel):
+    claim_text: str
+    claimant: Optional[str]
+    claim_date: Optional[datetime]
+    rating: Optional[str]
+    reviewer: Optional[str]
+    review_url: Optional[str]
+    review_date: Optional[datetime]
+    review_title: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+class NewsResult(BaseModel):
+    title: str
+    url: str
+    source: Optional[str]
+    date: Optional[datetime]
+    country: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+class SearchResponse(BaseModel):
+    query: str
+    claims: list[ClaimResult]
+    news: list[NewsResult]
+
+class TimelineItem(BaseModel):
+    date: Optional[datetime]
+    type: str
+    title: Optional[str]
+    url: Optional[str]
+    source: Optional[str]
+    rating: Optional[str]
+
+class TimelineResponse(BaseModel):
+    query: str
+    total: int
+    items: list[TimelineItem]
+</file>
+
+<file path=".gitignore">
+venv/
+data/
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+test.ipynb
+</file>
+
+</files>
