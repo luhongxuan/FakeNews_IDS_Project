@@ -10,3 +10,12 @@ test1.ipynb
 test_gnn.ipynb
 *.pt
 *.csv
+
+# Archived exploratory/smoke/diagnostic research code. The directory preserves
+# each file's former graphsage_intervention_* relative path locally.
+/research_scratch/
+/analysis/
+
+artifacts/
+reference_result/
+experiments/
