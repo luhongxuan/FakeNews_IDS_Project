@@ -19,3 +19,5 @@ test_gnn.ipynb
 artifacts/
 reference_result/
 experiments/
+
+.artifact_work/

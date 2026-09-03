@@ -1,0 +1,65 @@
+{
+  "status": "complete",
+  "started_at": "2026-09-03T14:49:56.601Z",
+  "purpose": "thesis-ready unified model comparison workbook",
+  "output": "C:\\FakeNews_IDS_Project\\outputs\\thesis_model_comparison_20260903\\thesis_model_comparison_tables.xlsx",
+  "sources": {
+    "correctedV5": "C:\\FakeNews_IDS_Project\\effective_models\\pheme_v5_corrected_target\\experiments\\20260903_143643_168807_corrected_v5_nested_full\\oof_thread_scores.csv",
+    "correctedHybrid": "C:\\FakeNews_IDS_Project\\effective_models\\pheme_active_quiet_corrected_target\\experiments\\20260903_214222_297421_corrected_quiet_tier_hybrid_full\\outer_scores.csv",
+    "correctedBudget": "C:\\FakeNews_IDS_Project\\effective_models\\pheme_active_quiet_corrected_target\\experiments\\20260903_214222_297421_corrected_quiet_tier_hybrid_full\\eligible_event_budget_summary.csv",
+    "correctedTop50": "C:\\FakeNews_IDS_Project\\effective_models\\pheme_active_quiet_corrected_target\\experiments\\20260903_215627_872431_corrected_top50_comparison\\top50_macro.csv",
+    "dynamic": "C:\\FakeNews_IDS_Project\\effective_models\\pheme_multicheckpoint_rf\\reference_result\\20260903_160025_balanced_cumulative_sequential_policy\\results\\sequential_policy_macro.csv",
+    "adaptive": "C:\\FakeNews_IDS_Project\\effective_models\\pheme_multicheckpoint_rf\\experiments\\20260903_162347_617042_adaptive_cumulative_policy_full\\adaptive_policy_macro.csv",
+    "hazard": "C:\\FakeNews_IDS_Project\\effective_models\\pheme_multicheckpoint_rf\\experiments\\20260903_172123_236311_wait_loss_hazard_policy_full\\result.json",
+    "acceleration": "C:\\FakeNews_IDS_Project\\effective_models\\pheme_multicheckpoint_rf\\experiments\\20260903_194947_531733_quiet_acceleration_rf_full\\result.json",
+    "rescue": "C:\\FakeNews_IDS_Project\\effective_models\\pheme_active_quiet_corrected_target\\experiments\\20260903_221403_155217_quiet_rescue_expert_full\\rescue_cap_summary.csv",
+    "resultsMd": "C:\\FakeNews_IDS_Project\\PROJECT_RESULTS_20260901.md",
+    "narrative": "C:\\FakeNews_IDS_Project\\THESIS_MODEL_NARRATIVE_20260903_ZH.md"
+  },
+  "split": "no new split; aggregation of saved event-held-out results",
+  "cutoff": "static strict-30 and dynamic 10--60 minute protocols kept separate",
+  "seed": "inherited from source runs",
+  "research_safety": "No protected dataset or experiment output is modified. Incompatible target/denominator lineages are separated into different sheets.",
+  "completed_at": "2026-09-03T14:49:58.664Z",
+  "metrics": {
+    "static_rows": 21,
+    "dynamic_rows": 7,
+    "adaptive_rows": 7,
+    "negative_rows": 7,
+    "legacy_rows": 4,
+    "source_rows": 11,
+    "inspections": [
+      {
+        "sheet": "Static30",
+        "ok": true
+      },
+      {
+        "sheet": "Dynamic50",
+        "ok": true
+      },
+      {
+        "sheet": "Adaptive",
+        "ok": true
+      },
+      {
+        "sheet": "NegativeEvidence",
+        "ok": true
+      },
+      {
+        "sheet": "LegacyContext",
+        "ok": true
+      },
+      {
+        "sheet": "Sources",
+        "ok": true
+      }
+    ],
+    "formula_error_count": 0
+  },
+  "output_files": [
+    "thesis_model_comparison_tables.xlsx",
+    "README.md",
+    "run_record.json",
+    "previews/"
+  ]
+}

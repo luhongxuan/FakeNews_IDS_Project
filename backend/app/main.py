@@ -7,6 +7,9 @@ from app.routers import graph
 from app.routers import events
 from app.routers import intervention
 from app.routers import verification
+from app.routers import ws_events
+from app.routers import factcheck
+from app.routers import radar
 
 Base.metadata.create_all(bind=engine)
 
@@ -25,6 +28,9 @@ app.include_router(graph.router)
 app.include_router(events.router)
 app.include_router(intervention.router)
 app.include_router(verification.router)
+app.include_router(ws_events.router)
+app.include_router(factcheck.router)
+app.include_router(radar.router)
 
 @app.get("/")
 def root():

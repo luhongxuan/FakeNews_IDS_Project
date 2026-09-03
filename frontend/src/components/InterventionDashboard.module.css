@@ -85,9 +85,10 @@
   padding: 10px 12px;
   margin-bottom: 8px;
   cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s;
+  transition: border-color 0.2s, background-color 0.2s, transform 0.15s ease-out;
 }
 .threadCard:hover { border-color: #5F6368; background-color: #242528; }
+.threadCard:active { transform: scale(0.98); }
 .threadCardActive { border-color: #8AB4F8; background-color: #1A2332; }
 .threadCard:focus-visible, .linkBtn:focus-visible, .interveneBtn:focus-visible, .secondaryBtn:focus-visible, .navTitle:focus-visible { outline: 2px solid #8AB4F8; outline-offset: 2px; }
 
@@ -133,8 +134,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   color: #5F6368;
   font-size: 13px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #3C4043;
+  border-top-color: #8AB4F8;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+  flex-shrink: 0;
 }
 
 .cascadeHeader {
@@ -171,11 +185,21 @@
   min-height: 0;
 }
 
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}
+
 .resultPanel {
   flex-shrink: 0;
   border-top: 1px solid #3C4043;
   background-color: #1A2332;
   padding: 14px 16px;
+  animation: fadeInUp 260ms ease-out;
 }
 
 .resultTitle { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: #8AB4F8; }
@@ -210,7 +234,12 @@
   padding: 14px 16px;
 }
 .verifyHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
-.verifyBody { display: flex; flex-direction: column; gap: 8px; }
+.verifyBody { display: flex; flex-direction: column; gap: 8px; animation: fadeInUp 260ms ease-out; }
+.evidenceItem { animation: fadeInUp 220ms ease-out both; }
+.evidenceItem:nth-child(2) { animation-delay: 60ms; }
+.evidenceItem:nth-child(3) { animation-delay: 120ms; }
+.evidenceItem:nth-child(4) { animation-delay: 180ms; }
+.evidenceItem:nth-child(n+5) { animation-delay: 220ms; }
 .verifyTopRow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
 .credBadge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; border: 1px solid; }

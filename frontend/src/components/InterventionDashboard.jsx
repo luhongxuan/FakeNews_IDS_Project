@@ -6,7 +6,7 @@ import CytoscapeComponent from 'react-cytoscapejs';
 import styles from './InterventionDashboard.module.css';
 import { cascadeStylesheet, cascadeLayout } from './graphConfig';
 
-const InterventionDashboard = ({ eventId, onBack, onLogoClick, onProfileNav, onGraphNav }) => {
+const InterventionDashboard = ({ eventId, onBack, onLogoClick, onProfileNav, onGraphNav, onLiveScenarioNav, onRadarReviewNav }) => {
   const [threads, setThreads] = useState([]);
   const [loadingThreads, setLoadingThreads] = useState(true);
   const [threadsError, setThreadsError] = useState(null);
@@ -23,6 +23,7 @@ const InterventionDashboard = ({ eventId, onBack, onLogoClick, onProfileNav, onG
 
   const [verification, setVerification] = useState(null);
   const [verifying, setVerifying] = useState(false);
+  const [checkingVerification, setCheckingVerification] = useState(false);
   const [verificationError, setVerificationError] = useState(null);
   const cyRef = useRef(null);
   const cascadeRequestRef = useRef(null);
@@ -52,12 +53,23 @@ const InterventionDashboard = ({ eventId, onBack, onLogoClick, onProfileNav, onG
     setInterveneResult(null);
     setInterventionError(null);
     setViewMode('decision');
+    setVerification(null);
+    setVerificationError(null);
     setLoadingCascade(true);
     fetch(`/api/threads/${threadId}/cascade?event_id=${eventId}`, { signal: controller.signal })
       .then((res) => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
       .then((data) => setCascade(data))
       .catch((error) => { if (error.name !== 'AbortError') setCascadeError(error.message); })
       .finally(() => { if (!controller.signal.aborted) setLoadingCascade(false); });
+
+    // 換 thread 時先問一次有沒有已經查證過的結果，有就直接顯示，
+    // 不用每次都手動按「產生查證報告」——只有從沒查過的 thread 才需要手動觸發。
+    setCheckingVerification(true);
+    fetch(`/api/threads/${threadId}/verify`, { signal: controller.signal })
+      .then((res) => { if (res.status === 404) return null; if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+      .then((data) => setVerification(data))
+      .catch((error) => { if (error.name !== 'AbortError') setVerificationError(error.message); })
+      .finally(() => { if (!controller.signal.aborted) setCheckingVerification(false); });
   };
 
   const runIntervention = () => {
@@ -146,6 +158,8 @@ const InterventionDashboard = ({ eventId, onBack, onLogoClick, onProfileNav, onG
         </div>
         <div className={styles.navCenter}>早期介入建議 — {eventId ? eventId.toUpperCase() : '未選取事件'}</div>
         <div className={styles.navRight}>
+          {onLiveScenarioNav && <button className={styles.linkBtn} onClick={onLiveScenarioNav}>▶ 即時情境模擬</button>}
+          {onRadarReviewNav && <button className={styles.linkBtn} onClick={onRadarReviewNav}>📡 即時雷達待審核</button>}
           <button className={styles.linkBtn} onClick={onGraphNav}>使用者拓撲圖（原型）</button>
           <button className={styles.linkBtn} onClick={onProfileNav}>實體關聯檔案</button>
           <button className={styles.linkBtn} onClick={onBack}>返回事件總覽</button>
@@ -160,7 +174,7 @@ const InterventionDashboard = ({ eventId, onBack, onLogoClick, onProfileNav, onG
       <div className={styles.bodyLayout}>
         <aside className={styles.threadList}>
           <div className={styles.listHeader}>建議介入清單（依模型分數排序，共 {threads.length} 則）</div>
-          {loadingThreads && <div className={styles.emptyHint}>載入中...</div>}
+          {loadingThreads && <div className={styles.emptyHint}><span className={styles.spinner} />載入中...</div>}
           {threadsError && <div className={styles.emptyHint}>載入失敗：{threadsError}</div>}
           {!loadingThreads && !threadsError && threads.length === 0 && (
             <div className={styles.emptyHint}>此事件目前沒有可用的模型分數。</div>
@@ -207,7 +221,7 @@ const InterventionDashboard = ({ eventId, onBack, onLogoClick, onProfileNav, onG
                 </div>
               </div>
 
-              {loadingCascade && <div className={styles.emptyHint}>載入傳播鏈中...</div>}
+              {loadingCascade && <div className={styles.emptyHint}><span className={styles.spinner} />載入傳播鏈中...</div>}
               {cascadeError && <div className={styles.emptyHint} role="alert">傳播鏈載入失敗：{cascadeError}</div>}
               {interventionError && <div className={styles.inlineError} role="alert">回放驗證失敗：{interventionError}</div>}
 
@@ -255,13 +269,16 @@ const InterventionDashboard = ({ eventId, onBack, onLogoClick, onProfileNav, onG
               <div className={styles.verifyPanel}>
                 <div className={styles.verifyHeader}>
                   <div className={styles.resultTitle}>查證 agent 報告（事後決策輔助，非模型輸入）</div>
-                  <button className={styles.secondaryBtn} onClick={() => runVerification(!!verification)} disabled={verifying}>
-                    {verifying ? '查證中...(本機 LLM 推理，可能需要數十秒)' : verification ? '重新查證' : '產生查證報告'}
+                  <button className={styles.secondaryBtn} onClick={() => runVerification(!!verification)} disabled={verifying || checkingVerification}>
+                    {verifying ? '查證中...(本機 LLM 推理，可能需要數十秒)' : checkingVerification ? '確認快取中...' : verification ? '重新查證' : '產生查證報告'}
                   </button>
                 </div>
                 {verificationError && <div className={styles.inlineError} role="alert">查證失敗：{verificationError}</div>}
+                {!verification && !verifying && !checkingVerification && !verificationError && (
+                  <div className={styles.verifyNoEvidence}>這則貼文還沒有查證紀錄，按上方按鈕產生。</div>
+                )}
                 {verification && (
-                  <div className={styles.verifyBody}>
+                  <div className={styles.verifyBody} key={selectedThreadId}>
                     <div className={styles.verifyTopRow}>
                       <span className={`${styles.credBadge} ${styles[`cred_${verification.credibility}`] || ''}`}>
                         {CREDIBILITY_LABEL[verification.credibility] || verification.credibility}

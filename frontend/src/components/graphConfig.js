@@ -59,7 +59,7 @@ export const cyLayout = { name: 'concentric', padding: 60, minNodeSpacing: 65, a
 // --- 傳播鏈 (cascade) 專用樣式：呈現單一 thread 的回覆樹，而非整體使用者網路 ---
 // Do not auto-fit a large retrospective tree into the viewport.  Auto-fit
 // shrinks nodes and labels after post-cutoff nodes are revealed.
-export const cascadeLayout = { name: 'breadthfirst', directed: true, padding: 40, spacingFactor: 1.15, animate: false, fit: false };
+export const cascadeLayout = { name: 'breadthfirst', directed: true, padding: 40, spacingFactor: 1.15, animate: true, animationDuration: 450, animationEasing: 'ease-out-cubic', fit: false };
 
 export const cascadeStylesheet = [
   { selector: 'node, edge', style: { 'transition-property': 'opacity, background-color', 'transition-duration': '0.3s' } },

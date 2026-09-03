@@ -4,6 +4,11 @@ import NetworkGraph from './components/NetworkGraph';
 import EventDashboard from './components/EventDashboard';
 import UserProfile from './components/UserProfile';
 import InterventionDashboard from './components/InterventionDashboard';
+import FactCheckTool from './components/FactCheckTool';
+import LiveScenarioSimulator from './components/LiveScenarioSimulator';
+import TrendingRadar from './components/TrendingRadar';
+import RadarReviewQueue from './components/RadarReviewQueue';
+import RadarEventDetail from './components/RadarEventDetail';
 
 const HISTORY_KEY = 'fakenews-navigation';
 
@@ -89,6 +94,26 @@ function App() {
     navigate('graph');
   };
 
+  const handleFactCheckClick = () => {
+    navigate('factcheck', null, null);
+  };
+
+  const handleLiveScenarioClick = (eventId) => {
+    navigate('live-scenario', eventId);
+  };
+
+  const handleRadarClick = () => {
+    navigate('radar', null, null);
+  };
+
+  const handleRadarReviewClick = () => {
+    navigate('radar-review', null, null);
+  };
+
+  const handleOpenRadarThread = (threadId) => {
+    navigate('radar-thread', threadId, null);
+  };
+
   return (
     <>
       {currentPage === 'dashboard' && (
@@ -97,6 +122,33 @@ function App() {
           onLogoClick={handleBackToDashboard}
           onGraphNav={() => handleGraphClick(null)} /* 🌟 解鎖：允許首頁直接跳轉空圖表 */
           onProfileNav={() => handleUserClick(null)} /* 🌟 解鎖：允許首頁直接跳轉空帳戶 */
+          onFactCheckNav={handleFactCheckClick}
+          onRadarNav={handleRadarClick}
+          onRadarEventClick={handleOpenRadarThread}
+        />
+      )}
+
+      {currentPage === 'factcheck' && (
+        <FactCheckTool onBack={handleBackToDashboard} />
+      )}
+
+      {currentPage === 'radar' && (
+        <TrendingRadar onBack={handleBackToDashboard} />
+      )}
+
+      {currentPage === 'radar-review' && (
+        <RadarReviewQueue
+          onOpenThread={handleOpenRadarThread}
+          onBack={handleBackToDashboard}
+          onLogoClick={handleBackToDashboard}
+        />
+      )}
+
+      {currentPage === 'radar-thread' && (
+        <RadarEventDetail
+          threadId={selectedEventId}
+          onBack={handleBackToDashboard}
+          onLogoClick={handleBackToDashboard}
         />
       )}
 
@@ -107,6 +159,16 @@ function App() {
           onLogoClick={handleBackToDashboard}
           onProfileNav={() => handleUserClick(null)}
           onGraphNav={() => handleGraphClick(selectedEventId)}
+          onLiveScenarioNav={() => handleLiveScenarioClick(selectedEventId)}
+          onRadarReviewNav={handleRadarReviewClick}
+        />
+      )}
+
+      {currentPage === 'live-scenario' && (
+        <LiveScenarioSimulator
+          eventId={selectedEventId}
+          onBack={() => handleEventClick(selectedEventId)}
+          onLogoClick={handleBackToDashboard}
         />
       )}
 

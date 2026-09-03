@@ -30,6 +30,7 @@ preventable impact divided by total candidate-pool future preventable impact
 |---|---|---|---:|---|
 | Highest viable PHEME result (legacy artifact lineage) | PHEME, 30 min, rumour-only, nested LOEO, 7 eligible events | v5 RF with inner selection between baseline and text-PCA features | **0.1467 reduction@10** | A legal early model captures meaningful additional future preventable impact across unseen events. |
 | Closest later PHEME candidate | PHEME v5 protected rumour-only artifact, 30 min, outer LOEO, 7 eligible events | Train-only calibrated active/quiet two-expert RF | **0.1461 reduction@10** | Splitting quiet and active threads recovers the original v5 level and improves the paired global RF, but does not surpass v5. |
+| Timing-aware PHEME candidate | PHEME corrected-v5 allowlist, 10--60 min in 10-minute steps, event-held-out OOF, fixed total Budget 50 | Balanced cumulative RF sequential policy | **0.3261 mean horizon reduction** | Under a common minute-10 denominator, repeated cumulative decisions improve over the replayed single-30-minute hybrid (0.2966); this metric is not directly interchangeable with reduction@10. |
 | Most traceable current PHEME formal result | PHEME Graph7 schema-locked artifact, 30 min, rumour-only, nested LOEO, 7 eligible events | RF with nested selection among role/context/discourse bundles | **0.1385 CRR@10** | The result survives schema locking and inner-only representation selection. |
 | Direct early-size comparison | PHEME Graph7, 30 min, LOEO | author-aware RF | **0.1192** vs early-size **0.1059** | A model can outperform simply selecting the largest early threads. |
 | Twitter graph-only holdout | Twitter15/16, source-level fixed holdout, 30 min | RF with 15 graph/activity features | T15: 0.1288 vs Oracle 0.2383; T16: 0.2598 vs Oracle 0.4465 | Pure early propagation graphs contain usable signal, but source-level holdout is not PHEME-style event generalization. |
@@ -291,6 +292,110 @@ selected in five of seven folds, while account age was selected in none. This
 is retained as exploratory negative evidence rather than an effective model.
 The complete run is archived at
 `research_scratch/legacy_full/graphsage_intervention_14/experiments/20260901_233016_536789_nested_pheme_quiet_feature_combinations`.
+
+### A9. Multi-checkpoint cumulative RF and fixed sequential intervention
+
+**Reference bundle**
+
+- `effective_models/pheme_multicheckpoint_rf/reference_result/20260903_160025_balanced_cumulative_sequential_policy`
+
+This candidate replaces a single decision at minute 30 with six decisions at
+minutes 10, 20, 30, 40, 50, and 60. It uses the same 2,402-thread corrected-v5
+rumour allowlist. The cumulative RF sees every legal observation available up
+to the current checkpoint; the comparison Window/Delta RF sees the current and
+previous ten-minute windows plus their changes. Both use pooled
+elapsed-time-aware Random Forest regressors with 300 trees, depth 8, minimum
+leaf 3, `max_features=0.8`, and seed 42. Every OOF prediction excludes the
+entire held-out event from fitting.
+
+The sequential policy fixes total Budget 50 in advance and allocates
+`[9, 9, 8, 8, 8, 8]` interventions across the six checkpoints. Once selected,
+a thread is removed from later candidate pools. Prevented nodes are counted at
+the actual action time, and all policies divide by total future preventable
+impact at minute 10. This common horizon penalizes late intervention and makes
+the timing policies directly comparable to the replayed 30-minute policies.
+
+| Fixed policy | Mean horizon reduction | Total blocked future nodes | Positive interventions | Mean action minute |
+|---|---:|---:|---:|---:|
+| Single-30 corrected-target v5 | 0.2748 | 3,790 | 301 / 350 | 30.0 |
+| Single-30 cumulative RF | 0.2852 | 3,926 | 313 / 350 | 30.0 |
+| Single-30 quiet-tier hybrid | 0.2966 | 3,995 | 315 / 350 | 30.0 |
+| Balanced Window/Delta | 0.3129 | 4,570 | 298 / 350 | 34.2 |
+| Balanced cumulative + one Window challenger per checkpoint | 0.3200 | 4,596 | 306 / 350 | 34.2 |
+| **Balanced cumulative RF** | **0.3261** | **4,527** | **310 / 350** | **34.2** |
+| Descriptive dynamic Oracle | 0.4928 | 7,356 | 346 / 350 | 34.2 |
+
+Against the single-30-minute hybrid under this shared protocol, balanced
+cumulative improves mean horizon reduction by 0.0295 absolute (about 9.95%
+relative) and blocks 532 additional future nodes. It improves six of seven
+eligible events and ties `putinmissing`; no event is worse. The Window
+challenger has a larger raw blocked-node sum because event sizes differ, but a
+lower event-macro reduction and three event regressions, so it is not selected
+as the candidate.
+
+The quiet-thread diagnostic remains a limitation rather than a solved result.
+Window/Delta finds four more quiet Oracle Top-50 threads at minute 10 and two
+more at minute 20, but loses more active hits. From minute 30 through minute 60,
+cumulative finds at least as many quiet hits at every checkpoint and more
+active hits. Cumulative still retrieves only 17--20 of 76--82 pooled quiet
+Oracle Top-50 cases per later checkpoint, so the sequential gain comes mainly
+from repeated earlier decisions rather than a decisive quiet-burst feature.
+
+The balanced schedule and challenger count were fixed before outer-outcome
+replay. They were not selected using held-out results. The dynamic Oracle is an
+unavailable upper bound. Any attempt to optimize the quota schedule must use a
+new nested policy-selection protocol; this result must not be used to tune and
+then re-report a better outer schedule.
+
+### A10. Next-10-minute wait-loss Hazard RF
+
+**Reference bundle**
+
+- `effective_models/pheme_multicheckpoint_rf/reference_result/20260903_172123_wait_loss_hazard_policy`
+
+This exploratory follow-up separates intervention value from urgency. The
+existing cumulative RF supplies the current utility score. A second pooled RF
+predicts `log1p(next10_wait_loss)`, where wait loss is the nonnegative decrease
+in corrected dynamic preventable impact between T and T+10 minutes. This label
+is future supervision only; the model retains the same 57 cutoff-safe
+cumulative inputs. The full evaluation fitted 56 inner and seven outer Hazard
+models under event separation, then selected utility threshold, Hazard
+threshold, and maximum budget from inner results only.
+
+The Hazard prediction task is learnable across held-out events:
+
+| Checkpoint | Spearman | Positive ROC-AUC | Positive PR-AUC | Top-20 wait-loss capture |
+|---:|---:|---:|---:|---:|
+| 10 min | 0.451 | 0.746 | 0.734 | 0.522 |
+| 20 min | 0.401 | 0.732 | 0.604 | 0.527 |
+| 30 min | 0.399 | 0.752 | 0.578 | 0.591 |
+| 40 min | 0.362 | 0.754 | 0.510 | 0.640 |
+| 50 min | 0.318 | 0.744 | 0.423 | 0.535 |
+
+However, predictive signal did not translate into a better intervention
+controller:
+
+| Policy | Mean interventions | Mean horizon reduction | Total blocked future nodes | Mean action minute |
+|---|---:|---:|---:|---:|
+| Hazard target 20 | 30.14 | 0.1473 | 2,944 | 19.34 |
+| Hazard target 25 | 36.57 | 0.2164 | 3,495 | 12.04 |
+| Hazard target 30 | 39.43 | 0.2281 | 3,675 | 12.04 |
+| Hazard cost 0.2 | 47.14 | 0.3242 | 3,780 | 10.11 |
+| Hazard cost 0.05 / 0.1 | 49.29 | 0.3344 | 4,027 | 10.44 |
+| **Fixed balanced cumulative 50** | **50.00** | 0.3261 | **4,527** | 34.20 |
+
+The low-cost policies have slightly higher event-macro reduction but block 500
+fewer total nodes than fixed balanced cumulative and lose on three of seven
+events. Inner selection usually chooses Hazard threshold zero, while nonzero
+gates still place most interventions at minute 10. The defensible conclusion is
+that legal early features predict near-term continuation, but this does not by
+itself identify when reserving an intervention slot is beneficial. This model
+is retained as a timing-prediction diagnostic, not a replacement policy.
+
+Because the Hazard hypothesis followed inspection of earlier outer PHEME
+results, this is nested and leakage-safe but not an untouched confirmatory
+test. A later burst-onset target must not be tuned and claimed as fresh evidence
+on the same consumed outer events.
 
 ---
 
