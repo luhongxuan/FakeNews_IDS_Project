@@ -67,12 +67,31 @@ const VerifiedMark = () => (
   </svg>
 );
 
-export default function PostCard({ post, users, onShare, onComment, isNew }) {
+export default function PostCard({ post, users, onShare, onComment, isNew, picked }) {
   const author = users[post.user] ?? { handle: post.user, name: post.user, verified: false };
   const sourceAuthor = post.sharedFrom ? users[post.sharedFrom] : null;
 
   return (
-    <article className={`card ${isNew ? 'enter' : ''}`} data-post-id={post.id}>
+    <article
+      className={`card ${isNew ? 'enter' : ''} ${picked ? 'cardPicked' : ''}`}
+      data-post-id={post.id}
+      data-thread-id={post.threadId}
+    >
+      {picked && (
+        <div className="pickedBadge" aria-label="已選取送分析">
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 10.5l4 4 8-9"
+            />
+          </svg>
+          已選取
+        </div>
+      )}
       {/* 轉發標頭：這一行就是圖上那條 from → to 的邊 */}
       {sourceAuthor && (
         <div className="repostFlag">

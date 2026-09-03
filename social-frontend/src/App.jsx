@@ -5,7 +5,7 @@ import AIAgentPanel from './components/AIAgentPanel.jsx';
 import SelectionOverlay from './components/SelectionOverlay.jsx';
 import { createEventBridge, makeShareEvent, STATUS } from './lib/backend.js';
 import { listDatasets, loadDataset } from './lib/datasets.js';
-import { analyzePosts } from './lib/analysis.js';
+import { analyzeThread } from './lib/analysis.js';
 
 export default function App() {
   const [datasets, setDatasets] = useState([]);
@@ -21,7 +21,7 @@ export default function App() {
 
   const [aiOpen, setAiOpen] = useState(false);
   const [selecting, setSelecting] = useState(false);
-  const [captured, setCaptured] = useState([]); // [{ id, post, result }]
+  const [captured, setCaptured] = useState([]); // [{ threadId, posts, result }]
 
   const bridgeRef = useRef(null);
 
@@ -92,38 +92,44 @@ export default function App() {
     [emit]
   );
 
-  /* --- AI 助手：框選擷取到的貼文 id 清單 → 找出對應貼文 → 送去分析 --- */
-  const handleCapture = useCallback(
-    (ids) => {
+  /* --- 選取整串討論 → 依貼文年齡自動分派到模型或查證 --- */
+  const handleCaptureThreads = useCallback(
+    (threadIds) => {
       setSelecting(false);
-      if (!ids.length) return;
+      if (!threadIds.length) return;
 
       setCaptured((prev) => {
-        const already = new Set(prev.map((c) => c.id));
-        const newlyHit = ids
-          .filter((id) => !already.has(id))
-          .map((id) => posts.find((p) => p.id === id))
-          .filter(Boolean);
+        const already = new Set(prev.map((c) => c.threadId));
+        const newThreads = threadIds
+          .filter((tid) => !already.has(tid))
+          .map((tid) => ({
+            threadId: tid,
+            // 整串取出：原貼文加上所有回覆，不受畫面當下顯示範圍影響
+            posts: posts.filter((p) => p.threadId === tid),
+          }))
+          .filter((t) => t.posts.length > 0);
 
-        if (newlyHit.length === 0) return prev;
+        if (newThreads.length === 0) return prev;
 
-        // 非同步送分析，先讓這些項目以「分析中」狀態（result: null）出現在清單裡
-        analyzePosts(newlyHit).then((results) => {
-          setCaptured((cur) =>
-            cur.map((item) => {
-              const found = results.find((r) => r.postId === item.id);
-              return found ? { ...item, result: found } : item;
-            })
-          );
+        newThreads.forEach(({ threadId, posts: threadPosts }) => {
+          analyzeThread(threadPosts).then((result) => {
+            setCaptured((cur) =>
+              cur.map((item) => (item.threadId === threadId ? { ...item, result } : item))
+            );
+          });
         });
 
-        return [...prev, ...newlyHit.map((post) => ({ id: post.id, post, result: null }))];
+        return [...prev, ...newThreads.map((t) => ({ ...t, result: null }))];
       });
     },
     [posts]
   );
 
   const handleClearCaptured = () => setCaptured([]);
+
+  // 已選取的討論串，用來在動態牆上把對應貼文標示出來
+  const capturedThreadIds = new Set(captured.map((c) => c.threadId));
+
 
   return (
     <div className="shell">
@@ -179,7 +185,14 @@ export default function App() {
           )}
 
           {posts.map((post) => (
-            <PostCard key={post.id} post={post} users={{}} onShare={() => {}} onComment={() => {}} />
+            <PostCard
+              key={post.id}
+              post={post}
+              users={{}}
+              picked={capturedThreadIds.has(post.threadId)}
+              onShare={() => {}}
+              onComment={() => {}}
+            />
           ))}
         </main>
       </div>
@@ -201,8 +214,12 @@ export default function App() {
       >
         <svg viewBox="0 0 20 20" aria-hidden="true">
           <path
-            fill="currentColor"
-            d="M10 2l1.4 3.9L15.3 7l-3.9 1.4L10 12.3 8.6 8.4 4.7 7l3.9-1.1L10 2zM4 13.5l.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8.8-2.1zM16 12.5l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9.9-2.4z"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M4 10.5c0-3.6 2.7-6.5 6-6.5s6 2.9 6 6.5-2.7 6.5-6 6.5c-.9 0-1.8-.2-2.5-.6L4 17.5l1.1-3.1A6.4 6.4 0 014 10.5z"
           />
         </svg>
       </button>
@@ -219,7 +236,7 @@ export default function App() {
 
       <SelectionOverlay
         active={selecting}
-        onCapture={handleCapture}
+        onCaptureThreads={handleCaptureThreads}
         onCancel={() => setSelecting(false)}
       />
     </div>
