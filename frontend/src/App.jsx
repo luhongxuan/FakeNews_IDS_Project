@@ -9,13 +9,20 @@ import LiveScenarioSimulator from './components/LiveScenarioSimulator';
 import TrendingRadar from './components/TrendingRadar';
 import RadarReviewQueue from './components/RadarReviewQueue';
 import RadarEventDetail from './components/RadarEventDetail';
+import InterventionReviewPanel from './components/InterventionReviewPanel';
 
 const HISTORY_KEY = 'fakenews-navigation';
 
 function App() {
   const [currentPage, setCurrentPage] = useState(() => localStorage.getItem('currentPage') || 'dashboard');
   const [selectedEventId, setSelectedEventId] = useState(() => localStorage.getItem('selectedEventId') || null);
-  
+  // Which individual post (not the whole cluster) to pre-select when
+  // opening a radar thread's detail page -- e.g. from a decision list row
+  // that was about one specific post, not necessarily the cluster's
+  // representative. Not part of browser history/back-forward, just an
+  // initial-selection hint consumed once on mount.
+  const [selectedRadarPostUri, setSelectedRadarPostUri] = useState(null);
+
   const [selectedUser, setSelectedUser] = useState(() => {
     try {
       const item = localStorage.getItem('selectedUser');
@@ -110,8 +117,13 @@ function App() {
     navigate('radar-review', null, null);
   };
 
-  const handleOpenRadarThread = (threadId) => {
+  const handleOpenRadarThread = (threadId, postUri = null) => {
+    setSelectedRadarPostUri(postUri);
     navigate('radar-thread', threadId, null);
+  };
+
+  const handleInterventionReviewClick = () => {
+    navigate('intervention-review', null, null);
   };
 
   return (
@@ -125,6 +137,7 @@ function App() {
           onFactCheckNav={handleFactCheckClick}
           onRadarNav={handleRadarClick}
           onRadarEventClick={handleOpenRadarThread}
+          onInterventionReviewNav={handleInterventionReviewClick}
         />
       )}
 
@@ -141,12 +154,22 @@ function App() {
           onOpenThread={handleOpenRadarThread}
           onBack={handleBackToDashboard}
           onLogoClick={handleBackToDashboard}
+          onInterventionReviewNav={handleInterventionReviewClick}
+        />
+      )}
+
+      {currentPage === 'intervention-review' && (
+        <InterventionReviewPanel
+          onOpenThread={handleOpenRadarThread}
+          onBack={handleRadarReviewClick}
+          onLogoClick={handleBackToDashboard}
         />
       )}
 
       {currentPage === 'radar-thread' && (
         <RadarEventDetail
           threadId={selectedEventId}
+          initialPostUri={selectedRadarPostUri}
           onBack={handleBackToDashboard}
           onLogoClick={handleBackToDashboard}
         />

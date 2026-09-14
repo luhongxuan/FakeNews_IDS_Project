@@ -122,8 +122,72 @@
 .cred_disputed { color: #FDD663; border-color: rgba(253, 214, 99, .5); background-color: rgba(253, 214, 99, .1); }
 .cred_likely_false { color: #F28B82; border-color: rgba(242, 139, 130, .5); background-color: rgba(242, 139, 130, .1); }
 .cred_unverified { color: #9AA0A6; border-color: rgba(154, 160, 166, .5); background-color: rgba(154, 160, 166, .1); }
+
+.interventionEscalateNow { color: #F28B82; border-color: rgba(242, 139, 130, .5); background-color: rgba(242, 139, 130, .1); }
+.interventionEscalateNext { color: #FDD663; border-color: rgba(253, 214, 99, .5); background-color: rgba(253, 214, 99, .1); }
+.interventionHold { color: #8AB4F8; border-color: rgba(138, 180, 248, .5); background-color: rgba(138, 180, 248, .1); }
+.interventionDismiss { color: #81C995; border-color: rgba(129, 201, 149, .5); background-color: rgba(129, 201, 149, .1); }
+.interventionHard { color: #FF8A80; border-color: rgba(255, 138, 128, .6); background-color: rgba(255, 138, 128, .12); }
+.interventionSoft { color: #AECBFA; border-color: rgba(174, 203, 250, .55); background-color: rgba(174, 203, 250, .1); }
+.interventionNone { color: #81C995; border-color: rgba(129, 201, 149, .5); background-color: rgba(129, 201, 149, .1); }
+.interventionDeferred { color: #FDD663; border-color: rgba(253, 214, 99, .5); background-color: rgba(253, 214, 99, .1); }
 .verifySummary { font-size: 12.5px; color: #E3E3E3; line-height: 1.6; margin: 8px 0 0; }
 .verifySummary b { color: #FDD663; }
+
+.policyAudit { border-color: rgba(138, 180, 248, .45); }
+.policyTopLine { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.auditChip {
+  font-size: 10.5px; color: #C4C7C5; border: 1px solid #3C4043;
+  background: rgba(255,255,255,.03); padding: 2px 8px; border-radius: 999px;
+}
+.auditGrid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px;
+  margin-top: 10px; padding: 9px 10px; border-radius: 7px; background: #1A1B1E;
+  color: #9AA0A6; font-size: 11px;
+}
+.auditGrid b { color: #E3E3E3; font-weight: 700; }
+.recommendationNotice {
+  margin-top: 10px; padding-top: 8px; border-top: 1px solid #2C2D30;
+  color: #81C995; font-size: 11px;
+}
+
+/* Agent 執行紀錄（查了什麼、呼叫了哪些工具、引用了哪些證據）--
+   刻意用 <details> 預設收合，展示時再展開，避免每次查證結果都被一長串
+   工具紀錄淹沒，但仍讓人隨時能點開看 agent 到底做了什麼。 */
+.agentTrace { margin-top: 10px; border-top: 1px solid #2C2D30; padding-top: 8px; }
+.agentTraceSummary {
+  cursor: pointer; font-size: 11.5px; color: #8AB4F8; font-weight: 600;
+  list-style: none; user-select: none;
+}
+.agentTraceSummary::-webkit-details-marker { display: none; }
+.agentTraceSummary::before { content: '▸ '; }
+details[open] > .agentTraceSummary::before { content: '▾ '; }
+.traceQueries { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.traceList { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.traceItem {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  font-size: 11px; color: #9AA0A6; background: #131314; border: 1px solid #2C2D30;
+  border-radius: 6px; padding: 6px 8px;
+}
+.traceToolName { color: #C4C7C5; font-weight: 700; }
+.traceArg { color: #E3E3E3; font-style: italic; }
+.traceMeta { color: #80868B; }
+.traceBadgeAuto { color: #AECBFA; border: 1px solid rgba(174,203,250,.4); border-radius: 999px; padding: 1px 7px; }
+.traceBadgeRepeat { color: #FDD663; border: 1px solid rgba(253,214,99,.4); border-radius: 999px; padding: 1px 7px; }
+.traceStance { color: #C4C7C5; font-weight: 700; text-transform: uppercase; font-size: 10px; }
+.traceLink { color: #8AB4F8; text-decoration: none; word-break: break-all; }
+.traceLink:hover { text-decoration: underline; }
+
+.liveTrace { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.liveTraceHeader { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #9AA0A6; }
+.livePulseDot {
+  width: 8px; height: 8px; border-radius: 50%; background: #8AB4F8; flex-shrink: 0;
+  animation: livePulse 1.1s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
 
 @media (max-width: 1000px) {
   .mainLayout { flex-direction: column; overflow-y: auto; }

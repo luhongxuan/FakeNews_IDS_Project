@@ -8,9 +8,18 @@ import styles from './RadarReviewQueue.module.css';
 
 const POLL_INTERVAL_MS = 45000;
 
+function toUtcMillis(iso) {
+  // Backend serializes naive UTC datetimes (no offset suffix) via
+  // .isoformat(). Without a trailing Z or +HH:MM, the Date constructor
+  // treats the string as local time, silently shifting every timestamp by
+  // the browser's UTC offset (e.g. something that just happened shows as
+  // "8 hours ago" in UTC+8).
+  return new Date(/Z$|[+-]\d{2}:\d{2}$/.test(iso) ? iso : `${iso}Z`).getTime();
+}
+
 function formatRelativeTime(iso) {
   if (!iso) return '';
-  const diffMs = Date.now() - new Date(iso).getTime();
+  const diffMs = Date.now() - toUtcMillis(iso);
   const mins = Math.floor(diffMs / 60000);
   if (mins < 1) return '剛剛';
   if (mins < 60) return `${mins} 分鐘前`;
@@ -19,7 +28,7 @@ function formatRelativeTime(iso) {
   return `${Math.floor(hours / 24)} 天前`;
 }
 
-const RadarReviewQueue = ({ onBack, onLogoClick, onOpenThread }) => {
+const RadarReviewQueue = ({ onBack, onLogoClick, onOpenThread, onInterventionReviewNav }) => {
   const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -63,7 +72,10 @@ const RadarReviewQueue = ({ onBack, onLogoClick, onOpenThread }) => {
           即時雷達・待審核
         </button>
         <div className={styles.liveStatus}><span className={styles.liveDot} />{pendingCount} 則待審核</div>
-        <button className={styles.linkBtn} onClick={onBack}>返回</button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className={styles.linkBtn} onClick={onInterventionReviewNav}>自動干預建議</button>
+          <button className={styles.linkBtn} onClick={onBack}>返回</button>
+        </div>
       </header>
 
       <div className={styles.explainer}>

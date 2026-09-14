@@ -264,6 +264,34 @@
 .evidenceLink:hover { text-decoration: underline; }
 .evidenceSource { font-size: 10px; color: #80868B; margin-left: auto; }
 
+/* Agent 即時查證進度：查證按鈕按下後，工具呼叫紀錄一筆一筆邊做邊出現
+   （靠 InterventionDashboard.jsx 對 /api/verification_progress/{id} 的輪詢），
+   跟下面 verifyBody 用同一套 evidenceList/evidenceItem 樣式，讓過程跟
+   最終結果視覺上是同一件事的兩個階段，而不是切換到完全不同的排版。 */
+.liveProgress { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.liveProgressHeader { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #9AA0A6; }
+.livePulseDot {
+  width: 8px; height: 8px; border-radius: 50%; background: #8AB4F8; flex-shrink: 0;
+  animation: livePulse 1.1s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* 查完之後仍留著的過程紀錄（見上面的說明）：預設收合，不像 liveProgress
+   跑完就清空 -- 那是「正在做」的即時提示，這是「已經做完，留底可查」的
+   永久紀錄，兩者故意分開，語意不同。 */
+.processTrace { margin-top: 6px; border-top: 1px solid #3C4043; padding-top: 8px; }
+.processTraceSummary {
+  cursor: pointer; font-size: 11.5px; color: #8AB4F8; font-weight: 600;
+  list-style: none; user-select: none;
+}
+.processTraceSummary::-webkit-details-marker { display: none; }
+.processTraceSummary::before { content: '▸ '; }
+details[open] > .processTraceSummary::before { content: '▾ '; }
+.processTrace .evidenceList { margin-top: 8px; }
+
 @media (max-width: 860px) {
   .topNav { height: auto; min-height: 56px; padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
   .navCenter { order: 3; flex-basis: 100%; text-align: left; }

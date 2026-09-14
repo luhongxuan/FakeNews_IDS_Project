@@ -45,7 +45,7 @@ function radarThreadToEvent(thread) {
   };
 }
 
-const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav, onFactCheckNav, onRadarNav, onRadarEventClick }) => {
+const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav, onFactCheckNav, onRadarNav, onRadarEventClick, onInterventionReviewNav }) => {
   const [isLeftMenuOpen, setIsLeftMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSeverity, setFilterSeverity] = useState('all');
@@ -198,6 +198,15 @@ const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav, o
               style={{ marginRight: '12px', background: 'transparent', border: '1px solid #3C4043', color: '#E3E3E3', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', whiteSpace: 'nowrap' }}
             >
               📡 即時雷達
+            </button>
+          )}
+          {onInterventionReviewNav && (
+            <button
+              type="button"
+              onClick={onInterventionReviewNav}
+              style={{ marginRight: '12px', background: 'transparent', border: '1px solid #3C4043', color: '#E3E3E3', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', whiteSpace: 'nowrap' }}
+            >
+              🤖 自動干預建議
             </button>
           )}
           {onFactCheckNav && (

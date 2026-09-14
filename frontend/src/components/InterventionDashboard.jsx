@@ -25,8 +25,19 @@ const InterventionDashboard = ({ eventId, onBack, onLogoClick, onProfileNav, onG
   const [verifying, setVerifying] = useState(false);
   const [checkingVerification, setCheckingVerification] = useState(false);
   const [verificationError, setVerificationError] = useState(null);
+  // agent 查證進行中，即時同步顯示它目前做到哪一步了（見 runVerification）；
+  // 跟 verification（最終報告）分開放，跑完後這個就沒用了，避免兩份資料互相覆蓋。
+  const [liveToolCalls, setLiveToolCalls] = useState([]);
   const cyRef = useRef(null);
   const cascadeRequestRef = useRef(null);
+  const progressPollRef = useRef(null);
+
+  const stopProgressPolling = () => {
+    if (progressPollRef.current) {
+      clearInterval(progressPollRef.current);
+      progressPollRef.current = null;
+    }
+  };
 
   useEffect(() => {
     setThreads([]); setThreadsError(null); setSelectedThreadId(null);
@@ -43,10 +54,13 @@ const InterventionDashboard = ({ eventId, onBack, onLogoClick, onProfileNav, onG
     return () => controller.abort();
   }, [eventId]);
 
+  useEffect(() => () => stopProgressPolling(), []);
+
   const selectThread = (threadId) => {
     cascadeRequestRef.current?.abort();
     const controller = new AbortController();
     cascadeRequestRef.current = controller;
+    stopProgressPolling();
     setSelectedThreadId(threadId);
     setCascade(null);
     setCascadeError(null);
@@ -55,6 +69,7 @@ const InterventionDashboard = ({ eventId, onBack, onLogoClick, onProfileNav, onG
     setViewMode('decision');
     setVerification(null);
     setVerificationError(null);
+    setLiveToolCalls([]);
     setLoadingCascade(true);
     fetch(`/api/threads/${threadId}/cascade?event_id=${eventId}`, { signal: controller.signal })
       .then((res) => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
@@ -87,17 +102,36 @@ const InterventionDashboard = ({ eventId, onBack, onLogoClick, onProfileNav, onG
     if (!selectedThreadId) return;
     setVerifying(true);
     setVerificationError(null);
-    const url = `/api/threads/${selectedThreadId}/verify?event_id=${eventId}${force ? '&force=true' : ''}`;
+    setLiveToolCalls([]);
+
+    // 這次呼叫自己取一個 id，讓後端的 verification_progress 用同一把 key
+    // 邊做邊記錄；下面邊跑邊用同一個 id 去輪詢，畫面就能跟著 agent 目前做
+    // 到哪一步即時更新，而不是整個查證跑完（可能數十秒）才一次全部顯示。
+    const requestId = (crypto.randomUUID ? crypto.randomUUID() : `rv-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+    stopProgressPolling();
+    progressPollRef.current = setInterval(() => {
+      fetch(`/api/verification_progress/${requestId}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => { if (data) setLiveToolCalls(data.tool_calls || []); })
+        .catch(() => {}); // 輪詢失敗不影響主要查證流程，安靜略過就好
+    }, 700);
+
+    const url = `/api/threads/${selectedThreadId}/verify?event_id=${eventId}&request_id=${requestId}${force ? '&force=true' : ''}`;
     fetch(url, { method: 'POST' })
       .then((res) => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
       .then((data) => setVerification(data))
       .catch((error) => { setVerification(null); setVerificationError(error.message); })
-      .finally(() => setVerifying(false));
+      .finally(() => { stopProgressPolling(); setLiveToolCalls([]); setVerifying(false); });
   };
 
   const CREDIBILITY_LABEL = {
     likely_true: '證據傾向支持', disputed: '證據互相矛盾',
     likely_false: '證據傾向反駁', unverified: '尚無足夠證據',
+  };
+
+  const TOOL_NAME_LABEL = {
+    search_web: '🌐 一般網頁搜尋', search_news: '📰 新聞搜尋', search_fact_checks: '✅ 查核資料庫搜尋',
+    fetch_article: '📄 讀取全文',
   };
 
   const blockedIds = useMemo(
@@ -277,6 +311,28 @@ const InterventionDashboard = ({ eventId, onBack, onLogoClick, onProfileNav, onG
                 {!verification && !verifying && !checkingVerification && !verificationError && (
                   <div className={styles.verifyNoEvidence}>這則貼文還沒有查證紀錄，按上方按鈕產生。</div>
                 )}
+                {verifying && (
+                  <div className={styles.liveProgress}>
+                    <div className={styles.liveProgressHeader}>
+                      <span className={styles.livePulseDot} />
+                      Agent 正在查證・已呼叫 {liveToolCalls.length} 次工具
+                    </div>
+                    {liveToolCalls.length > 0 && (
+                      <ul className={styles.evidenceList}>
+                        {liveToolCalls.map((call, index) => (
+                          <li key={index} className={styles.evidenceItem}>
+                            <span className={styles.evidenceStance}>{TOOL_NAME_LABEL[call.name] || call.name}</span>
+                            {call.arguments?.query && <span className={styles.evidenceLink}>「{call.arguments.query}」</span>}
+                            {call.arguments?.url && <span className={styles.evidenceLink}>{call.arguments.url}</span>}
+                            <span className={styles.evidenceSource}>
+                              回傳 {call.result_count ?? 0} 筆{call.automatic && '・自動預查'}{call.repeated && '・重複呼叫'}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
                 {verification && (
                   <div className={styles.verifyBody} key={selectedThreadId}>
                     <div className={styles.verifyTopRow}>
@@ -302,6 +358,29 @@ const InterventionDashboard = ({ eventId, onBack, onLogoClick, onProfileNav, onG
                       </ul>
                     ) : (
                       <div className={styles.verifyNoEvidence}>沒有找到可引用的獨立證據。</div>
+                    )}
+                    {/* 查完不代表過程就不重要了 -- 跑的時候即時看到的那份工具呼叫
+                        紀錄，查完後仍原封不動留在這裡（收合展示，不佔版面），而
+                        不是像 liveProgress 那樣跑完就清掉。用同一個 report_jsonb
+                        裡本來就有的 tool_calls，不需要另外呼叫。 */}
+                    {verification.tool_calls?.length > 0 && (
+                      <details className={styles.processTrace}>
+                        <summary className={styles.processTraceSummary}>
+                          🔎 查證過程（{verification.model || '本機模型'}・{verification.tool_calls.length} 次工具呼叫）
+                        </summary>
+                        <ul className={styles.evidenceList}>
+                          {verification.tool_calls.map((call, index) => (
+                            <li key={index} className={styles.evidenceItem}>
+                              <span className={styles.evidenceStance}>{TOOL_NAME_LABEL[call.name] || call.name}</span>
+                              {call.arguments?.query && <span className={styles.evidenceLink}>「{call.arguments.query}」</span>}
+                              {call.arguments?.url && <span className={styles.evidenceLink}>{call.arguments.url}</span>}
+                              <span className={styles.evidenceSource}>
+                                回傳 {call.result_count ?? 0} 筆{call.automatic && '・自動預查'}{call.repeated && '・重複呼叫'}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
                     )}
                   </div>
                 )}
