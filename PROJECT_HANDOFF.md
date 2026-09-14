@@ -98,6 +98,16 @@ acceleration 與 dual-threshold 等方向。
   magnitude，且每 event 的正例極少。
 - Wait-loss／acceleration 可以描述「何時可能變快」，但沒有穩定取代 cumulative impact
   ranking；adaptive／reserve policy 多半是成本與等待權衡，而不是偵測能力提升。
+- Quiet pool 再排序曾以 tier probability 建候選池，再以 quiet utility RF 重排。完整七事件
+  nested LOEO 最後多數 fold 仍選擇保留全部 quiet pool；相較 quiet utility RF，K=5、10、20、
+  50、100 的平均 quiet efficiency 分別下降約 0.011、0.012、0.032、0.003、0.015，只有 K=1
+  出現不穩定的正增量。因此未保留為正式模型。
+- v5 Text RF 與 Active／Quiet RF 的 stacking rank fusion 亦未形成穩定優勢；K=10 相對最佳
+  單模型低約 0.0005，K=20、50 分別低約 0.0175、0.0282。這表示簡單線性順位融合無法穩定
+  利用兩模型的互補性，故未納入有效模型。
+- 早期另有一支 rumour／non-rumour retrospective 統計草稿，但沒有完整輸入 artifact contract，
+  入口程式亦未建立 DataFrame，不能重現正式結果；相關概念後來由 Chapter 3 behavior
+  analysis 的正式診斷流程取代。
 
 **為何轉向：** 問題不只是模型不夠複雜，而是固定 30 分鐘的 observable features 對 near-miss
 threads 缺乏足夠資訊。因此研究改成多 checkpoint 更新，而不是持續堆疊 quiet 特徵。
@@ -216,4 +226,3 @@ Hawkes-inspired `0.3373`。動態方法較早取得資訊但平均動作時間�
    [PROJECT_RESULTS.md](PROJECT_RESULTS.md) 為準。
 5. 不再為提升分數任意加入新的 quiet feature bundle。新方向必須提出新增可觀察資訊的假設，
    並先做 leakage audit 與短 smoke。
-

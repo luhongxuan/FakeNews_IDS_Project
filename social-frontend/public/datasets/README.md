@@ -1,6 +1,8 @@
 # 資料集擺放規格
 
-這個資料夾是**保留位置**，資料集訓練完成、確定保留集內容後，照這裡的格式放進來，前端不用再改任何程式碼就能直接讀到。
+這個資料夾存放前端可直接讀取的 PHEME 示範資料。現有事件資料由
+`social-frontend/scripts/build_pheme_dataset.py` 從受保護的 PHEME 原始資料與
+v5 Text RF 歷史 OOF 排名產生；瀏覽器執行時只讀取這些 JSON，不會執行 builder。
 
 ## 目錄結構
 
@@ -27,7 +29,7 @@ public/datasets/
 
 - `id` 必須跟資料夾名稱完全一致，前端會用它去抓 `public/datasets/<id>/thread.json`
 - `label` 是下拉選單顯示給使用者看的名稱，可以隨意命名
-- 目前是空陣列 `[]`，代表還沒有任何資料集，下拉選單會顯示「尚無可用資料集」
+- 若陣列為空 `[]`，下拉選單會顯示「尚無可用資料集」；目前 repository 已包含九個 PHEME 事件的示範資料。
 
 ## 2. `<id>/thread.json`
 

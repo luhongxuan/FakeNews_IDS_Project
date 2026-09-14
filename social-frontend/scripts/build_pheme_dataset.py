@@ -26,10 +26,11 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import traceback
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 PHEME_RAW = ROOT / "data" / "raw" / "pheme"
 V5_OOF = (
     ROOT / "effective_models" / "pheme_v5_text_rf" / "reference_result"
@@ -37,6 +38,7 @@ V5_OOF = (
 )
 OUT_DIR = ROOT / "social-frontend" / "public" / "datasets"
 MANIFEST_PATH = OUT_DIR / "manifest.json"
+RUNS_DIR = ROOT / "social-frontend" / "experiments"
 
 TWITTER_DATE_FORMAT = "%a %b %d %H:%M:%S %z %Y"
 THREADS_PER_DATASET = 25
@@ -62,6 +64,11 @@ DATASETS = [
     {"event_id": event_id, "id": event_id, "label": f"{title}（PHEME 真實資料）"}
     for event_id, title in EVENT_TITLES.items()
 ]
+
+
+def _write_json(path: Path, payload: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def _parse_date(value: str | None) -> datetime | None:
@@ -157,43 +164,104 @@ def build_thread(event_id: str, thread_id: str) -> dict | None:
 
 
 def main() -> None:
+    started_at = datetime.now(timezone.utc)
+    run_dir = RUNS_DIR / f"{started_at.strftime('%Y%m%d_%H%M%S_%f')}_pheme_frontend_dataset_build"
+    run_record_path = run_dir / "run_record.json"
+    run_record = {
+        "status": "running",
+        "started_at": started_at.isoformat(),
+        "script": str(Path(__file__).resolve()),
+        "input_artifacts": {
+            "pheme_raw": str(PHEME_RAW.resolve()),
+            "v5_oof_scores": str(V5_OOF.resolve()),
+        },
+        "output_directory": str(OUT_DIR.resolve()),
+        "split": "not applicable; frontend demonstration export",
+        "cutoff_sec": None,
+        "seed": None,
+        "config": {
+            "threads_per_dataset": THREADS_PER_DATASET,
+            "events": [spec["event_id"] for spec in DATASETS],
+            "selection": "per-event descending v5 OOF prediction with thread_id tie-break",
+        },
+        "metrics_results": {},
+        "output_files": [],
+    }
+    _write_json(run_record_path, run_record)
     print("Starting PHEME -> social-frontend dataset conversion.", flush=True)
     print(f"Output directory: {OUT_DIR.resolve()}", flush=True)
-    scores = pd.read_csv(V5_OOF, dtype={"thread_id": str, "event_id": str})
+    print(f"Run record directory: {run_dir.resolve()}", flush=True)
 
-    # This script is the single source of truth for what belongs in the
-    # manifest; rebuild it fresh each run rather than merging, so renaming
-    # or dropping a dataset here doesn't leave stale entries behind.
-    manifest = []
+    try:
+        print("[1/3] Loading v5 OOF ranking...", flush=True)
+        scores = pd.read_csv(V5_OOF, dtype={"thread_id": str, "event_id": str})
 
-    for spec in DATASETS:
-        event_id, dataset_id, label = spec["event_id"], spec["id"], spec["label"]
-        print(f"[{dataset_id}] selecting top {THREADS_PER_DATASET} threads by v5 model score for event={event_id}...", flush=True)
-        candidates = (
-            scores.loc[scores.event_id == event_id]
-            .sort_values(["prediction", "thread_id"], ascending=[False, True])
-            .head(THREADS_PER_DATASET)
-        )
-        threads = []
-        for index, row in enumerate(candidates.itertuples(), 1):
-            thread = build_thread(event_id, row.thread_id)
-            if thread is not None:
-                threads.append(thread)
-            print(f"  {index}/{len(candidates)}: thread_id={row.thread_id} -> {'ok' if thread else 'MISSING raw files, skipped'}", flush=True)
-        if not threads:
-            print(f"[{dataset_id}] FAILURE: no threads could be built, skipping this dataset.", flush=True)
-            continue
+        # This script is the single source of truth for what belongs in the
+        # manifest; rebuild it fresh each run rather than merging, so renaming
+        # or dropping a dataset here doesn't leave stale entries behind.
+        manifest = []
+        written_files: list[str] = []
+        total_threads = 0
 
-        out_dir = OUT_DIR / dataset_id
-        out_dir.mkdir(parents=True, exist_ok=True)
-        payload = {"id": dataset_id, "label": label, "threads": threads}
-        (out_dir / "thread.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"[{dataset_id}] wrote {len(threads)} threads to {out_dir / 'thread.json'}", flush=True)
+        print("[2/3] Building event datasets...", flush=True)
+        for event_index, spec in enumerate(DATASETS, 1):
+            event_id, dataset_id, label = spec["event_id"], spec["id"], spec["label"]
+            print(
+                f"  event {event_index}/{len(DATASETS)} [{dataset_id}]: selecting top "
+                f"{THREADS_PER_DATASET} threads by v5 score...",
+                flush=True,
+            )
+            candidates = (
+                scores.loc[scores.event_id == event_id]
+                .sort_values(["prediction", "thread_id"], ascending=[False, True])
+                .head(THREADS_PER_DATASET)
+            )
+            threads = []
+            for index, row in enumerate(candidates.itertuples(), 1):
+                thread = build_thread(event_id, row.thread_id)
+                if thread is not None:
+                    threads.append(thread)
+                print(
+                    f"    thread {index}/{len(candidates)}: {row.thread_id} -> "
+                    f"{'ok' if thread else 'MISSING raw files, skipped'}",
+                    flush=True,
+                )
+            if not threads:
+                print(f"  [{dataset_id}] no threads could be built; dataset skipped.", flush=True)
+                continue
 
-        manifest.append({"id": dataset_id, "label": label})
+            out_path = OUT_DIR / dataset_id / "thread.json"
+            payload = {"id": dataset_id, "label": label, "threads": threads}
+            _write_json(out_path, payload)
+            written_files.append(str(out_path.resolve()))
+            total_threads += len(threads)
+            print(f"  [{dataset_id}] wrote {len(threads)} threads to {out_path}", flush=True)
 
-    MANIFEST_PATH.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"SUCCESS: manifest updated at {MANIFEST_PATH.resolve()}", flush=True)
+            manifest.append({"id": dataset_id, "label": label})
+
+        print("[3/3] Writing manifest and run record...", flush=True)
+        _write_json(MANIFEST_PATH, manifest)
+        written_files.append(str(MANIFEST_PATH.resolve()))
+        run_record.update({
+            "status": "complete",
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+            "metrics_results": {
+                "datasets_written": len(manifest),
+                "threads_written": total_threads,
+            },
+            "output_files": written_files,
+        })
+        _write_json(run_record_path, run_record)
+        print(f"SUCCESS: PHEME frontend datasets saved; run record: {run_dir.resolve()}", flush=True)
+    except Exception:
+        run_record.update({
+            "status": "failed",
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+            "failure_details": traceback.format_exc(),
+        })
+        _write_json(run_record_path, run_record)
+        print(f"FAILURE: PHEME frontend dataset build preserved at: {run_dir.resolve()}", flush=True)
+        raise
 
 
 if __name__ == "__main__":
