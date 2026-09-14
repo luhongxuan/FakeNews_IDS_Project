@@ -1,14 +1,12 @@
 from fastapi import APIRouter, Query, Depends
 import os
-import sys
-import random
 import networkx as nx
 from sqlalchemy.orm import Session
-sys.path.append("/app")
 
 from app.database import get_db
 from app.services.graph_store import save_graph_to_db, load_event_summary
-from graph_analysis.builder import build_graph_from_pheme
+from app.services import model_scores
+from app.services.pheme_graph_builder import build_graph_from_pheme
 
 router = APIRouter()
 EVENT_IDS = ["charliehebdo", "ebola-essien", "ferguson", "germanwings-crash", "gurlitt", "ottawashooting", "prince-toronto", "putinmissing", "sydneysiege"]
@@ -56,8 +54,11 @@ def get_event_summary(event_id: str, db: Session = Depends(get_db)):
         date           = date,
         node_count     = G.number_of_nodes(),
         rumour_count   = rumours_num,
-        status         = random.sample(["monitoring", "pending", "archived"], 1)[0],
-        severity       = random.sample(["low", "medium", "high"], 1)[0],
+        status         = "monitoring",
+        # Real risk tier from the leakage-audited v5 text RF nested-LOEO OOF
+        # predictions (top-decile predicted-percentile bucketed), not a
+        # random placeholder.
+        severity       = model_scores.event_severity(event_id),
         description    = EVENT_META.get(event_id, {}).get("desc", ""),
         summary_jsonb  = None,
     )

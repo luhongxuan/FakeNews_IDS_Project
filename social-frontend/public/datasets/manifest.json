@@ -1,0 +1,38 @@
+[
+  {
+    "id": "charliehebdo",
+    "label": "查理週刊槍擊案（PHEME 真實資料）"
+  },
+  {
+    "id": "ebola-essien",
+    "label": "埃博拉疫情（PHEME 真實資料）"
+  },
+  {
+    "id": "ferguson",
+    "label": "弗格森事件（PHEME 真實資料）"
+  },
+  {
+    "id": "germanwings-crash",
+    "label": "德國之翼墜機事件（PHEME 真實資料）"
+  },
+  {
+    "id": "gurlitt",
+    "label": "古利特失竊事件（PHEME 真實資料）"
+  },
+  {
+    "id": "ottawashooting",
+    "label": "渥太華槍擊案（PHEME 真實資料）"
+  },
+  {
+    "id": "prince-toronto",
+    "label": "多倫多王子事件（PHEME 真實資料）"
+  },
+  {
+    "id": "putinmissing",
+    "label": "普丁失蹤事件（PHEME 真實資料）"
+  },
+  {
+    "id": "sydneysiege",
+    "label": "雪梨人質事件（PHEME 真實資料）"
+  }
+]

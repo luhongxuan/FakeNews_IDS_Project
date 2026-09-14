@@ -1,13 +1,28 @@
 // 檔案位置：frontend/src/App.jsx
-import React, { useState, useEffect } from 'react';
-import NetworkGraph from './components/NetworkGraph'; 
+import { useCallback, useEffect, useState } from 'react';
+import NetworkGraph from './components/NetworkGraph';
 import EventDashboard from './components/EventDashboard';
 import UserProfile from './components/UserProfile';
+import InterventionDashboard from './components/InterventionDashboard';
+import FactCheckTool from './components/FactCheckTool';
+import LiveScenarioSimulator from './components/LiveScenarioSimulator';
+import TrendingRadar from './components/TrendingRadar';
+import RadarReviewQueue from './components/RadarReviewQueue';
+import RadarEventDetail from './components/RadarEventDetail';
+import InterventionReviewPanel from './components/InterventionReviewPanel';
+
+const HISTORY_KEY = 'fakenews-navigation';
 
 function App() {
   const [currentPage, setCurrentPage] = useState(() => localStorage.getItem('currentPage') || 'dashboard');
   const [selectedEventId, setSelectedEventId] = useState(() => localStorage.getItem('selectedEventId') || null);
-  
+  // Which individual post (not the whole cluster) to pre-select when
+  // opening a radar thread's detail page -- e.g. from a decision list row
+  // that was about one specific post, not necessarily the cluster's
+  // representative. Not part of browser history/back-forward, just an
+  // initial-selection hint consumed once on mount.
+  const [selectedRadarPostUri, setSelectedRadarPostUri] = useState(null);
+
   const [selectedUser, setSelectedUser] = useState(() => {
     try {
       const item = localStorage.getItem('selectedUser');
@@ -28,41 +43,164 @@ function App() {
     else localStorage.removeItem('selectedUser');
   }, [currentPage, selectedEventId, selectedUser]);
 
-  const handleEventClick = (eventId) => {
+  const navigate = useCallback((page, eventId = selectedEventId, user = selectedUser) => {
+    const state = {
+      [HISTORY_KEY]: true,
+      page,
+      selectedEventId: eventId,
+      selectedUser: user,
+    };
+    window.history.pushState(state, '', window.location.href);
+    setCurrentPage(page);
     setSelectedEventId(eventId);
-    setCurrentPage('graph');
+    setSelectedUser(user);
+  }, [selectedEventId, selectedUser]);
+
+  useEffect(() => {
+    const currentState = window.history.state;
+    if (!currentState?.[HISTORY_KEY]) {
+      window.history.replaceState({
+        [HISTORY_KEY]: true,
+        page: currentPage,
+        selectedEventId,
+        selectedUser,
+      }, '', window.location.href);
+    }
+
+    const handlePopState = (event) => {
+      const state = event.state;
+      if (!state?.[HISTORY_KEY]) return;
+      setCurrentPage(state.page || 'dashboard');
+      setSelectedEventId(state.selectedEventId || null);
+      setSelectedUser(state.selectedUser || null);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+    // This effect initializes the current browser entry once. Navigation is
+    // handled by `navigate`, while popstate restores entries created by it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleEventClick = (eventId) => {
+    navigate('intervention', eventId);
+  };
+
+  const handleGraphClick = (eventId) => {
+    navigate('graph', eventId);
   };
 
   const handleUserClick = (userData) => {
-    setSelectedUser(userData);
-    setCurrentPage('userProfile');
+    navigate('userProfile', selectedEventId, userData);
   };
 
   const handleBackToDashboard = () => {
-    setCurrentPage('dashboard');
+    navigate('dashboard', null, null);
   };
 
   const handleBackToGraph = () => {
-    setCurrentPage('graph');
+    navigate('graph');
+  };
+
+  const handleFactCheckClick = () => {
+    navigate('factcheck', null, null);
+  };
+
+  const handleLiveScenarioClick = (eventId) => {
+    navigate('live-scenario', eventId);
+  };
+
+  const handleRadarClick = () => {
+    navigate('radar', null, null);
+  };
+
+  const handleRadarReviewClick = () => {
+    navigate('radar-review', null, null);
+  };
+
+  const handleOpenRadarThread = (threadId, postUri = null) => {
+    setSelectedRadarPostUri(postUri);
+    navigate('radar-thread', threadId, null);
+  };
+
+  const handleInterventionReviewClick = () => {
+    navigate('intervention-review', null, null);
   };
 
   return (
     <>
       {currentPage === 'dashboard' && (
-        <EventDashboard 
-          onEventClick={handleEventClick} 
-          onLogoClick={handleBackToDashboard} 
-          onGraphNav={() => handleEventClick(null)} /* 🌟 解鎖：允許首頁直接跳轉空圖表 */
+        <EventDashboard
+          onEventClick={handleEventClick}
+          onLogoClick={handleBackToDashboard}
+          onGraphNav={() => handleGraphClick(null)} /* 🌟 解鎖：允許首頁直接跳轉空圖表 */
           onProfileNav={() => handleUserClick(null)} /* 🌟 解鎖：允許首頁直接跳轉空帳戶 */
+          onFactCheckNav={handleFactCheckClick}
+          onRadarNav={handleRadarClick}
+          onRadarEventClick={handleOpenRadarThread}
+          onInterventionReviewNav={handleInterventionReviewClick}
         />
       )}
-      
-      {currentPage === 'graph' && (
-        <NetworkGraph 
-          eventId={selectedEventId} 
-          onBack={handleBackToDashboard} 
+
+      {currentPage === 'factcheck' && (
+        <FactCheckTool onBack={handleBackToDashboard} />
+      )}
+
+      {currentPage === 'radar' && (
+        <TrendingRadar onBack={handleBackToDashboard} />
+      )}
+
+      {currentPage === 'radar-review' && (
+        <RadarReviewQueue
+          onOpenThread={handleOpenRadarThread}
+          onBack={handleBackToDashboard}
           onLogoClick={handleBackToDashboard}
-          onEventChange={handleEventClick} 
+          onInterventionReviewNav={handleInterventionReviewClick}
+        />
+      )}
+
+      {currentPage === 'intervention-review' && (
+        <InterventionReviewPanel
+          onOpenThread={handleOpenRadarThread}
+          onBack={handleRadarReviewClick}
+          onLogoClick={handleBackToDashboard}
+        />
+      )}
+
+      {currentPage === 'radar-thread' && (
+        <RadarEventDetail
+          threadId={selectedEventId}
+          initialPostUri={selectedRadarPostUri}
+          onBack={handleBackToDashboard}
+          onLogoClick={handleBackToDashboard}
+        />
+      )}
+
+      {currentPage === 'intervention' && (
+        <InterventionDashboard
+          eventId={selectedEventId}
+          onBack={handleBackToDashboard}
+          onLogoClick={handleBackToDashboard}
+          onProfileNav={() => handleUserClick(null)}
+          onGraphNav={() => handleGraphClick(selectedEventId)}
+          onLiveScenarioNav={() => handleLiveScenarioClick(selectedEventId)}
+          onRadarReviewNav={handleRadarReviewClick}
+        />
+      )}
+
+      {currentPage === 'live-scenario' && (
+        <LiveScenarioSimulator
+          eventId={selectedEventId}
+          onBack={() => handleEventClick(selectedEventId)}
+          onLogoClick={handleBackToDashboard}
+        />
+      )}
+
+      {currentPage === 'graph' && (
+        <NetworkGraph
+          eventId={selectedEventId}
+          onBack={handleBackToDashboard}
+          onLogoClick={handleBackToDashboard}
+          onEventChange={handleGraphClick}
           onUserClick={handleUserClick}
           onProfileNav={() => handleUserClick(null)} /* 🌟 解鎖：允許圖表頁隨時切換至空帳戶 */
         />

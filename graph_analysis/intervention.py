@@ -2,12 +2,13 @@ import random
 import os
 import sys
 import time
+import heapq
 from collections import deque
 from typing import Optional
 import networkx as nx
 from graph_analysis.simulation import run_sir_simulation
 
-STRATEGIES = ["greedy"]
+STRATEGIES = ["random", "degree", "greedy", "min_cut", "celf"]
 
 if os.path.exists("/home/luhongxuan/FakeNews_IDS_Project"):
     sys.path.append("/home/luhongxuan/FakeNews_IDS_Project")
@@ -29,10 +30,12 @@ def select_intervention_nodes(
         "betweenness": lambda: _strategy_betweenness(UG, k),
         "greedy":      lambda: _strategy_greedy(UG, k),
         "min_cut":     lambda: _strategy_min_cut(UG, k),
+        "celf":        lambda: _strategy_celf(UG, k),
     }
     return dispatch[strategy]()
 
 def run_intervention_comparison(
+        
     G: nx.Graph,
     k: int = 5,
     beta: float = 0.1,
@@ -230,6 +233,50 @@ class _DinicMaxFlow:
                     visited.add(v)
                     q.append(v)
         return visited
+
+def _strategy_celf(G: nx.Graph, k: int, **kwargs) -> list:
+    
+    def estimate_spread(removed: set) -> float:
+        """移除節點後，從度數最高的節點出發，BFS 算可達節點數"""
+        G_temp = G.copy()
+        G_temp.remove_nodes_from(removed)
+        if G_temp.number_of_nodes() == 0:
+            return 0.0
+        
+        # 從度數最高的節點出發做 BFS
+        if len(G_temp.nodes()) == 0:
+            return 0.0
+        source = max(G_temp.degree(), key=lambda x: x[1])[0]
+        reachable = nx.single_source_shortest_path_length(G_temp, source)
+        return len(reachable)
+
+    baseline = estimate_spread(set())
+    print(f"[CELF] baseline reachable = {baseline}")
+
+    # 第一輪：初始化 heap
+    heap = []
+    for node in G.nodes():
+        gain = baseline - estimate_spread({node})
+        heapq.heappush(heap, (-gain, 0, node))
+        print(f"[CELF] 初始化: {node}，gain={-gain:.1f}")
+
+    selected = []
+    current_round = 1
+
+    while len(selected) < k and heap:
+        neg_gain, last_round, node = heapq.heappop(heap)
+
+        if last_round == current_round:
+            selected.append(node)
+            print(f"[CELF] round {current_round}: 選 {node}，gain={-neg_gain:.1f}")
+            current_round += 1
+        else:
+            already_removed = set(selected)
+            baseline_now = estimate_spread(already_removed)
+            new_gain = baseline_now - estimate_spread(already_removed | {node})
+            heapq.heappush(heap, (-new_gain, current_round, node))
+
+    return selected
 
 
 def _final_infected(sim_result: dict) -> int:
