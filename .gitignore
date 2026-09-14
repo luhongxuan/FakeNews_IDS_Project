@@ -32,6 +32,11 @@ experiments/
 
 tmp/
 
+# Local thesis working documents. Commit intentional final exports under a
+# dedicated docs/ directory instead of keeping editable drafts at repo root.
+/*.docx
+/*.pdf
+
 # Generated frontend bundles and copied demo datasets. Rebuild these from the
 # checked-in frontend sources instead of committing build output.
 /social-frontend/dist/
