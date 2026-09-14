@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, Boolean, Text, Float
+from sqlalchemy import Column, String, DateTime, Boolean, Text, Float, Integer
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from datetime import datetime, timezone
 import uuid
@@ -108,3 +108,54 @@ class VerificationReport(Base):
     model_name = Column(String, nullable=False)
     report_jsonb = Column(JSONB, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class RadarQueryExpansionAudit(Base):
+    """Live Radar Event Discovery V2, phase 3 -- one row per event-specific
+    query-expansion attempt for one seed source post (app/services/
+    radar_query_expansion.py). A NEW, independent table -- adding it does
+    not alter RadarThread's existing schema or rows, and Base.metadata.
+    create_all() (see app/main.py) only needs to CREATE this table, never
+    ALTER an existing one, so this is safe to add without a migration.
+
+    Purely an audit trail: every issued query, every candidate URI found,
+    which of those were new after dedup against already-known URIs, and
+    (once a merge decision is made for a candidate -- see
+    event_clustering_v2.classify_cluster_merge) the reasons behind it, all
+    recorded here so an expansion round can be reconstructed after the
+    fact. Never itself creates or edits a RadarThread row.
+    """
+    __tablename__ = "radar_query_expansion_audits"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    seed_uri = Column(String, index=True, nullable=False)
+    cluster_thread_id = Column(String, index=True, nullable=True)
+    queries_issued = Column(JSONB, nullable=False, default=list)
+    candidate_uris_found = Column(JSONB, nullable=False, default=list)
+    new_uris_after_dedup = Column(JSONB, nullable=False, default=list)
+    merge_decisions = Column(JSONB, nullable=False, default=list)
+    skipped_cooldown = Column(Boolean, nullable=False, default=False)
+    error = Column(Text, nullable=True)
+    expanded_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class InterventionDecision(Base):
+    """One audit-trail row from intervention_agent.py's triage loop for one
+    radar thread at one checkpoint.
+
+    Recommendation only -- nothing here ever deletes or hides content. Also
+    the input get_budget_state (see intervention_agent.py) reads from, so
+    the agent can see how many "escalate_now" slots this checkpoint tier
+    has already used before deciding whether to use another one.
+    """
+    __tablename__ = "intervention_decisions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    thread_id = Column(String, index=True, nullable=False)
+    post_uri = Column(String, nullable=False)
+    checkpoint_minutes = Column(Integer, nullable=False)
+    action = Column(String, nullable=False)
+    confidence = Column(Float, nullable=False)
+    reasoning = Column(Text, nullable=False)
+    report_jsonb = Column(JSONB, nullable=False)
+    decided_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

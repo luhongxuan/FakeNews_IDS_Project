@@ -13,9 +13,6 @@ RUN pip install --upgrade pip
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY graph_analysis/requirements.txt ./requirements-graph.txt
-RUN pip install --no-cache-dir -r requirements-graph.txt
-
 # ── 複製程式碼 ────────────────────────────
 COPY backend/ .
 

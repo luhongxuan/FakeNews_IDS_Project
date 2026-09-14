@@ -1,15 +1,12 @@
 from fastapi import APIRouter, Depends, Query
 from functools import lru_cache
 import os
-import sys
 import networkx as nx
 from sqlalchemy.orm import Session
 
-sys.path.append("/app")
-from graph_analysis.builder import build_graph_from_pheme
-
 from app.database import get_db
 from app.models.schema import PropagationEvent
+from app.services.pheme_graph_builder import build_graph_from_pheme
 
 router = APIRouter()
 
@@ -93,7 +90,7 @@ def get_graph(event: str = Query(..., description="PHEME 事件名稱")):
     # since _build_graph_cached makes every call after that instant.
     PHEME_PATH = os.getenv("PHEME_PATH", "/app/data/raw/pheme")
     # build_graph_from_pheme returns (graph, first_seen_date, rumour_count) --
-    # see graph_analysis/builder.py. This previously assigned the whole tuple
+    # see app/services/pheme_graph_builder.py. This previously assigned the whole tuple
     # to G, which meant this endpoint had never actually worked; it only
     # went unnoticed because the frontend was always on mock data until now.
     G, _first_seen_date, _rumour_count = _build_graph_cached(PHEME_PATH, event)

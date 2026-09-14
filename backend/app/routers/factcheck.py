@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.schema import VerificationReport
-from app.services.verification_agent import OLLAMA_MODEL, run_verification
+from app.services.verification_agent import OLLAMA_MODEL, VERIFICATION_PROMPT_VERSION, run_verification
 
 router = APIRouter()
 
@@ -28,13 +28,21 @@ MAX_TEXT_LENGTH = 2000
 
 class FactCheckRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=MAX_TEXT_LENGTH)
+    request_id: str | None = Field(
+        None, description="Frontend-minted id to poll live progress at GET /api/verification_progress/{request_id} while this call is in flight.",
+    )
 
 
 def _cache_key(text: str) -> str:
     # Deterministic per exact text so identical lookups hit cache instead of
     # re-running the agent; reuses VerificationReport's existing thread_id
     # column as a general cache key, not an actual PHEME thread id.
-    return "adhoc_" + hashlib.sha256(text.strip().encode("utf-8")).hexdigest()[:24]
+    # VERIFICATION_PROMPT_VERSION is folded in so a prompt/reasoning-rule fix
+    # (see its own docstring -- e.g. the Isabela earthquake false-refutation
+    # case) can never keep being served from a report generated under the
+    # old, since-fixed reasoning: bumping it makes every prior cache entry
+    # unreachable under the new key, forcing a fresh check next time.
+    return "adhoc_" + hashlib.sha256(f"{VERIFICATION_PROMPT_VERSION}|{text.strip()}".encode("utf-8")).hexdigest()[:24]
 
 
 @router.post("/api/factcheck")
@@ -50,7 +58,7 @@ async def factcheck(payload: FactCheckRequest, force: bool = Query(False), db: S
             return {**existing.report_jsonb, "cached": True, "generated_at": existing.created_at.isoformat() if existing.created_at else None}
 
     try:
-        report = await run_verification(db, key, "adhoc", text)
+        report = await run_verification(db, key, "adhoc", text, progress_id=payload.request_id)
     except httpx.ConnectError as error:
         raise HTTPException(
             status_code=503,

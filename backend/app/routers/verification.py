@@ -15,8 +15,25 @@ from app.models.schema import VerificationReport
 from app.routers.intervention import _pheme_base
 from app.services.pheme_cascade import load_source_date, load_source_preview
 from app.services.verification_agent import OLLAMA_MODEL, run_verification
+from app.services import verification_progress
 
 router = APIRouter()
+
+
+@router.get("/api/verification_progress/{request_id}")
+def get_verification_progress(request_id: str):
+    """Polled by the frontend while a verification is in flight (see
+    run_verification's `progress_id` param) so it can show each tool call
+    as the agent makes it instead of only after the whole ~10-90s run
+    finishes. Best-effort and in-memory only -- see verification_progress.py
+    for why that's fine here. 404 just means "nothing recorded under this
+    id (yet, or ever)", not an error -- the caller may be polling slightly
+    before the POST that starts the run has reached the server.
+    """
+    entry = verification_progress.get(request_id)
+    if entry is None:
+        raise HTTPException(status_code=404, detail="No progress recorded for this request_id")
+    return entry
 
 
 def _cached_report(db: Session, thread_id: str) -> dict | None:
@@ -36,7 +53,9 @@ def get_cached_verification(thread_id: str, db: Session = Depends(get_db)):
 
 @router.post("/api/threads/{thread_id}/verify")
 async def run_thread_verification(
-    thread_id: str, event_id: str = Query(...), force: bool = Query(False), db: Session = Depends(get_db)
+    thread_id: str, event_id: str = Query(...), force: bool = Query(False),
+    request_id: str | None = Query(None, description="Frontend-minted id to poll live progress at GET /api/verification_progress/{request_id} while this call is in flight."),
+    db: Session = Depends(get_db),
 ):
     if not force:
         cached = _cached_report(db, thread_id)
@@ -50,7 +69,7 @@ async def run_thread_verification(
     post_date = load_source_date(base, event_id, thread_id)
 
     try:
-        report = await run_verification(db, thread_id, event_id, claim_text, post_date=post_date)
+        report = await run_verification(db, thread_id, event_id, claim_text, post_date=post_date, progress_id=request_id)
     except httpx.ConnectError as error:
         raise HTTPException(
             status_code=503,

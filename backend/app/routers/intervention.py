@@ -20,7 +20,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query
 
-from app.services import model_scores
+from app.services import model_scores, pheme_replay
 from app.services.pheme_cascade import load_cascade, load_source_preview
 
 router = APIRouter()
@@ -60,6 +60,88 @@ def get_cascade(thread_id: str, event_id: str = Query(...)):
         return load_cascade(base, event_id, thread_id)
     except FileNotFoundError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
+
+
+@router.get("/api/events/{event_id}/replay_manifest")
+def get_replay_manifest(event_id: str, limit: int = Query(1000, ge=1, le=1000)):
+    """Every scored thread's real arrival order on ONE shared event clock --
+    the data source for the 即時情境模擬 command-center MVP's alert queue and
+    simulated clock. See pheme_replay.build_event_manifest's own docstring
+    for exactly what "arrival_offset_seconds" means and why RF-rank order
+    (the OLD simulator's ordering) is not the same thing as real arrival
+    order.
+    """
+    rows = model_scores.ranked_threads(event_id, limit)
+    if not rows:
+        raise HTTPException(status_code=404, detail=f"No scored threads for event_id={event_id}")
+    base = _pheme_base()
+    manifest = pheme_replay.build_event_manifest(base, event_id, rows)
+    for row in manifest["threads"]:
+        row["preview_text"] = load_source_preview(base, event_id, row["thread_id"])
+    return manifest
+
+
+@router.get("/api/threads/{thread_id}/cascade_window")
+def get_cascade_window(
+    thread_id: str,
+    event_id: str = Query(...),
+    thread_arrival_offset_seconds: float = Query(..., description="From replay_manifest's arrival_offset_seconds for this thread."),
+    sim_time_seconds: float = Query(..., ge=0, description="Current simulated event clock, in seconds since the event's earliest source tweet."),
+):
+    """Time-gated version of /cascade: only nodes/edges whose real event-time
+    has already been reached by sim_time_seconds. Enforced here, in the data
+    layer -- see pheme_replay.cascade_window's own docstring for the exact
+    invariant. The frontend must call this instead of the plain /cascade
+    endpoint while a replay is actually running.
+    """
+    base = _pheme_base()
+    try:
+        cascade = load_cascade(base, event_id, thread_id)
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    return pheme_replay.cascade_window(cascade, thread_arrival_offset_seconds, sim_time_seconds)
+
+
+@router.get("/api/threads/{thread_id}/intervene_window")
+def get_intervene_window(
+    thread_id: str,
+    event_id: str = Query(...),
+    thread_arrival_offset_seconds: float = Query(...),
+    sim_time_seconds: float = Query(..., ge=0),
+):
+    """Progressive reveal of realized-vs-pending counterfactually-blocked
+    nodes for a thread the operator already chose to intervene on. Call
+    this on every simulated-clock tick after intervening (GET, not POST --
+    it doesn't record the intervention decision itself, only reports how
+    much of it has "come true" as sim time advances); see
+    pheme_replay.realized_blocked_nodes for the exact semantics, which
+    match the existing /intervene endpoint's blocked-node definition
+    exactly, just revealed over simulated time instead of all at once.
+    """
+    base = _pheme_base()
+    try:
+        cascade = load_cascade(base, event_id, thread_id)
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    return pheme_replay.realized_blocked_nodes(cascade, thread_arrival_offset_seconds, sim_time_seconds)
+
+
+@router.get("/api/threads/{thread_id}/auto_decision")
+def get_auto_decision(
+    thread_id: str,
+    predicted_impact: float = Query(...),
+    credibility: str | None = Query(None),
+    confidence: float | None = Query(None),
+):
+    """"Agent 自動決策" mode for the 即時情境模擬指揮台: given this thread's
+    already-known RF score and verification result, what would the SAME
+    deterministic policy the live radar pipeline uses actually decide? Pure
+    passthrough to pheme_replay.auto_decision -- see its docstring for the
+    exact (deliberately conservative) rule. Never runs the verification
+    agent itself; the caller must have already checked (or explicitly chosen
+    not to check) this thread.
+    """
+    return {"thread_id": thread_id, **pheme_replay.auto_decision(predicted_impact, credibility, confidence)}
 
 
 @router.post("/api/threads/{thread_id}/intervene")

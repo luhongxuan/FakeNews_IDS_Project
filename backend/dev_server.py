@@ -20,9 +20,9 @@ os.environ.setdefault("DATABASE_URL", "postgresql://admin:secret@localhost:15432
 _ROOT = Path(__file__).resolve().parent.parent
 os.environ.setdefault("PHEME_PATH", str(_ROOT / "data" / "raw" / "pheme"))
 
-# The routers import `graph_analysis` assuming the Docker layout where the
-# repo root is mounted at /app (see routers/graph.py, routers/events.py
-# `sys.path.append("/app")`). Add the real repo root instead for local runs.
+# The intervention runtime imports the canonical model package from the repo
+# root. Add that root for host-side development; PHEME graph construction is
+# self-contained under backend/app/services.
 sys.path.insert(0, str(_ROOT))
 
 import uvicorn

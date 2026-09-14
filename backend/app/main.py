@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine
@@ -31,6 +33,13 @@ app.include_router(verification.router)
 app.include_router(ws_events.router)
 app.include_router(factcheck.router)
 app.include_router(radar.router)
+
+@app.on_event("startup")
+async def _start_background_jobs():
+    # Fire-and-forget: this task lives for the process lifetime, not tied to
+    # any single request. See radar.run_intervention_scheduler_forever for
+    # why this can't just piggyback on a request like _maybe_ingest does.
+    asyncio.create_task(radar.run_intervention_scheduler_forever())
 
 @app.get("/")
 def root():

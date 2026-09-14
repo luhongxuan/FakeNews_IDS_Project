@@ -87,6 +87,22 @@ def load_source_date(base_path: Path, event_id: str, thread_id: str) -> str | No
     return created_at.strftime("%Y-%m-%d") if created_at else None
 
 
+def load_source_created_at(base_path: Path, event_id: str, thread_id: str) -> datetime | None:
+    """Source tweet's own absolute (timezone-aware) created_at.
+
+    Was already being parsed internally by load_cascade (as
+    `source_created_at`, used only to compute each reply's offset_sec) but
+    never exposed -- pheme_replay.py's event_manifest needs the raw absolute
+    timestamp itself to place multiple threads' source tweets on one shared
+    event-wide clock, which a single thread's own offset_sec (relative only
+    to itself) cannot do.
+    """
+    data = _load_source_tweet(base_path, event_id, thread_id)
+    if not data:
+        return None
+    return _parse_twitter_date(data.get("created_at"))
+
+
 def load_cascade(base_path: Path, event_id: str, thread_id: str) -> dict:
     thread_dir = _thread_dir(base_path, event_id, thread_id)
     if thread_dir is None:

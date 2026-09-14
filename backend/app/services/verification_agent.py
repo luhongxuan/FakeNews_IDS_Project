@@ -33,13 +33,54 @@ from sqlalchemy.orm import Session
 
 from app.services.article_fetch import fetch_article_text
 from app.services.search_tools import search_fact_checks, search_news, search_web
+from app.services import verification_progress
 
 # Deliberately not named OLLAMA_HOST: Ollama itself reserves that variable
 # for its own bind address (e.g. "0.0.0.0:11434", no scheme), and this
 # machine already has it set system-wide -- reusing the name here silently
 # picked up that value and broke httpx (missing http:// scheme).
-OLLAMA_API_BASE = os.getenv("OLLAMA_API_BASE", "http://localhost:11434")
+# .rstrip("/"): a trailing slash in the configured base (very easy to paste
+# in by accident, e.g. copying a RunPod proxy URL straight from its console)
+# turned every request below into ".../api/chat" with a doubled slash, which
+# some reverse proxies (RunPod's included) 307-redirect to the normalized
+# single-slash path -- and since httpx.AsyncClient() below defaults to
+# follow_redirects=False, that redirect surfaced as a raise_for_status()
+# error ("Redirect response '307 Temporary Redirect'...") instead of ever
+# reaching the model, i.e. a config-formatting typo that looked exactly like
+# the remote server being broken. Normalizing here makes the join always
+# correct regardless of how the operator formatted the env var.
+OLLAMA_API_BASE = os.getenv("OLLAMA_API_BASE", "http://localhost:11434").rstrip("/")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3-vl:8b-instruct")
+
+# Bump whenever SYSTEM_PROMPT's grounding/reasoning rules change in a way
+# that could flip a past verdict (e.g. the "different event != refutation"
+# rule added for the Isabela, Puerto Rico earthquake false-refutation case:
+# a real, accurate USGS-confirmed post was wrongly marked "likely_false"
+# because the model treated a similar-but-different nearby quake record as
+# a contradiction). Callers should fold this into their cache key so an
+# old VerificationReport produced under a since-fixed prompt is never
+# served as if it still reflects current reasoning -- see factcheck.py's
+# and radar.py's _cache_key/_verify_cache_key.
+# v3: minimum-search-rounds-before-abstaining rule (step 2) -- observed a
+# claim that mixed an unusual name/number combination (a Trump/JFK-era-figure
+# mashup) get "unverified" on some runs and "likely_false" on others purely
+# because the FIRST search query's exact phrasing sometimes missed the real
+# coverage; the model was allowed to give up after one try instead of
+# rephrasing. Also see OLLAMA_TEMPERATURE just below -- same underlying
+# symptom (run-to-run inconsistency on an unchanged claim), two different
+# causes (giving up too early vs. high sampling variance), both worth fixing.
+# v4: rule 7, the mirror image of rule 6's "different event != refutation".
+# Same Trump/"wrestled a second gunman"/Jacqueline Kennedy claim, AFTER v3:
+# the agent now reliably found and fetch_article'd several detailed reports
+# on the real 2026 White House Correspondents' Dinner shooting, correctly
+# recognized none of them mention the claimed detail -- and then still
+# landed on "unverified" instead of "likely_false", because nothing told it
+# that silence in thorough coverage of a dramatic claim's own event IS
+# evidence, not a null result. Rule 6 stops the model from over-reading a
+# near-miss as a contradiction; rule 7 stops it from under-reading a real,
+# well-covered non-mention as "no evidence either way" -- two failure modes
+# in opposite directions, not one fix generalizing to the other.
+VERIFICATION_PROMPT_VERSION = "v4"
 MAX_TOOL_ITERATIONS = 5
 REQUEST_TIMEOUT = 120.0
 
@@ -125,10 +166,12 @@ You must not answer from your own background knowledge or training data. You hav
 
 Process:
 1. Identify the concrete, checkable claim(s) in the post text.
-2. You MUST call at least one of search_news, search_fact_checks, or search_web, with short keyword queries (not the raw post text), before giving any final verdict. search_news and search_fact_checks are narrower and more authoritative when they return something; search_web (general DuckDuckGo search) is broader and a good fallback when the other two come back empty. You may call tools multiple times with different queries if the first results are not useful.
+2. You MUST call at least one of search_news, search_fact_checks, or search_web, with short keyword queries (not the raw post text), before giving any final verdict. search_news and search_fact_checks are narrower and more authoritative when they return something; search_web (general DuckDuckGo search) is broader and a good fallback when the other two come back empty. If your FIRST round of searches does not turn up a result that clearly discusses the same specific event as the claim, you MUST try at least one more search with a differently-worded query (synonyms, fewer/different keywords, drop or add the year) before concluding "unverified" -- a claim that mixes an unusual combination of names/numbers/places is exactly the case where the first query's exact phrasing is most likely to miss the real coverage, and giving up after one try is indistinguishable from never having checked at all.
 3. Each search result includes a "source_tier" field (e.g. "wire_service", "major_outlet", "fact_checker", "official", "reference", or "unknown"), computed independently of you -- not something you assign. Weight tiered sources more heavily than "unknown" ones when they disagree, and say so in your summary when it matters.
 4. If a result's title/snippet alone isn't enough to tell whether it supports or refutes the claim, call fetch_article with that result's exact url to read the full text before deciding -- don't guess from the snippet alone when the full article is one call away.
 5. Once you have enough evidence (or tool results are consistently empty/irrelevant after a couple of tries), stop calling tools and output your final verdict, based only on what the tools actually returned. If every tool call came back empty, your credibility MUST be "unverified" and your summary must say plainly that no independent evidence was found -- do not fill the gap with what you happen to already know about the event.
+6. For a PRECISE, checkable claim (an exact number, date, magnitude, distance, or other specific measurement -- e.g. "M3.2 earthquake 27 km N of X on Sept 7"), a source only counts as "refutes" if it is clearly reporting on THAT SAME specific event and states a conflicting fact about it (e.g. multiple outlets giving a different death toll for the same confirmed incident). Finding a DIFFERENT event of the same general kind -- a similar magnitude quake near the same place but a different date, distance, or depth; a different fire; a different flood -- is NOT evidence the claimed event is false. Your search tools have no access to authoritative structured databases (seismic networks, official statistics registries, etc.), so failing to find an exact match is usually a coverage gap, not a contradiction. If the closest thing you found is a related-but-distinct record, say so plainly ("I found a similar but distinct event; I could not confirm or refute this specific one") and use "unverified" -- never promote "the nearest match I found doesn't line up" into "likely_false" or a "refutes" stance. This applies symmetrically: don't let it become "likely_true" either just because something superficially similar exists.
+7. The opposite gap: if the claim attaches a specific, notable, dramatic action or detail (something that, if it really happened, would obviously be reported -- e.g. "the President personally wrestled a gunman to the ground", "a celebrity was present and injured") to a real event you HAVE found, and you have fetch_article'd multiple detailed, full-text reports specifically about that same event (same date/location/incident), and NONE of that detailed coverage mentions the claimed action or person at all -- that silence IS evidence against the claim, not merely "insufficient evidence". Thorough contemporaneous reporting on a real, well-covered incident does not casually omit a detail that dramatic if it happened; the most likely explanation is that the specific detail was invented and grafted onto a real event. Call this "likely_false" (not "unverified"), cite the detailed real-event articles you fetched with stance "refutes", and say plainly in the summary that you checked multiple detailed accounts of the actual event and none mention the specific claimed detail. Only apply this when you actually fetched full article text (not just snippets) from more than one source about the real event -- a single snippet or a single article is not "thorough coverage", and minor/background details can legitimately go unreported even when true, so don't apply this to claims about small, easily-overlooked specifics.
 
 Your final answer MUST be ONLY a single JSON object (no prose before or after, no markdown fences) with exactly this shape:
 {
@@ -205,6 +248,15 @@ def _extract_json(text: str) -> dict | None:
 
 
 OLLAMA_NUM_CTX = int(os.getenv("OLLAMA_NUM_CTX", "8192"))
+# Ollama/qwen2.5 defaults to a fairly high sampling temperature (~0.7-0.8),
+# tuned for open-ended chat, not for a task that should give the SAME verdict
+# on the SAME evidence every time. This is a real, observed source of the
+# agent flip-flopping between runs on an identical claim+evidence (e.g. the
+# "3 gunmen"/Trump-JFK cases this session): not a bug in any one run, just
+# high-variance sampling on a task that wants low variance. Low but nonzero
+# (not 0) so the model can still break ties/vary phrasing in its summary
+# without changing its actual verdict run-to-run.
+OLLAMA_TEMPERATURE = float(os.getenv("OLLAMA_TEMPERATURE", "0.15"))
 
 
 async def _call_ollama(client: httpx.AsyncClient, messages: list[dict], use_tools: bool) -> dict:
@@ -218,7 +270,7 @@ async def _call_ollama(client: httpx.AsyncClient, messages: list[dict], use_tool
         # re-issuing near-identical queries a few tool calls in. Explicit
         # num_ctx trades a bit more KV-cache memory for the model actually
         # remembering its own tool history.
-        "options": {"num_ctx": OLLAMA_NUM_CTX},
+        "options": {"num_ctx": OLLAMA_NUM_CTX, "temperature": OLLAMA_TEMPERATURE},
     }
     if use_tools:
         payload["tools"] = TOOLS
@@ -269,18 +321,43 @@ async def _run_tool(db: Session, name: str, arguments: dict, seen_urls: set[str]
     return results
 
 
-async def run_verification(db: Session, thread_id: str, event_id: str, claim_text: str, post_date: str | None = None) -> dict:
+async def run_verification(
+    db: Session, thread_id: str, event_id: str, claim_text: str, post_date: str | None = None,
+    progress_id: str | None = None,
+) -> dict:
     """Run the tool-calling agent loop; returns the structured report dict.
 
     ``post_date`` (YYYY-MM-DD, from the source tweet's own timestamp) anchors
     searches to when the post was actually made -- see _heuristic_query's
     docstring for why this matters for old/minor claims.
 
+    ``progress_id``: when given, every tool call this run makes is also
+    pushed to verification_progress AS IT HAPPENS (not just in the final
+    returned report), so a caller polling verification_progress.get(...)
+    with the same id can show live progress during the ~10-90s this
+    usually takes. Purely additive -- None (the default) skips this
+    entirely, same behavior as before this existed.
+
     Never raises for a well-formed but unreachable Ollama host / model --
     callers should still handle httpx errors (e.g. connection refused if
     Ollama is not running) and surface them as a clear failure, not a fake
-    verdict.
+    verdict. Still marks the progress feed done (with the error message) in
+    that case via the finally block below, so a polling frontend does not
+    spin forever.
     """
+    verification_progress.start(progress_id)
+    try:
+        result = await _run_verification_inner(db, thread_id, event_id, claim_text, post_date, progress_id)
+    except Exception as error:
+        verification_progress.finish(progress_id, error=str(error))
+        raise
+    verification_progress.finish(progress_id)
+    return result
+
+
+async def _run_verification_inner(
+    db: Session, thread_id: str, event_id: str, claim_text: str, post_date: str | None, progress_id: str | None,
+) -> dict:
     date_note = f" (posted on {post_date})" if post_date else ""
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -324,8 +401,12 @@ async def run_verification(db: Session, thread_id: str, event_id: str, claim_tex
         for item in initial_web + initial_facts:
             if item.get("url"):
                 seen_urls.add(item["url"])
-        tool_call_log.append({"name": "search_web", "arguments": {"query": initial_query}, "result_count": len(initial_web), "automatic": True})
-        tool_call_log.append({"name": "search_fact_checks", "arguments": {"query": initial_query}, "result_count": len(initial_facts), "automatic": True})
+        _log_call = {"name": "search_web", "arguments": {"query": initial_query}, "result_count": len(initial_web), "automatic": True}
+        tool_call_log.append(_log_call)
+        verification_progress.append_tool_call(progress_id, _log_call)
+        _log_call = {"name": "search_fact_checks", "arguments": {"query": initial_query}, "result_count": len(initial_facts), "automatic": True}
+        tool_call_log.append(_log_call)
+        verification_progress.append_tool_call(progress_id, _log_call)
         messages.append({
             "role": "user",
             "content": (
@@ -352,7 +433,11 @@ async def run_verification(db: Session, thread_id: str, event_id: str, claim_tex
         normalized = {k: (v.strip().lower() if isinstance(v, str) else v) for k, v in arguments.items()}
         return name + "|" + json.dumps(normalized, sort_keys=True)
 
-    async with httpx.AsyncClient() as client:
+    # follow_redirects=True: defense-in-depth alongside the OLLAMA_API_BASE
+    # normalization above -- a remote proxy (RunPod's included) issuing a
+    # benign redirect (protocol upgrade, trailing-slash normalization, etc.)
+    # should transparently succeed, not surface as a fake "server error".
+    async with httpx.AsyncClient(follow_redirects=True) as client:
         final_content = None
         for _ in range(MAX_TOOL_ITERATIONS):
             result = await _call_ollama(client, messages, use_tools=True)
@@ -401,7 +486,9 @@ async def run_verification(db: Session, thread_id: str, event_id: str, claim_tex
                 for item in tool_result:
                     if item.get("url"):
                         seen_urls.add(item["url"])
-                tool_call_log.append({"name": name, "arguments": arguments, "result_count": len(tool_result), "repeated": repeated})
+                _log_call = {"name": name, "arguments": arguments, "result_count": len(tool_result), "repeated": repeated}
+                tool_call_log.append(_log_call)
+                verification_progress.append_tool_call(progress_id, _log_call)
                 content = json.dumps(tool_result, ensure_ascii=False)
                 if repeated:
                     content = (

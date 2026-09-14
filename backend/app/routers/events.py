@@ -1,14 +1,12 @@
 from fastapi import APIRouter, Query, Depends
 import os
-import sys
 import networkx as nx
 from sqlalchemy.orm import Session
-sys.path.append("/app")
 
 from app.database import get_db
 from app.services.graph_store import save_graph_to_db, load_event_summary
 from app.services import model_scores
-from graph_analysis.builder import build_graph_from_pheme
+from app.services.pheme_graph_builder import build_graph_from_pheme
 
 router = APIRouter()
 EVENT_IDS = ["charliehebdo", "ebola-essien", "ferguson", "germanwings-crash", "gurlitt", "ottawashooting", "prince-toronto", "putinmissing", "sydneysiege"]

@@ -34,6 +34,15 @@ DEFAULT_KEYWORDS = [
     "plane crash",
     "earthquake",
     "wildfire evacuation",
+    # Added 2026-09-07 (user request) -- more surface area for the live radar
+    # to catch a story that's actually blowing up right now, still within
+    # PHEME's own event domain: "riot"/"protest" match Ferguson's own event
+    # type (protest/unrest following a shooting), "flood"/"wildfire" extend
+    # the existing natural-disaster coverage (earthquake, wildfire evacuation).
+    "flood",
+    "wildfire",
+    "protest",
+    "riot",
 ]
 
 
@@ -95,7 +104,9 @@ def parse_iso(value: str | None):
         return None
 
 
-def _walk_replies(node: dict, parent_id: str | None, root_created_at, nodes: list[dict], edges: list[dict]) -> None:
+def _walk_replies(
+    node: dict, parent_id: str | None, root_created_at, nodes: list[dict], edges: list[dict], depth: int = 1
+) -> None:
     for reply in node.get("replies", []) or []:
         post = reply.get("post")
         if not post:
@@ -112,10 +123,11 @@ def _walk_replies(node: dict, parent_id: str | None, root_created_at, nodes: lis
             "text": record.get("text", ""),
             "offset_sec": offset_sec,
             "observed_by_cutoff": observed,
+            "depth": depth,
         })
         if parent_id is not None:
             edges.append({"source": parent_id, "target": post["uri"]})
-        _walk_replies(reply, post["uri"], root_created_at, nodes, edges)
+        _walk_replies(reply, post["uri"], root_created_at, nodes, edges, depth + 1)
 
 
 def build_cascade_graph(thread_json: dict, root_uri: str, root_created_at) -> dict:
@@ -125,6 +137,12 @@ def build_cascade_graph(thread_json: dict, root_uri: str, root_created_at) -> di
     render live threads with zero new frontend graph code. This is just a
     picture of what has actually happened so far; it carries no claim about
     the future (see estimate_deletion_impact for that distinction).
+
+    Each node also carries `depth` (reply-chain distance from the root) --
+    unused by the graph UI itself, but needed as-is by
+    intervention_features.py, which feeds this same structure into the
+    Hawkes-RF's cumulative feature set and expects a depth field matching
+    the one PHEME's reply table provides.
     """
     root = (thread_json.get("thread") or {}).get("post") or {}
     root_record = root.get("record") or {}
@@ -136,6 +154,7 @@ def build_cascade_graph(thread_json: dict, root_uri: str, root_created_at) -> di
         "text": root_record.get("text", ""),
         "offset_sec": 0,
         "observed_by_cutoff": True,
+        "depth": 0,
     }]
     edges: list[dict] = []
     _walk_replies(thread_json.get("thread", {}), root_uri, root_created_at, nodes, edges)
