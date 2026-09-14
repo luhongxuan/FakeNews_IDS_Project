@@ -5,10 +5,13 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import Ridge
 
-from pheme_quiet_expert_common import gated_predict, recency_values
+from effective_models.pheme_active_quiet_calibrated_rf import config
+from effective_models.pheme_active_quiet_calibrated_rf.features.quiet_active_gate_features import (
+    gated_predict, recency_values,
+)
 
 
-CALIBRATION_ALPHA = 1.0
+CALIBRATION_ALPHA = config.CALIBRATION_ALPHA
 
 
 def inner_oof_predictions(outer_train: list, depth_nodes, account_age_nodes, node_offsets, model_params: dict | None = None, progress_prefix: str = "") -> pd.DataFrame:

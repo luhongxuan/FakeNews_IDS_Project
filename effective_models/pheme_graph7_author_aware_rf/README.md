@@ -8,12 +8,23 @@
 This folder has its own copies of the author-aware snapshot and schema
 finalization feature scripts; it does not share them with the discourse model.
 The protected completed artifact and reference result are stored locally under
-`artifacts/` and `reference_result/`.
+`artifacts/` and `reference_result/`; exact paths and hashes are documented in
+`ARTIFACTS.md`.
 
 ```powershell
-cd C:\FakeNews_IDS_Project\effective_models\pheme_graph7_author_aware_rf\training
-..\..\..\venv\Scripts\python.exe .\run_fold_safe_author_aware_rf.py
+cd C:\FakeNews_IDS_Project
+.\venv\Scripts\python.exe .\effective_models\pheme_graph7_author_aware_rf\training\run_smoke.py
 ```
+
+Only after the smoke succeeds, run the complete LOEO reproduction manually:
+
+```powershell
+.\venv\Scripts\python.exe .\effective_models\pheme_graph7_author_aware_rf\training\run_full.py
+```
+
+Both entry points use `training/common.py`; smoke changes only the number of
+outer folds and trees and is not a research result. See `REMOVED_FILES.md` for
+the cleanup history.
 
 Original source is preserved under
 `research_scratch/legacy_full/graphsage_intervention_7/`.

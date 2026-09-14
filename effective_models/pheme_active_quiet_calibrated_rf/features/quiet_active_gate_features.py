@@ -9,11 +9,10 @@ from __future__ import annotations
 
 import numpy as np
 
-from pheme_account_age_v5_common import (
+from effective_models.pheme_active_quiet_calibrated_rf import config
+from effective_models.pheme_active_quiet_calibrated_rf.features.account_age_text_temporal_features import (
     ACCOUNT_AGE_FEATURE,
-    CUTOFF_SECONDS,
     FEATURE_SETS,
-    MODEL_PARAMS,
     TEMPORAL_FEATURE_NAMES,
     feature_names,
     fit_predict,
@@ -22,7 +21,7 @@ from pheme_account_age_v5_common import (
 
 MODEL_FEATURE_SET = "text_augmented_no_profile_plus_account_age"
 GATE_FEATURE = "log1p_seconds_since_last_activity"
-QUIET_QUANTILE = 0.60
+QUIET_QUANTILE = config.QUIET_QUANTILE
 GATE_INDEX = TEMPORAL_FEATURE_NAMES.index(GATE_FEATURE)
 
 
@@ -38,7 +37,7 @@ def recency_values(graphs: list) -> np.ndarray:
 
 def gated_predict(train: list, test: list, depth_nodes, account_age_nodes, node_offsets, model_params: dict | None = None) -> tuple[np.ndarray, dict, list[dict]]:
     """Fit active/quiet experts from train events only and score one test event."""
-    params = MODEL_PARAMS if model_params is None else model_params
+    params = config.FULL_PARAMETERS if model_params is None else model_params
     train_recency = recency_values(train)
     test_recency = recency_values(test)
     threshold = float(np.quantile(train_recency, QUIET_QUANTILE))

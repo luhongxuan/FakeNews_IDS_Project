@@ -12,9 +12,9 @@ frozen validation/test outputs are under `reference_result/`.
 The original test has already been consumed and must not be reused for tuning.
 
 ```powershell
-cd C:\FakeNews_IDS_Project\effective_models\twitter_weak_order_scalar_mlp\training
-..\..\..\venv\Scripts\python.exe .\run_validation_head_focused_scalar_v2_strict.py
+.\venv\Scripts\python.exe .\effective_models\twitter_weak_order_scalar_mlp\training\run_smoke.py
+.\venv\Scripts\python.exe .\effective_models\twitter_weak_order_scalar_mlp\training\run_full.py
 ```
 
-The frozen evaluation source is retained under `evaluation/` for provenance,
-not for repeated model selection.
+Both commands use `training/common.py`. The full command only reproduces the
+already-frozen test protocol; its result must not be used for further tuning.

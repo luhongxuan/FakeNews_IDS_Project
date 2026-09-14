@@ -14,12 +14,20 @@ They include safe temporal/depth values, source/reply PCA, immutable observed
 account age, the recency gate, and expert-score calibration. Mutable profile
 and engagement counters are excluded.
 
+Canonical smoke and full entry points share `training/common.py`:
+
 ```powershell
-cd C:\FakeNews_IDS_Project\effective_models\pheme_active_quiet_calibrated_rf\training
-..\..\..\venv\Scripts\python.exe .\run_paired_oof_pheme_quiet_expert_calibration.py
+cd C:\FakeNews_IDS_Project\effective_models\pheme_active_quiet_calibrated_rf
+..\..\venv\Scripts\python.exe .\training\run_smoke.py
+..\..\venv\Scripts\python.exe .\training\run_full.py
 ```
 
-Original source: `graphsage_intervention_14/`. The retained training and feature
-code now uses private helpers plus the verified protected inputs under `data/`;
-the original directory remains untouched only because its exhaustive
-feature-combination experiment is still running.
+Run smoke first. The full nested-calibration workflow is long-running and must be
+started manually. See `ARTIFACTS.md` and `REMOVED_FILES.md` for local data and cleanup
+provenance.
+
+Original source: `graphsage_intervention_14/`. The retained training directory
+now contains only the calibrated Active/Quiet model and its direct helpers.
+Quiet-tier, quiet-head, change-point, stance/text, user-overlap, and policy
+follow-up experiments are preserved locally under
+`analysis/pheme_active_quiet_calibrated_rf/` and are excluded from Git.

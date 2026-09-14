@@ -7,13 +7,24 @@
   original label, mutable counts, future nodes, or future edges.
 - Selection: RF depth chosen on validation, test evaluated once.
 
-`features/twitter_graph_only_ranker_common.py` is a model-private copy of the
-feature list and protected loader.
+The model is self-contained. Both smoke and full entry points call the same
+implementation in `training/common.py`; smoke mode changes only corpus scope,
+test evaluation, and tree count.
 
 ```powershell
-cd C:\FakeNews_IDS_Project\effective_models\twitter_graph_only_rf\training
-..\..\..\venv\Scripts\python.exe .\run_twitter15_16_graph_only_ranker.py
+cd C:\FakeNews_IDS_Project
+.\venv\Scripts\python.exe .\effective_models\twitter_graph_only_rf\training\run_smoke.py
 ```
+
+Only after smoke succeeds, the canonical full reproduction command is:
+
+```powershell
+.\venv\Scripts\python.exe .\effective_models\twitter_graph_only_rf\training\run_full.py
+```
+
+The protected test split has already been evaluated and must not be reused for
+tuning. See `ARTIFACTS.md` for local-only inputs and hashes, and
+`REMOVED_FILES.md` for cleanup history.
 
 Original source is preserved under
 `research_scratch/legacy_full/graphsage_intervention_9/`.

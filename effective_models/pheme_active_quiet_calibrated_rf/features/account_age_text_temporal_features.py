@@ -6,9 +6,6 @@ is immutable; mutable profile and engagement values are not added here.
 """
 from __future__ import annotations
 
-from pathlib import Path
-import sys
-
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
@@ -16,40 +13,29 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
 import torch
 
-
-BASE = Path(__file__).resolve().parent.parent
-ROOT = Path(__file__).resolve().parents[3]
-V5 = ROOT / "data" / "protected_research_assets" / "pheme_v5_strict30"
-sys.path.insert(0, str(V5))
-sys.path.insert(0, str(ROOT))
-
-from run_fold_safe_temporal_rf import (  # noqa: E402
-    MODEL_PARAMS,
-    SEED,
-    TEMPORAL_FEATURE_NAMES,
-)
-from text_feature_common import (  # noqa: E402
-    PCA_COMPONENTS,
-    text_matrix,
-)
+from effective_models.pheme_active_quiet_calibrated_rf import config
+from effective_models.pheme_active_quiet_calibrated_rf.features.text_feature_common import text_matrix
 
 
-DATASET = V5 / "pheme_graphs_roberta_30min_replyv4_preventableimpact_semantic.pt"
-RAW_NODES = V5 / "pheme_node_features_roberta_replyv4.csv"
-REPLIES = V5 / "pheme_reply_level_v4.csv"
 ACCOUNT_AGE_COLUMN = "account_age_days_log"
 ACCOUNT_AGE_FEATURE = "observed_account_age_days_log_mean"
-CUTOFF_SECONDS = 1800.0
+TEMPORAL_FEATURE_NAMES = [
+    "log1p_count_0_10m", "log1p_count_10_20m", "log1p_count_20_30m",
+    "log1p_count_recent_5m", "log1p_count_recent_10m",
+    "log1p_seconds_since_last_activity", "log1p_median_interarrival_sec",
+    "log1p_std_interarrival_sec", "observed_leaf_fraction",
+    "mean_observed_children", "max_observed_children",
+]
 SAFE_BASE_FEATURE_NAMES = TEMPORAL_FEATURE_NAMES + [
     "log1p_observed_nodes", "late_activity_frac", "mean_depth", "max_depth",
 ]
 FEATURE_SETS = ("text_augmented_no_profile", "text_augmented_no_profile_plus_account_age")
-ELIGIBLE_MIN_THREADS = 100
+ELIGIBLE_MIN_THREADS = config.ELIGIBLE_MIN_THREADS
 
 
 def load_graphs() -> tuple[list, list[str], list[str]]:
     """Load the existing protected rumour-only v5 artifact without modifying it."""
-    graphs = torch.load(DATASET, weights_only=False)
+    graphs = torch.load(config.DATASET_PATH, weights_only=False)
     events = sorted({str(graph.event_id) for graph in graphs})
     eligible = [event for event in events if sum(str(graph.event_id) == event for graph in graphs) >= ELIGIBLE_MIN_THREADS]
     if len(graphs) != 2402 or len(events) != 9:
@@ -57,36 +43,51 @@ def load_graphs() -> tuple[list, list[str], list[str]]:
     return graphs, events, eligible
 
 
-def load_safe_nodes() -> tuple[dict[tuple[str, str], float], dict[tuple[str, str], float]]:
+def load_safe_nodes(required_keys: set[tuple[str, str]]) -> tuple[dict[tuple[str, str], float], dict[tuple[str, str], float]]:
     """Read depth and fixed account age only; no mutable profile fields are read."""
-    frame = pd.read_csv(
-        RAW_NODES,
+    required_index = pd.MultiIndex.from_tuples(required_keys, names=["thread_id", "tweet_id"])
+    depth_nodes, age_nodes = {}, {}
+    for frame in pd.read_csv(
+        config.RAW_NODES_PATH,
         usecols=["thread_id", "tweet_id", "event_id", "depth", ACCOUNT_AGE_COLUMN],
         dtype={"thread_id": str, "tweet_id": str, "event_id": str},
+        chunksize=250_000,
         low_memory=False,
-    )
-    if frame.duplicated(["thread_id", "tweet_id"]).any():
-        raise ValueError("Account-age source rows are not unique by (thread_id, tweet_id)")
-    if frame[["depth", ACCOUNT_AGE_COLUMN]].isna().any().any() or not np.isfinite(frame[["depth", ACCOUNT_AGE_COLUMN]].to_numpy(dtype=float)).all():
-        raise ValueError("Safe-node source has missing or non-finite depth/account-age values")
-    depth_nodes = {(row.thread_id, row.tweet_id): float(row.depth) for row in frame.itertuples(index=False)}
-    age_nodes = {(row.thread_id, row.tweet_id): float(getattr(row, ACCOUNT_AGE_COLUMN)) for row in frame.itertuples(index=False)}
+    ):
+        index = pd.MultiIndex.from_frame(frame[["thread_id", "tweet_id"]])
+        selected = frame.loc[index.isin(required_index)]
+        if selected[["depth", ACCOUNT_AGE_COLUMN]].isna().any().any() or not np.isfinite(selected[["depth", ACCOUNT_AGE_COLUMN]].to_numpy(dtype=float)).all():
+            raise ValueError("Safe-node source has missing or non-finite depth/account-age values")
+        for row in selected.itertuples(index=False):
+            key = (row.thread_id, row.tweet_id)
+            if key in depth_nodes:
+                raise ValueError(f"Duplicate safe-node row: {key}")
+            depth_nodes[key] = float(row.depth)
+            age_nodes[key] = float(getattr(row, ACCOUNT_AGE_COLUMN))
+    if required_keys - set(depth_nodes):
+        raise KeyError(f"Missing {len(required_keys - set(depth_nodes))} required safe-node rows")
     return depth_nodes, age_nodes
 
 
-def load_node_offsets() -> dict[tuple[str, str], float]:
+def load_node_offsets(required_keys: set[tuple[str, str]]) -> dict[tuple[str, str], float]:
     """Load offsets solely to verify that every model node is observable at 30 min."""
     frame = pd.read_csv(
-        REPLIES,
+        config.REPLIES_PATH,
         usecols=["thread_id", "tweet_id", "offset_sec"],
         dtype={"thread_id": str, "tweet_id": str},
         low_memory=False,
     )
+    frame = frame.loc[pd.MultiIndex.from_frame(frame[["thread_id", "tweet_id"]]).isin(
+        pd.MultiIndex.from_tuples(required_keys, names=["thread_id", "tweet_id"])
+    )]
     if frame.duplicated(["thread_id", "tweet_id"]).any():
         raise ValueError("Reply offsets are not unique by (thread_id, tweet_id)")
     if frame.offset_sec.isna().any() or not np.isfinite(frame.offset_sec.to_numpy(dtype=float)).all():
         raise ValueError("Reply offsets contain missing or non-finite values")
-    return {(row.thread_id, row.tweet_id): float(row.offset_sec) for row in frame.itertuples(index=False)}
+    offsets = {(row.thread_id, row.tweet_id): float(row.offset_sec) for row in frame.itertuples(index=False)}
+    if required_keys - set(offsets):
+        raise KeyError(f"Missing {len(required_keys - set(offsets))} required observation offsets")
+    return offsets
 
 
 def safe_base_features(graph, depth_nodes: dict[tuple[str, str], float]) -> np.ndarray:
@@ -141,7 +142,7 @@ def validate_fold(train: list, test: list, depth_nodes, account_age_nodes, node_
                 offset = node_offsets[key]
             except KeyError as error:
                 raise KeyError(f"Missing observation offset for snapshot node {key}") from error
-            if offset > CUTOFF_SECONDS + 1e-9:
+            if offset > config.CUTOFF_SECONDS + 1e-9:
                 raise ValueError(f"Future node used in snapshot {key}: offset={offset}")
 
 
@@ -152,7 +153,7 @@ def matrices(train: list, test: list, depth_nodes, account_age_nodes, feature_se
     base_test = np.vstack([safe_base_features(graph, depth_nodes) for graph in test])
     text_train, text_test = text_matrix(train), text_matrix(test)
     text_scaler = StandardScaler().fit(text_train)
-    pca = PCA(n_components=PCA_COMPONENTS, random_state=SEED).fit(text_scaler.transform(text_train))
+    pca = PCA(n_components=config.PCA_COMPONENTS, random_state=config.SEED).fit(text_scaler.transform(text_train))
     x_train = np.hstack([base_train, pca.transform(text_scaler.transform(text_train))])
     x_test = np.hstack([base_test, pca.transform(text_scaler.transform(text_test))])
     if feature_set == "text_augmented_no_profile_plus_account_age":
@@ -169,7 +170,7 @@ def fit_predict(train: list, test: list, depth_nodes, account_age_nodes, node_of
     x_train, x_test = matrices(train, test, depth_nodes, account_age_nodes, feature_set)
     y_train = np.asarray([float(graph.preventable_y.item()) for graph in train], dtype=np.float32)
     scaler = StandardScaler().fit(x_train)
-    params = dict(MODEL_PARAMS if model_params is None else model_params)
+    params = dict(config.FULL_PARAMETERS if model_params is None else model_params)
     model = RandomForestRegressor(**params).fit(scaler.transform(x_train), y_train)
     prediction = model.predict(scaler.transform(x_test))
     if not np.isfinite(prediction).all():
@@ -178,7 +179,7 @@ def fit_predict(train: list, test: list, depth_nodes, account_age_nodes, node_of
 
 
 def feature_names(feature_set: str) -> list[str]:
-    names = list(SAFE_BASE_FEATURE_NAMES) + [f"text_pca_{index}" for index in range(PCA_COMPONENTS)]
+    names = list(SAFE_BASE_FEATURE_NAMES) + [f"text_pca_{index}" for index in range(config.PCA_COMPONENTS)]
     return names + ([ACCOUNT_AGE_FEATURE] if feature_set == "text_augmented_no_profile_plus_account_age" else [])
 
 

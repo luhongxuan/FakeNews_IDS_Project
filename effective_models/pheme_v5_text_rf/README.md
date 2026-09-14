@@ -1,25 +1,27 @@
 # PHEME v5 Text RF
 
-- Result: eligible-event macro reduction@10 = **0.1467**.
-- Protocol: PHEME rumour-only, strict 30 minutes, nested LOEO.
-- Target: `log1p(preventable_impact)`.
-- Model: RandomForestRegressor, 300 trees, depth 8, minimum leaf 3.
-- Inner selection: temporal/structure baseline versus baseline + train-fold
-  source/reply text PCA64.
+Canonical strict-30 nested RF workflow. Inner event folds select between:
 
-`training/` contains the original fitting entry point and its local helper
-copies. `features/` independently preserves the temporal/structure and
-source/reply embedding definitions. `evaluation/` contains the intervention
-metric implementation.
+1. cutoff-safe temporal and structural features reconstructed from observable nodes;
+2. the same baseline plus source and observed-early-reply RoBERTa embeddings reduced
+   to PCA64 using training rows only.
 
-Protected inputs are stored under
-`data/protected_research_assets/pheme_v5_strict30/` with verified SHA-256
-copies of the original graph and raw observable-node files.
+The historical eligible-event macro Impact Capture@10 is **0.1467**. Historical
+outputs remain under `reference_result/` and are never overwritten.
+
+## Canonical workflow
 
 ```powershell
-cd C:\FakeNews_IDS_Project\effective_models\pheme_v5_text_rf\training
-..\..\..\venv\Scripts\python.exe .\run_nested_text_impact_ranker_rf.py
+cd C:\FakeNews_IDS_Project\effective_models\pheme_v5_text_rf
+..\..\venv\Scripts\python.exe .\training\run_smoke.py
 ```
 
-Original source: `graphsage_intervention_5/run_nested_text_impact_ranker_rf.py`.
-The retained copy no longer imports code from that legacy directory.
+After smoke succeeds, manually start the long-running full nested LOEO workflow:
+
+```powershell
+..\..\venv\Scripts\python.exe .\training\run_full.py
+```
+
+Both entry points share `training/common.py`. Smoke uses a four-event subset, one
+outer fold, two inner folds, and five trees; it is not a research result. See
+`ARTIFACTS.md` for protected input hashes and `REMOVED_FILES.md` for cleanup history.
