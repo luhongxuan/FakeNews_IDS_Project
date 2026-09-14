@@ -10,9 +10,16 @@ test1.ipynb
 test_gnn.ipynb
 *.pt
 *.csv
+*.pkl
+*.pickle
+*.joblib
+*.npy
+*.npz
+*.parquet
 
-# Archived exploratory/smoke/diagnostic research code. The directory preserves
-# each file's former graphsage_intervention_* relative path locally.
+# Archived exploratory/smoke/diagnostic research code, including experimental
+# model branches moved out of effective_models. Former relative paths are
+# preserved under analysis/ where practical.
 /research_scratch/
 /analysis/
 
@@ -21,3 +28,18 @@ reference_result/
 experiments/
 
 .artifact_work/
+
+tmp/
+
+# Generated frontend bundles and copied demo datasets. Rebuild these from the
+# checked-in frontend sources instead of committing build output.
+/social-frontend/dist/
+/social-frontend/node_modules/
+
+# Backend smoke/diagnostic outputs. Keep the scripts, not their generated run
+# records or timestamped result directories.
+/backend/app/services/smoke_*_result.json
+/backend/diagnostics/[0-9]*/
+
+# One-off local request payload used during integration debugging.
+/scratch_payload.json
