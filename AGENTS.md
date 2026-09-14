@@ -453,7 +453,8 @@ the user explicitly requests and approves them.
 # 16. Network Access
 
 Do not send project data, dataset contents, experiment outputs, credentials, or
-private files to external services.
+private files to external services, except for the narrow user-owned RunPod
+inference exception below.
 
 Do not access the network unless it is necessary for the requested task and
 permitted by the current environment.
@@ -464,7 +465,38 @@ Never expose:
 - passwords
 - tokens
 - environment secrets
-- private dataset contents
+- private dataset contents outside the explicitly permitted cutoff-safe RunPod
+  payload described below
+
+### User-Owned RunPod Inference Exception
+
+PHEME Agent experiments may send only the minimum cutoff-safe inference payload
+to a RunPod endpoint owned and explicitly enabled by the user for that
+experiment. This exception is for model inference only; it does not authorize
+uploading or synchronizing the raw dataset, repository, database, experiment
+directories, or unrelated project files.
+
+Every experiment using this exception must:
+
+- require an explicit configuration flag such as `ALLOW_REMOTE=true`;
+- send only source text, replies, timestamps, graph summaries, and derived
+  features observable at or before the configured observation cutoff;
+- exclude post-cutoff content, future-growth or preventable-impact labels,
+  Oracle membership, final veracity, dataset split metadata, and other
+  evaluation answers from the inference payload;
+- never transmit API keys, passwords, tokens, `.env` contents, credentials, or
+  private infrastructure details as part of prompts or saved public outputs;
+- use access control and encrypted transport for the RunPod endpoint;
+- record the remote-use authorization, provider, model, cutoff, exact payload
+  field names, prompt/schema version or hash, cache hit/miss counts, and actual
+  inference-call count in the experiment run record;
+- redact endpoint credentials and query tokens from logs and run records; and
+- keep model, prompt, decoding configuration, and evaluation protocol fixed
+  across directly compared events or clearly report any difference.
+
+User authorization for this RunPod exception does not relax any early-detection,
+split-separation, leakage, reproducibility, or evaluation rule elsewhere in this
+file.
 
 ---
 
