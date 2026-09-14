@@ -108,7 +108,7 @@ export default function App() {
         if (newlyHit.length === 0) return prev;
 
         // 非同步送分析，先讓這些項目以「分析中」狀態（result: null）出現在清單裡
-        analyzePosts(newlyHit).then((results) => {
+        analyzePosts(newlyHit, { eventId: datasetId, allPosts: posts }).then((results) => {
           setCaptured((cur) =>
             cur.map((item) => {
               const found = results.find((r) => r.postId === item.id);
@@ -120,7 +120,7 @@ export default function App() {
         return [...prev, ...newlyHit.map((post) => ({ id: post.id, post, result: null }))];
       });
     },
-    [posts]
+    [datasetId, posts]
   );
 
   const handleClearCaptured = () => setCaptured([]);
