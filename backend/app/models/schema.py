@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, DateTime, Boolean, Text, Float, Integer
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from datetime import datetime, timezone
 import uuid
+from pgvector.sqlalchemy import Vector
 from app.database import Base
 
 class ClaimCache(Base):
@@ -108,6 +109,45 @@ class VerificationReport(Base):
     model_name = Column(String, nullable=False)
     report_jsonb = Column(JSONB, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class KnownFalseClaim(Base):
+    """RAG knowledge base of REAL, already-verified likely_false claims.
+
+    Written to only by app/services/known_false_claims.record() -- one row
+    per real verification agent run that concluded "likely_false" (never
+    written speculatively, never edited by hand). embedding is the same
+    all-MiniLM-L6-v2 sentence embedding app/services/event_clustering.py
+    already uses for live-radar story clustering, reused here rather than
+    introducing a second embedding model -- one backend dependency, one
+    vector space, two consumers.
+
+    Purpose: when a brand-new candidate post arrives, before spending a real
+    (slow, non-deterministic) LLM verification call on it, embed its text and
+    search this table for semantically similar PAST claims that were already
+    confirmed false. A close match is strong evidence this is the same rumour
+    reworded (see the "3 gunmen"/Charlie Hebdo case this project found
+    live -- the same false claim resurfaced across many differently-worded
+    posts) -- see known_false_claims.find_similar for how that similarity
+    is used both to reprioritize the verification queue AND, optionally, as
+    retrieved context handed to the verification agent itself (genuine RAG:
+    retrieval feeding the generation step, not just a priority score).
+
+    Requires the pgvector Postgres extension (`CREATE EXTENSION IF NOT
+    EXISTS vector;`), and the `db` container image switched to
+    pgvector/pgvector:pg15 (see docker-compose.yml) -- a stock postgres:15
+    image does not have this extension available at all.
+    """
+    __tablename__ = "known_false_claims"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    source_thread_id = Column(String, index=True, nullable=False)
+    claim_text = Column(Text, nullable=False)
+    embedding = Column(Vector(384), nullable=False)
+    credibility = Column(String, nullable=False)
+    confidence = Column(Float, nullable=True)
+    summary = Column(Text, nullable=True)
+    verified_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class RadarQueryExpansionAudit(Base):

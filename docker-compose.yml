@@ -49,7 +49,15 @@ services:
       - db
 
   db:
-    image: postgres:15
+    # pgvector/pgvector:pg15 is the official postgres:15 image with the
+    # pgvector extension pre-built in -- same on-disk format, same default
+    # user/db/port setup, so the existing `postgres_data` named volume (all
+    # current radar_threads/verification_reports/etc. data) is untouched by
+    # this swap. Needed for the known-false-claims RAG similarity store
+    # (app/services/known_false_claims.py) -- CREATE EXTENSION vector must
+    # still be run once against a running container (see that module's
+    # docstring), this image just makes the extension available to enable.
+    image: pgvector/pgvector:pg15
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: secret
