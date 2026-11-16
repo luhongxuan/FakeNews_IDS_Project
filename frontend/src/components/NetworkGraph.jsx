@@ -1,24 +1,41 @@
 // 檔案位置：frontend/src/components/NetworkGraph.jsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import styles from './NetworkGraph.module.css';
-import { USE_MOCK_DATA, MOCK_ELEMENTS, cyStylesheet, cyLayout } from './graphConfig';
+import { cyStylesheet, cyLayout } from './graphConfig';
 
 const NetworkGraph = ({ eventId, onBack, onLogoClick, onEventChange, onUserClick, onProfileNav }) => {
   const [selectedNode, setSelectedNode] = useState(null);
   const [elements, setElements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [meta, setMeta] = useState(null); // { source: 'event'|'live', eventCount? }
   const [isLeftMenuOpen, setIsLeftMenuOpen] = useState(false);
+  const [refreshTick, setRefreshTick] = useState(0);
   const cyRef = useRef(null);
+
+  const loadGraph = useCallback((signal) => {
+    setLoading(true);
+    setError(null);
+    // 有選定事件 -> 該事件的完整歷史傳播圖（讀原始 PHEME 資料）。
+    // 沒有選定事件 -> social-frontend 透過 WebSocket 送來、目前累積的即時圖。
+    const url = eventId ? `/api/graph?event=${encodeURIComponent(eventId)}` : '/api/graph/live';
+    fetch(url, { signal })
+      .then((res) => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+      .then((data) => {
+        setElements(data.elements || []);
+        setMeta(eventId ? { source: 'event' } : { source: 'live', eventCount: data.event_count ?? 0 });
+      })
+      .catch((err) => { if (err.name !== 'AbortError') setError(err.message); })
+      .finally(() => { if (!signal?.aborted) setLoading(false); });
+  }, [eventId]);
 
   useEffect(() => {
     closePanel();
-    if (USE_MOCK_DATA) {
-      setLoading(true); setElements([]);
-      const timer = setTimeout(() => { setElements(MOCK_ELEMENTS); setLoading(false); }, 600);
-      return () => clearTimeout(timer);
-    }
-  }, [eventId]);
+    const controller = new AbortController();
+    loadGraph(controller.signal);
+    return () => controller.abort();
+  }, [loadGraph, refreshTick]);
 
   const closePanel = () => {
     setSelectedNode(null);
@@ -110,7 +127,7 @@ const NetworkGraph = ({ eventId, onBack, onLogoClick, onEventChange, onUserClick
             <div className={styles.card}>
               <div className={styles.kpiLabel}>當前分析事件集</div>
               <div className={styles.kpiValue} style={{ color: '#E3E3E3', fontSize: '18px', marginTop: '4px' }}>
-                {loading ? '載入中...' : (eventId ? eventId.toUpperCase() : '未選取事件 (請搜尋)')}
+                {loading ? '載入中...' : (eventId ? eventId.toUpperCase() : `即時彙總（${meta?.eventCount ?? 0} 筆事件）`)}
               </div>
             </div>
           </section>
@@ -118,10 +135,20 @@ const NetworkGraph = ({ eventId, onBack, onLogoClick, onEventChange, onUserClick
           <main className={styles.mainWorkspace}>
             <div className={styles.graphContainer}>
               <div className={styles.graphHeader}>
-                <span>網絡傳播拓撲矩陣</span>
-                <div className={styles.legendContainer}>
-                  <div className={styles.legendItem}><div className={styles.dotBlue}></div> 正常節點</div>
-                  <div className={styles.legendItem}><div className={styles.dotRed}></div> 異常/謠言節點</div>
+                <span>
+                  網絡傳播拓撲矩陣
+                  {!eventId && <small className={styles.demoNotice}>即時模式：顯示 social-frontend 目前已透過 WebSocket 送出的全部傳播關係</small>}
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {!eventId && (
+                    <button className={styles.zoomBtn} onClick={() => setRefreshTick((v) => v + 1)} title="重新整理即時圖">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                    </button>
+                  )}
+                  <div className={styles.legendContainer}>
+                    <div className={styles.legendItem}><div className={styles.dotBlue}></div> 正常節點</div>
+                    <div className={styles.legendItem}><div className={styles.dotRed}></div> 異常/謠言節點</div>
+                  </div>
                 </div>
               </div>
 
@@ -159,9 +186,17 @@ const NetworkGraph = ({ eventId, onBack, onLogoClick, onEventChange, onUserClick
                   </div>
                 )}
                 
-                {!loading && elements.length === 0 && (
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#5F6368', fontSize: '14px' }}>
-                    請由上方搜尋列輸入事件 ID (如: sydneysiege) 以初始化傳播矩陣
+                {!loading && error && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F28B82', fontSize: '14px' }} role="alert">
+                    載入失敗：{error}
+                  </div>
+                )}
+
+                {!loading && !error && elements.length === 0 && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#5F6368', fontSize: '14px', textAlign: 'center', padding: '0 40px' }}>
+                    {eventId
+                      ? `事件「${eventId}」目前沒有可繪製的傳播圖`
+                      : '尚未收到任何即時傳播事件。可由上方搜尋列輸入事件 ID 查看單一事件的完整歷史圖，或到 social-frontend 選擇資料集，讓傳播關係即時串流進來。'}
                   </div>
                 )}
 

@@ -1,0 +1,70 @@
+{
+  "model_name": "PHEME Hawkes-inspired Multi-checkpoint Cumulative Random Forest",
+  "status": "candidate_improvement_seed_stable_not_official_baseline",
+  "created_date": "2026-09-04",
+  "base_model": "effective_models/pheme_multicheckpoint_rf",
+  "input_materialization": "effective_models/pheme_hawkes_multicheckpoint_rf/artifacts/pheme_multicheckpoint_features.csv",
+  "candidate_threads": 2402,
+  "events_total": 9,
+  "eligible_events_reported": 7,
+  "checkpoints_seconds": [600, 1200, 1800, 2400, 3000, 3600],
+  "base_feature_count": 57,
+  "added_feature_count": 5,
+  "total_feature_count": 62,
+  "added_features": [
+    "hawkes_exp_decay_300s",
+    "hawkes_exp_decay_600s",
+    "hawkes_exp_decay_1200s",
+    "hawkes_short_to_long_ratio",
+    "hawkes_recent_share"
+  ],
+  "model_params": {
+    "n_estimators": 300,
+    "max_depth": 8,
+    "min_samples_leaf": 3,
+    "max_features": 0.8,
+    "n_jobs": 1
+  },
+  "evaluation": {
+    "split": "outer_leave_one_event_out",
+    "target": "log1p_corrected_dynamic_preventable_impact",
+    "budget": 50,
+    "checkpoint_quotas": [9, 9, 8, 8, 8, 8],
+    "denominator": "event future horizon at minute 10"
+  },
+  "canonical_training_sources": [
+    "effective_models/pheme_hawkes_multicheckpoint_rf/features/hawkes_features.py",
+    "effective_models/pheme_hawkes_multicheckpoint_rf/evaluation/sequential_policy.py",
+    "effective_models/pheme_hawkes_multicheckpoint_rf/training/common.py",
+    "effective_models/pheme_hawkes_multicheckpoint_rf/training/run_smoke.py",
+    "effective_models/pheme_hawkes_multicheckpoint_rf/training/run_full.py"
+  ],
+  "reference_artifacts": [
+    {
+      "role": "single_seed_full",
+      "path": "effective_models/pheme_hawkes_multicheckpoint_rf/reference_result/20260904_014233_251222_hawkes_intensity_feature_full",
+      "result_sha256": "C54DFA94F5FB8BC7E3600445226F9A81D33694FF662C4539ABAD56C7153762C5"
+    },
+    {
+      "role": "event_stability_audit",
+      "path": "effective_models/pheme_hawkes_multicheckpoint_rf/reference_result/20260904_022203_738733_hawkes_intensity_stability_audit",
+      "result_sha256": "93EAF6A8BDCAE3DA56C1A1A12023B043FCAB8FE46D49FA6CB67C857B7A86FEA1"
+    },
+    {
+      "role": "five_seed_full",
+      "path": "effective_models/pheme_hawkes_multicheckpoint_rf/reference_result/20260904_023222_030707_hawkes_intensity_multiseed_full",
+      "result_sha256": "DAC1A63941832BF755D322BD8BC235E6EE61385D14DC1FF3640C751110CD204E"
+    }
+  ],
+  "headline_results": {
+    "seed42_baseline_mean_horizon_reduction": 0.3260845222350638,
+    "seed42_hawkes_mean_horizon_reduction": 0.3406164146768961,
+    "five_seed_mean_reduction_delta": 0.012861316097100516,
+    "five_seed_std_reduction_delta": 0.0016447167956569122,
+    "five_seed_min_reduction_delta": 0.010941631694994514,
+    "seeds_improved": 5,
+    "seeds_evaluated": 5,
+    "mean_blocked_impact_delta": 218.4
+  },
+  "interpretation_boundary": "Hawkes-inspired fixed-decay feature augmentation, not a fitted multivariate Hawkes process. Fixed Budget-50 is an experimental comparison policy, not a universal deployment policy."
+}

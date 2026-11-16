@@ -22,11 +22,36 @@ import styles from './EventDashboard.module.css';
 //   { id: 'gurlitt', title: '古利特藝術品收藏案', date: '2013-11-03', nodes: 138, rumours: 45, status: 'archived', severity: 'low', description: '慕尼黑發現納粹掠奪藝術品，推特上出現去向錯誤資訊。' },
 // ];
 
-const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav }) => {
+function radarSeverity(memberCount, totalEngagement) {
+  if (memberCount >= 5 || totalEngagement >= 15) return 'high';
+  if (memberCount >= 2 || totalEngagement >= 5) return 'medium';
+  return 'low';
+}
+
+function radarThreadToEvent(thread) {
+  const title = thread.representative_text.length > 36
+    ? thread.representative_text.slice(0, 36) + '…'
+    : thread.representative_text;
+  return {
+    id: thread.id,
+    source: 'radar',
+    title,
+    description: thread.representative_text,
+    date: (thread.last_seen_at || '').slice(0, 10),
+    nodes: thread.member_count,
+    rumours: thread.total_engagement,
+    status: thread.reviewed ? 'monitoring' : 'pending',
+    severity: radarSeverity(thread.member_count, thread.total_engagement),
+  };
+}
+
+const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav, onFactCheckNav, onRadarNav, onRadarEventClick, onInterventionReviewNav }) => {
   const [isLeftMenuOpen, setIsLeftMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSeverity, setFilterSeverity] = useState('all');
   const [eventStates, setEventStates] = useState({});
+  const [radarThreads, setRadarThreads] = useState([]);
+  const [radarMinEngagement, setRadarMinEngagement] = useState(0);
 
   useEffect(() => {
     const phemeEvents = ["charliehebdo", "ebola-essien", "ferguson", "germanwings-crash", "gurlitt", "ottawashooting", "prince-toronto", "putinmissing", "sydneysiege"];
@@ -53,14 +78,21 @@ const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav })
         });
     });
   }, []);
-  const backendEvents = Object.entries(eventStates).map(([id, data]) => ({ 
-    id, ...data
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`/api/radar/threads?limit=20&min_engagement=${radarMinEngagement}`, { signal: controller.signal })
+      .then((res) => res.json())
+      .then((data) => setRadarThreads(data.threads || []))
+      .catch((error) => { if (error.name !== 'AbortError') console.error('載入即時雷達事件失敗:', error); });
+    return () => controller.abort();
+  }, [radarMinEngagement]);
+
+  const backendEvents = Object.entries(eventStates).map(([id, data]) => ({
+    id, source: 'pheme', ...data
   }));
 
-  const backendIds = Object.keys(eventStates);
-  // const onlyMockEvents = MOCK_EVENTS.filter(e => !backendIds.includes(e.id));
-
-  const allEvents = [...backendEvents];
+  const allEvents = [...backendEvents, ...radarThreads.map(radarThreadToEvent)];
 
   console.log('目前載入的事件列表:', allEvents);
 
@@ -84,16 +116,17 @@ const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav })
   };
 
   const renderCard = (event) => {
-    const realStats = eventStates[event.id];
+    const isRadar = event.source === 'radar';
+    const handleClick = () => (isRadar ? onRadarEventClick(event.id) : onEventClick(event.id));
     return (
-      <div key={event.id} className={styles.eventCard} onClick={() => onEventClick(event.id)}>
+      <div key={event.id} className={styles.eventCard} onClick={handleClick}>
         <div className={styles.cardTitle}>
           {event.title}
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
         </div>
         <div className={styles.cardDesc}>{event.description}</div>
         <div className={styles.cardTags}>
-          <span className={styles.tag}>{event.id}</span>
+          <span className={styles.tag}>{isRadar ? '📡 即時雷達' : event.id}</span>
           {getSeverityTag(event.severity)}
         </div>
         <div className={styles.cardFooter}>
@@ -158,6 +191,33 @@ const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav })
         </div>
 
         <div className={styles.navRight}>
+          {onRadarNav && (
+            <button
+              type="button"
+              onClick={onRadarNav}
+              style={{ marginRight: '12px', background: 'transparent', border: '1px solid #3C4043', color: '#E3E3E3', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', whiteSpace: 'nowrap' }}
+            >
+              📡 即時雷達
+            </button>
+          )}
+          {onInterventionReviewNav && (
+            <button
+              type="button"
+              onClick={onInterventionReviewNav}
+              style={{ marginRight: '12px', background: 'transparent', border: '1px solid #3C4043', color: '#E3E3E3', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', whiteSpace: 'nowrap' }}
+            >
+              🤖 自動干預建議
+            </button>
+          )}
+          {onFactCheckNav && (
+            <button
+              type="button"
+              onClick={onFactCheckNav}
+              style={{ marginRight: '12px', background: 'transparent', border: '1px solid #3C4043', color: '#E3E3E3', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', whiteSpace: 'nowrap' }}
+            >
+              🔍 一般查證工具
+            </button>
+          )}
           <div className={styles.searchFilterWrapper}>
             <select className={styles.selectInput} value={filterSeverity} onChange={(e) => setFilterSeverity(e.target.value)}>
               <option value="all">所有風險</option>
@@ -193,7 +253,20 @@ const EventDashboard = ({ onEventClick, onLogoClick, onGraphNav, onProfileNav })
                 <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#9AA0A6' }}></div>
                 待分析事件
               </div>
-              <span className={styles.columnCount}>{pendingEvents.length}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <select
+                  className={styles.radarFilterSelect}
+                  value={radarMinEngagement}
+                  onChange={(e) => setRadarMinEngagement(Number(e.target.value))}
+                  title="即時雷達事件的顯示範圍（僅影響雷達來源的卡片）"
+                >
+                  <option value={0}>雷達：全部</option>
+                  <option value={3}>雷達：已有討論</option>
+                  <option value={20}>雷達：討論熱烈</option>
+                  <option value={100}>雷達：正在瘋傳</option>
+                </select>
+                <span className={styles.columnCount}>{pendingEvents.length}</span>
+              </div>
             </div>
             <div className={styles.columnBody}>
               {pendingEvents.length > 0 ? pendingEvents.map(renderCard) : renderEmptyPlaceholders()}

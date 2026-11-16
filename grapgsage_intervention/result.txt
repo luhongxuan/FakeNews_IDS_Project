@@ -1,0 +1,98 @@
+(venv) luhongxuan@luhongxuan-VMware-Virtual-Platform:~/FakeNews_IDS_Project/grapgsage_intervention$ /home/luhongxuan/FakeNews_IDS_Project/venv/bin/python /home/luhongxuan/FakeNews_IDS_Project/grapgsage_intervention/pheme_graphsage.py
+載入圖資料集：pheme_graphs_roberta_30min.pt
+共 6425 張圖
+使用裝置：cpu
+
+=======================================================
+LOEO fold：test_event = charliehebdo
+  train=4346  test=2079
+  epoch  10 | loss=0.1752 (cls=0.2419 reg=0.0195) | val_loss=0.2056 patience=8 | acc=0.810 f1_macro=0.746 auc=0.841 node_mae=0.0566
+  epoch  20 | loss=0.1011 (cls=0.1359 reg=0.0200) | val_loss=0.2268 patience=7 | acc=0.740 f1_macro=0.685 auc=0.816 node_mae=0.0670
+  epoch  30 | loss=0.0500 (cls=0.0630 reg=0.0195) | val_loss=0.1924 patience=2 | acc=0.785 f1_macro=0.717 auc=0.831 node_mae=0.0586
+  epoch  40 | loss=0.0510 (cls=0.0643 reg=0.0197) | val_loss=0.2053 patience=12 | acc=0.772 f1_macro=0.714 auc=0.821 node_mae=0.0604
+  early stopping at epoch 43
+  最佳 f1_macro=0.698
+
+=======================================================
+LOEO fold：test_event = ebola-essien
+  train=6411  test=14
+  epoch  10 | loss=0.1653 (cls=0.2280 reg=0.0190) | val_loss=0.1999 patience=5 | acc=0.357 f1_macro=0.263 auc=0.000 node_mae=0.0422
+  early stopping at epoch 20
+  最佳 f1_macro=0.333
+
+=======================================================
+LOEO fold：test_event = ferguson
+  train=5282  test=1143
+  epoch  10 | loss=0.1731 (cls=0.2392 reg=0.0188) | val_loss=0.1817 patience=4 | acc=0.710 f1_macro=0.536 auc=0.576 node_mae=0.0654
+  epoch  20 | loss=0.0965 (cls=0.1299 reg=0.0187) | val_loss=0.1686 patience=0 | acc=0.672 f1_macro=0.542 auc=0.547 node_mae=0.0748
+  epoch  30 | loss=0.0528 (cls=0.0675 reg=0.0185) | val_loss=0.2058 patience=1 | acc=0.696 f1_macro=0.571 auc=0.609 node_mae=0.0675
+  epoch  40 | loss=0.0493 (cls=0.0625 reg=0.0186) | val_loss=0.1861 patience=11 | acc=0.699 f1_macro=0.596 auc=0.649 node_mae=0.0661
+  early stopping at epoch 44
+  最佳 f1_macro=0.570
+
+=======================================================
+LOEO fold：test_event = germanwings-crash
+  train=5956  test=469
+  epoch  10 | loss=0.1623 (cls=0.2237 reg=0.0191) | val_loss=0.2040 patience=2 | acc=0.569 f1_macro=0.503 auc=0.692 node_mae=0.0730
+  epoch  20 | loss=0.1110 (cls=0.1503 reg=0.0191) | val_loss=0.2004 patience=12 | acc=0.706 f1_macro=0.705 auc=0.759 node_mae=0.0749
+  epoch  30 | loss=0.0512 (cls=0.0650 reg=0.0189) | val_loss=0.2041 patience=9 | acc=0.684 f1_macro=0.679 auc=0.740 node_mae=0.0760
+  early stopping at epoch 36
+  最佳 f1_macro=0.702
+
+=======================================================
+LOEO fold：test_event = gurlitt
+  train=6287  test=138
+  epoch  10 | loss=0.1630 (cls=0.2246 reg=0.0192) | val_loss=0.2034 patience=5 | acc=0.558 f1_macro=0.373 auc=0.480 node_mae=0.3861
+  epoch  20 | loss=0.0997 (cls=0.1342 reg=0.0190) | val_loss=0.1995 patience=1 | acc=0.486 f1_macro=0.450 auc=0.493 node_mae=0.3335
+  epoch  30 | loss=0.0486 (cls=0.0612 reg=0.0191) | val_loss=0.1807 patience=11 | acc=0.558 f1_macro=0.451 auc=0.508 node_mae=0.3503
+  early stopping at epoch 34
+  最佳 f1_macro=0.467
+
+=======================================================
+LOEO fold：test_event = ottawashooting
+  train=5535  test=890
+  epoch  10 | loss=0.1746 (cls=0.2407 reg=0.0202) | val_loss=0.1978 patience=2 | acc=0.657 f1_macro=0.647 auc=0.807 node_mae=0.0510
+  epoch  20 | loss=0.0974 (cls=0.1305 reg=0.0202) | val_loss=0.1951 patience=8 | acc=0.687 f1_macro=0.686 auc=0.769 node_mae=0.0528
+  early stopping at epoch 27
+  最佳 f1_macro=0.691
+
+=======================================================
+LOEO fold：test_event = prince-toronto
+  train=6192  test=233
+  epoch  10 | loss=0.1633 (cls=0.2252 reg=0.0189) | val_loss=0.1991 patience=5 | acc=0.266 f1_macro=0.221 auc=0.528 node_mae=0.1771
+  epoch  20 | loss=0.1055 (cls=0.1426 reg=0.0190) | val_loss=0.2170 patience=3 | acc=0.227 f1_macro=0.198 auc=0.667 node_mae=0.1657
+  epoch  30 | loss=0.0669 (cls=0.0875 reg=0.0188) | val_loss=0.2185 patience=5 | acc=0.163 f1_macro=0.149 auc=0.675 node_mae=0.1739
+  epoch  40 | loss=0.0419 (cls=0.0519 reg=0.0188) | val_loss=0.2056 patience=7 | acc=0.262 f1_macro=0.222 auc=0.716 node_mae=0.1715
+  epoch  50 | loss=0.0340 (cls=0.0404 reg=0.0189) | val_loss=0.1985 patience=5 | acc=0.223 f1_macro=0.194 auc=0.737 node_mae=0.1777
+  最佳 f1_macro=0.216
+
+=======================================================
+LOEO fold：test_event = putinmissing
+  train=6187  test=238
+  epoch  10 | loss=0.1658 (cls=0.2287 reg=0.0189) | val_loss=0.2121 patience=4 | acc=0.500 f1_macro=0.489 auc=0.539 node_mae=0.2053
+  epoch  20 | loss=0.0992 (cls=0.1336 reg=0.0189) | val_loss=0.3694 patience=14 | acc=0.571 f1_macro=0.571 auc=0.617 node_mae=0.2031
+  early stopping at epoch 21
+  最佳 f1_macro=0.559
+
+=======================================================
+LOEO fold：test_event = sydneysiege
+  train=5204  test=1221
+  epoch  10 | loss=0.1509 (cls=0.2063 reg=0.0216) | val_loss=0.2326 patience=3 | acc=0.713 f1_macro=0.698 auc=0.795 node_mae=0.0514
+  epoch  20 | loss=0.1026 (cls=0.1374 reg=0.0213) | val_loss=0.2001 patience=13 | acc=0.725 f1_macro=0.715 auc=0.802 node_mae=0.0508
+  early stopping at epoch 22
+  最佳 f1_macro=0.681
+
+=======================================================
+LOEO 結果彙總：
+event                          acc    f1_macro   f1_rumour         auc    node_mse    node_mae
+charliehebdo                0.7523      0.6982      0.5705      0.8245      0.0181      0.0632
+ebola-essien                0.5000      0.3333      0.6667      0.0000      0.0100      0.0502
+ferguson                    0.6885      0.5695      0.3432      0.5983      0.0219      0.0675
+germanwings-crash           0.7100      0.7020      0.7509      0.7706      0.0228      0.0763
+gurlitt                     0.5290      0.4672      0.2857      0.4858      0.1491      0.3497
+ottawashooting              0.6910      0.6907      0.6806      0.7670      0.0146      0.0515
+prince-toronto              0.2532      0.2156      0.3873      0.6725      0.0726      0.1765
+putinmissing                0.5588      0.5588      0.5607      0.5974      0.0835      0.2083
+sydneysiege                 0.7035      0.6809      0.5960      0.8060      0.0137      0.0494
+----------------------------------------------------------------------------------------------
+mean                        0.5985      0.5463      0.5379      0.6136      0.0451      0.1214
