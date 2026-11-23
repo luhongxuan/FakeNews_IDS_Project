@@ -1,0 +1,9 @@
+{
+  "_note": "semantic role -> styleId in the main report. Ordinary new content uses styles only; captions copy the exact direct formatting of an existing same-kind caption.",
+  "paragraph": "a0",
+  "h1": "1", "h2": "2", "h3": "3", "h4": "4",
+  "list_number": "a",
+  "list_para": "ae",
+  "front_title": "5",
+  "caption": "af4"
+}

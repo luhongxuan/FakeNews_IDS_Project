@@ -20,7 +20,7 @@ npm run dev
 ```text
 當下可觀察的 Bluesky 回覆樹
         ↓
-凍結的 Hawkes-inspired RF（預估後續 reply-cascade impact）
+凍結的 Balanced Cumulative multi-checkpoint RF（57 個累積特徵；預估後續 reply-cascade impact；部署的不是 Hawkes-inspired 版本，見 backend/app/services/intervention_model.py）
         ↓
 Verification Agent（查找支持／反駁核心主張的證據）
         ↓
