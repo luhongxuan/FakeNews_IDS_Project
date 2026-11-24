@@ -49,3 +49,14 @@ tmp/
 
 # One-off local request payload used during integration debugging.
 /scratch_payload.json
+
+# Word 報告編修管線（docx_pipeline）：只追蹤工具原始碼與設定；
+# 版本備份（每版約 11 MB）、變更報告、驗證產物皆為本機產物，可由管線重新產生。
+/docx_pipeline/versions/
+/docx_pipeline/reports/
+/docx_pipeline/*_validation_*/
+
+# 一次性的報告撰寫過程筆記與已併入 Word 的草稿；定稿內容以 Word 報告為準。
+/報告精簡審查清單.md
+/第3章重排步驟.md
+/報告草稿_*.md

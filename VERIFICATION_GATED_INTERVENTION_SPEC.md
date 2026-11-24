@@ -9,7 +9,7 @@
 
 ```text
 Propagation Risk Layer
-Hawkes-inspired Multi-checkpoint Cumulative RF
+Balanced Cumulative Multi-checkpoint RF（目前系統部署版本；Hawkes-inspired 版本僅作研究比較，未部署）
 預測現在介入可能避免的 future impact
                     ↓
 Evidence Layer
