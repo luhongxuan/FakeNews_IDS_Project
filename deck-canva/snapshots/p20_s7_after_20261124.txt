@@ -1,0 +1,6 @@
+p20 (PB5VMh2wklFx4zkQ) s7 after, committed 2026-11-24
+tag: 06 系統展示 | title: 系統展示：同一個事件，兩個時間點
+subtitle: 貼文進來 → 傳播圖 → 自動查證 → 建議處理；用 Charlie Hebdo 歷史事件回放
+headers: 回放時間　12:31:07 | 回放時間　14:16:43 (light #f5f7fb)
+screenshots 840x404.5 each, red boxes rescaled; 8 stat cards deleted
+tags: 建議不介入／證據支持此為真實內容 | 建議介入／查證顯示疑似假訊息，信心足夠 | page 07

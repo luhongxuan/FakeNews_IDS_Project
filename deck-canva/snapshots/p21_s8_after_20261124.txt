@@ -1,0 +1,6 @@
+p21 (PBBdknqJjD8x8nFV) s8 after, committed 2026-11-24
+tag: 07 結論 | title: 限制與結論 | page 08
+left card 我們做到了: 先挑出最可能擴散的討論 / 自動查證，依證據分級建議處理 / 把「挑」和「查」分開，不把風險當成真假
+right card 還沒驗證: 查證的準確率與速度 / 實際能減少多少擴散 / 能不能用到其他平台
+bar: 我們是輔助決策的工具：不自動判斷真假，也不自動限制內容
+note: 3 locked white cards (LB18QlkC…, LBbTZGw7…, LBxLPJ3Y…) cannot be deleted by tool; covered by white rectangles.
