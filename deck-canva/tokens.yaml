@@ -1,0 +1,45 @@
+# 設計系統。階段 0 量測（來源：複本 DAHbz-kXvro 的 p1、p15 元素資料；其餘頁尚未量測，不要猜）
+# null 表示尚未量測。fontRef 只有 ID，沒有字體名稱。
+canvas_px: [1920, 1080]
+colors:
+  navy:    "#16213e"   # 封面底色（p1 實測）；結尾頁尚未量
+  navy_2:  "#1f2e52"   # 封面裝飾圓（p1）
+  teal:    "#1c7293"   # 章節點、章節標籤、強調數字、階段徽章（p15）
+  orange:  "#f2a65a"   # 封面細線、「第 08 組」（p1）
+  text:    "#1b1f3b"   # 標題、副標（p15）
+  muted:   "#4b5876"   # 標籤文字、頁尾（p15）
+  gray:    "#767171"   # 說明文字（p15）；對白底約 4.8:1，過關但接近下限
+  card_border: "#e3e7f0"  # 卡片描邊（p15）
+  on_navy_muted: "#cadcfc"  # 深色底上的次要文字（p1）
+  card_bg: null
+type_px:             # 實測字級（p1 / p15）
+  cover_title: 80    # bold，fontRef YAFcfgNlM2Y
+  title: 60          # bold，fontRef YAFcfgNlM2Y
+  subtitle: 30       # bold，YAFcfhdOoGk
+  section_tag: 26    # bold，字距 0.077，YAFcfhdOoGk
+  body: 28           # p15 說明文字；低於準則 30
+  kpi_number: 48     # bold，YAFcfgNlM2Y
+  kpi_label: 37.33
+  caption: 28        # p15；「用途／分子／分母」標籤 32 bold
+  footer: 18         # 頁尾「第08組｜…」，#4b5876
+  page_number: 27    # fontRef YACgEZ1cb1Q（與其他文字不同），顏色 #000000，行高 1.416
+layout_px:
+  margin: 72         # p15 左緣 72；p1 左緣 129.6；目標 ≥ 96，p15 不符
+  gap: null
+  title_xy: [72, 97.92]        # p15，寬 1771.2、高 122.4
+  section_tag_xy: [106.56, 43.2]  # p15，前有 23×23 teal 圓點在 (72, 60.5)
+  stage_badge_xy: [1557.36, 43.2] # p15，70×70 teal 圓 + 白字數字 + 右側階段名（28 px bold，#000000）
+  page_number_xy: [1716, 1029.6]  # 寬 108，右對齊 → 右緣 1824（距右 96）
+  footer_xy: [72, 1029.6]         # 高 43.2 → 底緣 1072.8，距下僅 7.2，低於 96 邊界
+fonts:
+  headline: "YAFcfgNlM2Y（標題、數字）"
+  body: "YAFcfhdOoGk（內文、標籤、頁尾）"
+  page_number: "YACgEZ1cb1Q（與上面兩個都不同）"
+  note: "read-design 只回 fontRef ID，查不到字體名稱；無法確認是否為字體缺失造成的替換"
+rules:               # 通用準則（1920×1080）
+  min_body_px: 30
+  min_caption_px: 18
+  min_contrast: 4.5
+  min_contrast_large: 3.0
+  max_bullets: 5
+  max_chars_per_page: 140

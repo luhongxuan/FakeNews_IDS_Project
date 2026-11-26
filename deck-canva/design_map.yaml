@@ -1,0 +1,41 @@
+# 設計編號與頁面對照。commit 後必須同步更新。
+original:            # 組員原稿，唯讀，絕對不要修改
+  design_id: DAHUsImNFGU
+  title: 基於圖演算法與機器學習的 假訊息事件干預決策系統
+working_copy:        # 所有修改只在這份進行
+  design_id: DAHbz-kXvro
+  edit_url: （不進版控：公開倉庫；用 design_id 查詢）
+  page_count: 22
+  size_px: [1920, 1080]
+reference_pdf: 454186bc-…08….pdf   # 9/9 匯出的 22 頁 PDF，僅供參考
+old_18_page_deck: DAHUn6W6yJo      # 較早的 18 頁版本，已被取代，僅供參考
+
+pages:               # page_id 取自作業複本；pattern 為初步判斷，階段 2 重新確認
+  - {n: 1,  page_id: PB4f0FJ9rdN2wZJs, title: 封面,                       pattern: cover}
+  - {n: 2,  page_id: PBknvzN8TwZgbKzm, title: 報告大綱,                   pattern: agenda_cards}
+  - {n: 3,  page_id: PBpVbGQ7gr9z2BBt, title: 假訊息很多，查核的人手有限 (s2，已改寫 2026-11-24；新主流程第 2 頁), pattern: text_plus_tree_diagram}
+  - {n: 4,  page_id: PBLHqp61KVWVPt4m, title: 介於「早期偵測」與「資源配置」之間的空白, pattern: three_cards_callout}
+  - {n: 5,  page_id: PBR3XDdCPdyTfR00, title: 四項系統目的,               pattern: four_cards}
+  - {n: 6,  page_id: PB8NzD4yhQcPqdjs, title: 這種排序有幫助嗎？用真實事件做歷史回放, pattern: donut_kpi}
+  - {n: 7,  page_id: PBFCSdw30tCdjBdK, title: 特徵設計：57 項基礎特徵 + 5 項時間衰減特徵, pattern: five_cards_dark_callout}
+  - {n: 8,  page_id: PB8f2wBP4kN7h57B, title: 先把公開貼文，整理成一個可追蹤的傳播串, pattern: text_node_diagram}
+  - {n: 9,  page_id: PBPmBpZbDh5r6NV0, title: 系統架構：前後端分離，模組各自獨立, pattern: architecture_cards}
+  - {n: 10, page_id: PBRpkpzXvMJgbxwn, title: 核心設計：三階段決策流程,   pattern: three_step_dark}
+  - {n: 11, page_id: PBg4HT06FXDzGcKM, title: 固定時間點觀測：以 30 分鐘作為起點基準, pattern: timeline_three_cards}
+  - {n: 12, page_id: PBWKcjFK4lKG1TWj, title: 多時間點觀測：只用「當下」看得到的資訊, pattern: timeline_three_cards}
+  - {n: 13, page_id: PBwwNd0ybB0YmYx8, title: 模型演進：從單一時間點到動態時間衰減, pattern: two_framed_step_lists}
+  - {n: 14, page_id: PB6LFMCK7tQlNRdr, title: 固定 30 分鐘模型：Pooled Fixed Capture, pattern: table_formula}
+  - {n: 15, page_id: PB6lX039ykg0nmLD, title: 多時間點動態模型：加入時間衰減特徵的效果, pattern: bar_chart_kpi_formula}
+  - {n: 16, page_id: PBPWvtGpNcFttRQd, title: 動態排序策略全面優於固定與隨機基準, pattern: bar_chart_formulas_kpi}
+  - {n: 17, page_id: PBxY1bP6VWyZ3VZt, title: 進入查核名單後，先找證據再談處理, pattern: chips_screenshot}
+  - {n: 18, page_id: PBdrxl6rjVScHtL1, title: Evidence-to-Action：依證據狀態分級介入, pattern: rule_rows_badges}
+  - {n: 19, page_id: PB3Vvm3fvrkV38NX, title: 系統實作：即時情境模擬指揮台, pattern: text_screenshot}
+  - {n: 20, page_id: PB5VMh2wklFx4zkQ, title: 動態展示：模擬時間推進，系統持續監測與決策, pattern: two_state_comparison}
+  - {n: 21, page_id: PBBdknqJjD8x8nFV, title: 未來展望,                   pattern: five_cards}
+  - {n: 22, page_id: PBqX5JvyJvJhkGsV, title: 結尾,                       pattern: closing}
+
+# 階段 0 之後，讀取元素資料時把各頁的 locator_id 摘要補在這裡（有用的才記，例如標題、頁碼、來源列）
+elements: {}
+
+new_order_20261124: [PB4f0FJ9rdN2wZJs, PBpVbGQ7gr9z2BBt, PBRpkpzXvMJgbxwn, PBWKcjFK4lKG1TWj, PBPWvtGpNcFttRQd, PBRFmr5HdzgSq1wL, PB5VMh2wklFx4zkQ, PBBdknqJjD8x8nFV, PBqX5JvyJvJhkGsV, PBknvzN8TwZgbKzm, PBLHqp61KVWVPt4m, PBR3XDdCPdyTfR00, PB8NzD4yhQcPqdjs, PBFCSdw30tCdjBdK, PB8f2wBP4kN7h57B, PBPmBpZbDh5r6NV0, PBg4HT06FXDzGcKM, PBwwNd0ybB0YmYx8, PB6LFMCK7tQlNRdr, PB6lX039ykg0nmLD, PBxY1bP6VWyZ3VZt, PBdrxl6rjVScHtL1, PB3Vvm3fvrkV38NX]
+# 上表 n 欄為重排前的頁號；現行頁序以 new_order_20261124 為準。
