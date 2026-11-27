@@ -1,0 +1,10 @@
+{
+  "T_max_min": 60,
+  "min_replies": 1,
+  "top_fraction": 0.1,
+  "split_mode": "time",
+  "group_id_definition": "UTC source-post date",
+  "group_boundaries": "ordered groups 60/20/20; floor each, remainder to training",
+  "T_minutes": null,
+  "H_hours": null
+}

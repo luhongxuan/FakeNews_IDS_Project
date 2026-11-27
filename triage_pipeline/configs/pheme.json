@@ -1,0 +1,10 @@
+{
+  "T_max_min": 60,
+  "min_replies": 1,
+  "top_fraction": 0.1,
+  "split_mode": "leave_group_out",
+  "group_id_definition": "archive event",
+  "group_boundaries": "nested leave one event out",
+  "T_minutes": null,
+  "H_hours": null
+}

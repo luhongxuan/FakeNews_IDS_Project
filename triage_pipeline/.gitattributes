@@ -1,0 +1,3 @@
+# 規格雜湊會在執行時驗證，換行格式必須固定。
+* text eol=lf
+SPEC.md text eol=crlf
